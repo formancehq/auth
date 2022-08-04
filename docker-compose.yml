@@ -7,7 +7,9 @@ services:
     ports:
     - "16686:16686/tcp"
   dex:
-    image: ghcr.io/dexidp/dex:latest
+    build:
+      context: .
+      dockerfile: dex.Dockerfile
     volumes:
       - ./dex-config.yaml:/etc/dex/config.docker.yaml
     ports:
