@@ -26,9 +26,7 @@ const (
 	delegatedIssuerFlag       = "delegated-issuer"
 	baseUrlFlag               = "base-url"
 	signingKeyFlag            = "signing-key"
-	configNameFlag            = "config-name"
-	configTypeFlag            = "config-type"
-	configPathFlag            = "config-path"
+	configFlag                = "config"
 )
 
 var serveCmd = &cobra.Command{
@@ -70,9 +68,8 @@ var serveCmd = &cobra.Command{
 			return err
 		}
 
-		viper.SetConfigName(viper.GetString(configNameFlag))
-		viper.SetConfigType(viper.GetString(configTypeFlag))
-		viper.AddConfigPath(viper.GetString(configPathFlag))
+		viper.SetConfigName(viper.GetString(configFlag))
+		viper.AddConfigPath(".")
 		if err := viper.ReadInConfig(); err != nil {
 			if _, ok := err.(viper.ConfigFileNotFoundError); ok {
 				// Config file not found; ignore error if desired
@@ -132,9 +129,7 @@ func init() {
 	serveCmd.Flags().String(baseUrlFlag, "http://localhost:8080", "Base service url")
 	serveCmd.Flags().String(signingKeyFlag, "", "Signing key")
 
-	serveCmd.Flags().String(configNameFlag, "viper-config", "Config file name without extension")
-	serveCmd.Flags().String(configTypeFlag, "yaml", "Config file type. REQUIRED if the config file does not have the extension in the name")
-	serveCmd.Flags().String(configPathFlag, ".", "Path to look for the config file in")
+	serveCmd.Flags().String(configFlag, "viper-config", "Config file name without extension")
 
 	sharedotlptraces.InitOTLPTracesFlags(serveCmd.Flags())
 }
