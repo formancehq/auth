@@ -82,7 +82,7 @@ var serveCmd = &cobra.Command{
 		}
 		o := clientOptions{}
 		if err := viper.Unmarshal(&o); err != nil {
-			panic(errors.Wrap(err, "unmarshal viper config"))
+			return errors.Wrap(err, "unmarshal viper config")
 		}
 
 		options := []fx.Option{
