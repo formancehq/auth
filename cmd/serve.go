@@ -80,14 +80,19 @@ var serveCmd = &cobra.Command{
 			}
 		}
 
-		type staticClients struct {
+		type clientOptions struct {
 			Clients []auth.ClientOptions `json:"clients" yaml:"clients"`
 		}
-		scs := staticClients{}
-		if err := viper.Unmarshal(&scs); err != nil {
+		o := clientOptions{}
+		if err := viper.Unmarshal(&o); err != nil {
 			panic(errors.Wrap(err, "unmarshal viper config"))
 		}
-		spew.Dump("STATIC CLIENTS FROM CONFIG", scs)
+
+		for _, c := range o.Clients {
+			storage.StaticClients = append(storage.StaticClients, auth.NewClient(c))
+		}
+
+		spew.Dump("STATIC CLIENTS", storage.StaticClients)
 
 		options := []fx.Option{
 			fx.Supply(fx.Annotate(cmd.Context(), fx.As(new(context.Context)))),

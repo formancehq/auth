@@ -326,9 +326,19 @@ func (s *storage) GetKeySet(ctx context.Context) (*jose.JSONWebKeySet, error) {
 	}, nil
 }
 
+var (
+	StaticClients []*auth.Client
+)
+
 // GetClientByClientID implements the op.Storage interface
 // it will be called whenever information (type, redirect_uris, ...) about the client behind the client_id is needed
 func (s *storage) getClientByClientID(ctx context.Context, clientID string) (*auth.Client, error) {
+	for _, c := range StaticClients {
+		if c.Id == clientID {
+			return c, nil
+		}
+	}
+
 	client := &auth.Client{}
 	return client, s.db.
 		WithContext(ctx).

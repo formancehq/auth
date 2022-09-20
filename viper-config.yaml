@@ -1,7 +1,8 @@
 clients:
-  - public: true
+  - id: demo
+    public: true
     redirectUris:
       - http://localhost:3000/auth-callback
-    name: static client
+    name: demo
     postLogoutRedirectUris:
       - http://localhost:3000/
