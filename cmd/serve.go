@@ -4,14 +4,16 @@ import (
 	"context"
 	"crypto/x509"
 	"encoding/pem"
-	"errors"
 	"fmt"
 
+	"github.com/davecgh/go-spew/spew"
+	auth "github.com/formancehq/auth/pkg"
 	"github.com/formancehq/auth/pkg/api"
 	"github.com/formancehq/auth/pkg/delegatedauth"
 	"github.com/formancehq/auth/pkg/storage"
 	"github.com/numary/go-libs/sharedlogging"
 	"github.com/numary/go-libs/sharedotlp/pkg/sharedotlptraces"
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"go.uber.org/fx"
@@ -24,6 +26,9 @@ const (
 	delegatedIssuerFlag       = "delegated-issuer"
 	baseUrlFlag               = "base-url"
 	signingKeyFlag            = "signing-key"
+	configNameFlag            = "config-name"
+	configTypeFlag            = "config-type"
+	configPathFlag            = "config-path"
 )
 
 var serveCmd = &cobra.Command{
@@ -32,7 +37,6 @@ var serveCmd = &cobra.Command{
 		return bindFlagsToViper(cmd)
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-
 		baseUrl := viper.GetString(baseUrlFlag)
 		if baseUrl == "" {
 			return errors.New("base url must be defined")
@@ -66,6 +70,28 @@ var serveCmd = &cobra.Command{
 			return err
 		}
 
+		viper.SetConfigName(viper.GetString(configNameFlag))
+		viper.SetConfigType(viper.GetString(configTypeFlag))
+		viper.AddConfigPath(viper.GetString(configPathFlag))
+		if err := viper.ReadInConfig(); err != nil {
+			if _, ok := err.(viper.ConfigFileNotFoundError); ok {
+				// Config file not found; ignore error if desired
+				sharedlogging.GetLogger(cmd.Context()).Infof("no viper config file found")
+			} else {
+				// Config file was found but another error was produced
+				panic(errors.Wrap(err, "reading viper config file"))
+			}
+		}
+
+		type staticClients struct {
+			Clients []auth.ClientOptions `json:"clients" yaml:"clients"`
+		}
+		scs := staticClients{}
+		if err := viper.Unmarshal(&scs); err != nil {
+			panic(errors.Wrap(err, "unmarshal viper config"))
+		}
+		spew.Dump("STATIC CLIENTS FROM CONFIG", scs)
+
 		options := []fx.Option{
 			fx.Supply(fx.Annotate(cmd.Context(), fx.As(new(context.Context)))),
 			api.Module(baseUrl, ":8080"),
@@ -81,6 +107,7 @@ var serveCmd = &cobra.Command{
 			}),
 			fx.NopLogger,
 		}
+
 		if tm := sharedotlptraces.CLITracesModule(viper.GetViper()); tm != nil {
 			options = append(options, tm)
 		}
@@ -104,6 +131,10 @@ func init() {
 	serveCmd.Flags().String(delegatedClientSecretFlag, "", "Delegated OIDC client secret")
 	serveCmd.Flags().String(baseUrlFlag, "http://localhost:8080", "Base service url")
 	serveCmd.Flags().String(signingKeyFlag, "", "Signing key")
+
+	serveCmd.Flags().String(configNameFlag, "viper-config", "Config file name without extension")
+	serveCmd.Flags().String(configTypeFlag, "yaml", "Config file type. REQUIRED if the config file does not have the extension in the name")
+	serveCmd.Flags().String(configPathFlag, ".", "Path to look for the config file in")
 
 	sharedotlptraces.InitOTLPTracesFlags(serveCmd.Flags())
 }
