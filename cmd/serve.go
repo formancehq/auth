@@ -6,7 +6,6 @@ import (
 	"encoding/pem"
 	"fmt"
 
-	"github.com/davecgh/go-spew/spew"
 	auth "github.com/formancehq/auth/pkg"
 	"github.com/formancehq/auth/pkg/api"
 	"github.com/formancehq/auth/pkg/delegatedauth"
@@ -72,11 +71,9 @@ var serveCmd = &cobra.Command{
 		viper.AddConfigPath(".")
 		if err := viper.ReadInConfig(); err != nil {
 			if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-				// Config file not found; ignore error if desired
 				sharedlogging.GetLogger(cmd.Context()).Infof("no viper config file found")
 			} else {
-				// Config file was found but another error was produced
-				panic(errors.Wrap(err, "reading viper config file"))
+				return errors.Wrap(err, "reading viper config file")
 			}
 		}
 
@@ -88,16 +85,10 @@ var serveCmd = &cobra.Command{
 			panic(errors.Wrap(err, "unmarshal viper config"))
 		}
 
-		for _, c := range o.Clients {
-			storage.StaticClients = append(storage.StaticClients, auth.NewClient(c))
-		}
-
-		spew.Dump("STATIC CLIENTS", storage.StaticClients)
-
 		options := []fx.Option{
 			fx.Supply(fx.Annotate(cmd.Context(), fx.As(new(context.Context)))),
 			api.Module(baseUrl, ":8080"),
-			storage.Module(viper.GetString(postgresUriFlag), key),
+			storage.Module(viper.GetString(postgresUriFlag), key, o.Clients),
 			delegatedauth.Module(delegatedauth.Config{
 				Issuer:       delegatedIssuer,
 				ClientID:     delegatedClientID,
@@ -134,7 +125,7 @@ func init() {
 	serveCmd.Flags().String(baseUrlFlag, "http://localhost:8080", "Base service url")
 	serveCmd.Flags().String(signingKeyFlag, "", "Signing key")
 
-	serveCmd.Flags().String(configFlag, "viper-config", "Config file name without extension")
+	serveCmd.Flags().String(configFlag, "config", "Config file name without extension")
 
 	sharedotlptraces.InitOTLPTracesFlags(serveCmd.Flags())
 }
