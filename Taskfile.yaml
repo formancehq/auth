@@ -2,7 +2,7 @@ version: '3'
 
 vars:
   COMPONENT:
-    sh: cat go.mod | head -1 | cut -d \  -f2 | cut -d / -f 3
+    sh: cat go.mod | head -1 | cut -d \ -f2 | cut -d / -f 3
 
 tasks:
   default:
