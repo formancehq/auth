@@ -22,8 +22,6 @@ paths:
                 $ref: '#/components/schemas/ListClientsResponse'
           description: List of clients
       summary: List clients
-      tags:
-      - Clients
     post:
       operationId: createClient
       requestBody:
@@ -39,8 +37,6 @@ paths:
                 $ref: '#/components/schemas/CreateClientResponse'
           description: Client created
       summary: Create client
-      tags:
-      - Clients
   /clients/{clientId}:
     delete:
       operationId: deleteClient
@@ -57,8 +53,6 @@ paths:
         "204":
           description: Client deleted
       summary: Delete client
-      tags:
-      - Clients
     get:
       operationId: readClient
       parameters:
@@ -78,8 +72,6 @@ paths:
                 $ref: '#/components/schemas/ReadClientResponse'
           description: Retrieved client
       summary: Read client
-      tags:
-      - Clients
     put:
       operationId: updateClient
       parameters:
@@ -104,8 +96,6 @@ paths:
                 $ref: '#/components/schemas/UpdateClientResponse'
           description: Updated client
       summary: Update client
-      tags:
-      - Clients
   /clients/{clientId}/secrets:
     post:
       operationId: createSecret
@@ -131,8 +121,6 @@ paths:
                 $ref: '#/components/schemas/CreateSecretResponse'
           description: Created secret
       summary: Add a secret to a client
-      tags:
-      - Clients
   /clients/{clientId}/secrets/{secretId}:
     delete:
       operationId: deleteSecret
@@ -157,8 +145,6 @@ paths:
         "204":
           description: Secret deleted
       summary: Delete a secret from a client
-      tags:
-      - Clients
   /clients/{clientId}/scopes/{scopeId}:
     delete:
       operationId: deleteScopeFromClient
@@ -183,8 +169,6 @@ paths:
         "204":
           description: Scope deleted from client
       summary: Delete scope from client
-      tags:
-      - Clients
     put:
       operationId: addScopeToClient
       parameters:
@@ -208,8 +192,6 @@ paths:
         "204":
           description: Scope added to client
       summary: Add scope to client
-      tags:
-      - Clients
   /scopes:
     get:
       description: List Scopes
@@ -222,8 +204,6 @@ paths:
                 $ref: '#/components/schemas/ListScopesResponse'
           description: List of scopes
       summary: List scopes
-      tags:
-      - Scopes
     post:
       description: Create scope
       operationId: createScope
@@ -240,8 +220,6 @@ paths:
                 $ref: '#/components/schemas/CreateScopeResponse'
           description: Created scope
       summary: Create scope
-      tags:
-      - Scopes
   /scopes/{scopeId}:
     delete:
       description: Delete scope
@@ -259,8 +237,6 @@ paths:
         "204":
           description: Scope deleted
       summary: Delete scope
-      tags:
-      - Scopes
     get:
       description: Read scope
       operationId: readScope
@@ -281,8 +257,6 @@ paths:
                 $ref: '#/components/schemas/ReadScopeResponse'
           description: Retrieved scope
       summary: Read scope
-      tags:
-      - Scopes
     put:
       description: Update scope
       operationId: updateScope
@@ -308,8 +282,6 @@ paths:
                 $ref: '#/components/schemas/UpdateScopeResponse'
           description: Updated scope
       summary: Update scope
-      tags:
-      - Scopes
   /scopes/{scopeId}/transient/{transientScopeId}:
     delete:
       description: Delete a transient scope from a scope
@@ -335,8 +307,6 @@ paths:
         "204":
           description: Transient scope deleted
       summary: Delete a transient scope from a scope
-      tags:
-      - Scopes
     put:
       description: Add a transient scope to a scope
       operationId: addTransientScope
@@ -361,8 +331,6 @@ paths:
         "204":
           description: Scope added
       summary: Add a transient scope to a scope
-      tags:
-      - Scopes
   /users:
     get:
       description: List users
@@ -375,8 +343,6 @@ paths:
                 $ref: '#/components/schemas/ListUsersResponse'
           description: List of users
       summary: List users
-      tags:
-      - Users
   /users/{userId}:
     get:
       description: Read user
@@ -398,8 +364,6 @@ paths:
                 $ref: '#/components/schemas/ReadUserResponse'
           description: Retrieved user
       summary: Read user
-      tags:
-      - Users
 components:
   schemas:
     Metadata:

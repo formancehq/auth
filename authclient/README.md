@@ -78,24 +78,24 @@ All URIs are relative to *https://.o.formance.cloud/auth*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
-*ClientsApi* | [**AddScopeToClient**](docs/ClientsApi.md#addscopetoclient) | **Put** /clients/{clientId}/scopes/{scopeId} | Add scope to client
-*ClientsApi* | [**CreateClient**](docs/ClientsApi.md#createclient) | **Post** /clients | Create client
-*ClientsApi* | [**CreateSecret**](docs/ClientsApi.md#createsecret) | **Post** /clients/{clientId}/secrets | Add a secret to a client
-*ClientsApi* | [**DeleteClient**](docs/ClientsApi.md#deleteclient) | **Delete** /clients/{clientId} | Delete client
-*ClientsApi* | [**DeleteScopeFromClient**](docs/ClientsApi.md#deletescopefromclient) | **Delete** /clients/{clientId}/scopes/{scopeId} | Delete scope from client
-*ClientsApi* | [**DeleteSecret**](docs/ClientsApi.md#deletesecret) | **Delete** /clients/{clientId}/secrets/{secretId} | Delete a secret from a client
-*ClientsApi* | [**ListClients**](docs/ClientsApi.md#listclients) | **Get** /clients | List clients
-*ClientsApi* | [**ReadClient**](docs/ClientsApi.md#readclient) | **Get** /clients/{clientId} | Read client
-*ClientsApi* | [**UpdateClient**](docs/ClientsApi.md#updateclient) | **Put** /clients/{clientId} | Update client
-*ScopesApi* | [**AddTransientScope**](docs/ScopesApi.md#addtransientscope) | **Put** /scopes/{scopeId}/transient/{transientScopeId} | Add a transient scope to a scope
-*ScopesApi* | [**CreateScope**](docs/ScopesApi.md#createscope) | **Post** /scopes | Create scope
-*ScopesApi* | [**DeleteScope**](docs/ScopesApi.md#deletescope) | **Delete** /scopes/{scopeId} | Delete scope
-*ScopesApi* | [**DeleteTransientScope**](docs/ScopesApi.md#deletetransientscope) | **Delete** /scopes/{scopeId}/transient/{transientScopeId} | Delete a transient scope from a scope
-*ScopesApi* | [**ListScopes**](docs/ScopesApi.md#listscopes) | **Get** /scopes | List scopes
-*ScopesApi* | [**ReadScope**](docs/ScopesApi.md#readscope) | **Get** /scopes/{scopeId} | Read scope
-*ScopesApi* | [**UpdateScope**](docs/ScopesApi.md#updatescope) | **Put** /scopes/{scopeId} | Update scope
-*UsersApi* | [**ListUsers**](docs/UsersApi.md#listusers) | **Get** /users | List users
-*UsersApi* | [**ReadUser**](docs/UsersApi.md#readuser) | **Get** /users/{userId} | Read user
+*DefaultApi* | [**AddScopeToClient**](docs/DefaultApi.md#addscopetoclient) | **Put** /clients/{clientId}/scopes/{scopeId} | Add scope to client
+*DefaultApi* | [**AddTransientScope**](docs/DefaultApi.md#addtransientscope) | **Put** /scopes/{scopeId}/transient/{transientScopeId} | Add a transient scope to a scope
+*DefaultApi* | [**CreateClient**](docs/DefaultApi.md#createclient) | **Post** /clients | Create client
+*DefaultApi* | [**CreateScope**](docs/DefaultApi.md#createscope) | **Post** /scopes | Create scope
+*DefaultApi* | [**CreateSecret**](docs/DefaultApi.md#createsecret) | **Post** /clients/{clientId}/secrets | Add a secret to a client
+*DefaultApi* | [**DeleteClient**](docs/DefaultApi.md#deleteclient) | **Delete** /clients/{clientId} | Delete client
+*DefaultApi* | [**DeleteScope**](docs/DefaultApi.md#deletescope) | **Delete** /scopes/{scopeId} | Delete scope
+*DefaultApi* | [**DeleteScopeFromClient**](docs/DefaultApi.md#deletescopefromclient) | **Delete** /clients/{clientId}/scopes/{scopeId} | Delete scope from client
+*DefaultApi* | [**DeleteSecret**](docs/DefaultApi.md#deletesecret) | **Delete** /clients/{clientId}/secrets/{secretId} | Delete a secret from a client
+*DefaultApi* | [**DeleteTransientScope**](docs/DefaultApi.md#deletetransientscope) | **Delete** /scopes/{scopeId}/transient/{transientScopeId} | Delete a transient scope from a scope
+*DefaultApi* | [**ListClients**](docs/DefaultApi.md#listclients) | **Get** /clients | List clients
+*DefaultApi* | [**ListScopes**](docs/DefaultApi.md#listscopes) | **Get** /scopes | List scopes
+*DefaultApi* | [**ListUsers**](docs/DefaultApi.md#listusers) | **Get** /users | List users
+*DefaultApi* | [**ReadClient**](docs/DefaultApi.md#readclient) | **Get** /clients/{clientId} | Read client
+*DefaultApi* | [**ReadScope**](docs/DefaultApi.md#readscope) | **Get** /scopes/{scopeId} | Read scope
+*DefaultApi* | [**ReadUser**](docs/DefaultApi.md#readuser) | **Get** /users/{userId} | Read user
+*DefaultApi* | [**UpdateClient**](docs/DefaultApi.md#updateclient) | **Put** /clients/{clientId} | Update client
+*DefaultApi* | [**UpdateScope**](docs/DefaultApi.md#updatescope) | **Put** /scopes/{scopeId} | Update scope
 
 
 ## Documentation For Models

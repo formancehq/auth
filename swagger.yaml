@@ -17,8 +17,6 @@ paths:
     get:
       summary: List clients
       operationId: listClients
-      tags:
-        - Clients
       responses:
         "200":
           description: List of clients
@@ -29,8 +27,6 @@ paths:
     post:
       summary: Create client
       operationId: createClient
-      tags:
-        - Clients
       requestBody:
         content:
           application/json:
@@ -47,8 +43,6 @@ paths:
     get:
       summary: Read client
       operationId: readClient
-      tags:
-        - Clients
       parameters:
         - description: Client ID
           in: path
@@ -66,8 +60,6 @@ paths:
     put:
       summary: Update client
       operationId: updateClient
-      tags:
-        - Clients
       requestBody:
         content:
           application/json:
@@ -90,8 +82,6 @@ paths:
     delete:
       summary: Delete client
       operationId: deleteClient
-      tags:
-        - Clients
       parameters:
         - description: Client ID
           in: path
@@ -106,8 +96,6 @@ paths:
     post:
       summary: Add a secret to a client
       operationId: createSecret
-      tags:
-        - Clients
       parameters:
         - description: Client ID
           in: path
@@ -131,8 +119,6 @@ paths:
     delete:
       summary: Delete a secret from a client
       operationId: deleteSecret
-      tags:
-        - Clients
       parameters:
         - description: Client ID
           in: path
@@ -153,8 +139,6 @@ paths:
     put:
       summary: Add scope to client
       operationId: addScopeToClient
-      tags:
-        - Clients
       parameters:
         - description: Client ID
           in: path
@@ -174,8 +158,6 @@ paths:
     delete:
       summary: Delete scope from client
       operationId: deleteScopeFromClient
-      tags:
-        - Clients
       parameters:
         - description: Client ID
           in: path
@@ -197,8 +179,6 @@ paths:
       summary: List scopes
       description: List Scopes
       operationId: listScopes
-      tags:
-        - Scopes
       responses:
         200:
           description: List of scopes
@@ -210,8 +190,6 @@ paths:
       summary: Create scope
       description: Create scope
       operationId: createScope
-      tags:
-        - Scopes
       requestBody:
         content:
           application/json:
@@ -229,8 +207,6 @@ paths:
       summary: Read scope
       description: Read scope
       operationId: readScope
-      tags:
-        - Scopes
       parameters:
         - description: Scope ID
           in: path
@@ -249,8 +225,6 @@ paths:
       summary: Update scope
       description: Update scope
       operationId: updateScope
-      tags:
-        - Scopes
       parameters:
         - description: Scope ID
           in: path
@@ -274,8 +248,6 @@ paths:
       summary: Delete scope
       description: Delete scope
       operationId: deleteScope
-      tags:
-        - Scopes
       parameters:
         - description: Scope ID
           in: path
@@ -291,8 +263,6 @@ paths:
       summary: Add a transient scope to a scope
       description: Add a transient scope to a scope
       operationId: addTransientScope
-      tags:
-        - Scopes
       parameters:
         - description: Scope ID
           in: path
@@ -313,8 +283,6 @@ paths:
       summary: Delete a transient scope from a scope
       description: Delete a transient scope from a scope
       operationId: deleteTransientScope
-      tags:
-        - Scopes
       parameters:
         - description: Scope ID
           in: path
@@ -336,8 +304,6 @@ paths:
       summary: List users
       description: List users
       operationId: listUsers
-      tags:
-        - Users
       responses:
         200:
           description: List of users
@@ -350,8 +316,6 @@ paths:
       summary: Read user
       description: Read user
       operationId: readUser
-      tags:
-        - Users
       parameters:
         - description: User ID
           in: path

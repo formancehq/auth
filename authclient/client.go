@@ -49,11 +49,7 @@ type APIClient struct {
 
 	// API Services
 
-	ClientsApi *ClientsApiService
-
-	ScopesApi *ScopesApiService
-
-	UsersApi *UsersApiService
+	DefaultApi *DefaultApiService
 }
 
 type service struct {
@@ -72,9 +68,7 @@ func NewAPIClient(cfg *Configuration) *APIClient {
 	c.common.client = c
 
 	// API Services
-	c.ClientsApi = (*ClientsApiService)(&c.common)
-	c.ScopesApi = (*ScopesApiService)(&c.common)
-	c.UsersApi = (*UsersApiService)(&c.common)
+	c.DefaultApi = (*DefaultApiService)(&c.common)
 
 	return c
 }
