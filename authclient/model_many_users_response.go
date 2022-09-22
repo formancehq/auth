@@ -14,32 +14,32 @@ import (
 	"encoding/json"
 )
 
-// ListClientsResponse struct for ListClientsResponse
-type ListClientsResponse struct {
-	Data []Client `json:"data,omitempty"`
+// ManyUsersResponse struct for ManyUsersResponse
+type ManyUsersResponse struct {
+	Data []User `json:"data,omitempty"`
 }
 
-// NewListClientsResponse instantiates a new ListClientsResponse object
+// NewManyUsersResponse instantiates a new ManyUsersResponse object
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewListClientsResponse() *ListClientsResponse {
-	this := ListClientsResponse{}
+func NewManyUsersResponse() *ManyUsersResponse {
+	this := ManyUsersResponse{}
 	return &this
 }
 
-// NewListClientsResponseWithDefaults instantiates a new ListClientsResponse object
+// NewManyUsersResponseWithDefaults instantiates a new ManyUsersResponse object
 // This constructor will only assign default values to properties that have it defined,
 // but it doesn't guarantee that properties required by API are set
-func NewListClientsResponseWithDefaults() *ListClientsResponse {
-	this := ListClientsResponse{}
+func NewManyUsersResponseWithDefaults() *ManyUsersResponse {
+	this := ManyUsersResponse{}
 	return &this
 }
 
 // GetData returns the Data field value if set, zero value otherwise.
-func (o *ListClientsResponse) GetData() []Client {
+func (o *ManyUsersResponse) GetData() []User {
 	if o == nil || o.Data == nil {
-		var ret []Client
+		var ret []User
 		return ret
 	}
 	return o.Data
@@ -47,7 +47,7 @@ func (o *ListClientsResponse) GetData() []Client {
 
 // GetDataOk returns a tuple with the Data field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *ListClientsResponse) GetDataOk() ([]Client, bool) {
+func (o *ManyUsersResponse) GetDataOk() ([]User, bool) {
 	if o == nil || o.Data == nil {
 		return nil, false
 	}
@@ -55,7 +55,7 @@ func (o *ListClientsResponse) GetDataOk() ([]Client, bool) {
 }
 
 // HasData returns a boolean if a field has been set.
-func (o *ListClientsResponse) HasData() bool {
+func (o *ManyUsersResponse) HasData() bool {
 	if o != nil && o.Data != nil {
 		return true
 	}
@@ -63,12 +63,12 @@ func (o *ListClientsResponse) HasData() bool {
 	return false
 }
 
-// SetData gets a reference to the given []Client and assigns it to the Data field.
-func (o *ListClientsResponse) SetData(v []Client) {
+// SetData gets a reference to the given []User and assigns it to the Data field.
+func (o *ManyUsersResponse) SetData(v []User) {
 	o.Data = v
 }
 
-func (o ListClientsResponse) MarshalJSON() ([]byte, error) {
+func (o ManyUsersResponse) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
 	if o.Data != nil {
 		toSerialize["data"] = o.Data
@@ -76,38 +76,38 @@ func (o ListClientsResponse) MarshalJSON() ([]byte, error) {
 	return json.Marshal(toSerialize)
 }
 
-type NullableListClientsResponse struct {
-	value *ListClientsResponse
+type NullableManyUsersResponse struct {
+	value *ManyUsersResponse
 	isSet bool
 }
 
-func (v NullableListClientsResponse) Get() *ListClientsResponse {
+func (v NullableManyUsersResponse) Get() *ManyUsersResponse {
 	return v.value
 }
 
-func (v *NullableListClientsResponse) Set(val *ListClientsResponse) {
+func (v *NullableManyUsersResponse) Set(val *ManyUsersResponse) {
 	v.value = val
 	v.isSet = true
 }
 
-func (v NullableListClientsResponse) IsSet() bool {
+func (v NullableManyUsersResponse) IsSet() bool {
 	return v.isSet
 }
 
-func (v *NullableListClientsResponse) Unset() {
+func (v *NullableManyUsersResponse) Unset() {
 	v.value = nil
 	v.isSet = false
 }
 
-func NewNullableListClientsResponse(val *ListClientsResponse) *NullableListClientsResponse {
-	return &NullableListClientsResponse{value: val, isSet: true}
+func NewNullableManyUsersResponse(val *ManyUsersResponse) *NullableManyUsersResponse {
+	return &NullableManyUsersResponse{value: val, isSet: true}
 }
 
-func (v NullableListClientsResponse) MarshalJSON() ([]byte, error) {
+func (v NullableManyUsersResponse) MarshalJSON() ([]byte, error) {
 	return json.Marshal(v.value)
 }
 
-func (v *NullableListClientsResponse) UnmarshalJSON(src []byte) error {
+func (v *NullableManyUsersResponse) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }

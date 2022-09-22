@@ -17,16 +17,20 @@ paths:
     get:
       summary: List clients
       operationId: listClients
+      tags:
+        - Clients
       responses:
         "200":
           description: List of clients
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ListClientsResponse'
+                $ref: '#/components/schemas/ManyClientsResponse'
     post:
       summary: Create client
       operationId: createClient
+      tags:
+        - Clients
       requestBody:
         content:
           application/json:
@@ -38,11 +42,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CreateClientResponse'
+                $ref: '#/components/schemas/OneClientResponse'
   /clients/{clientId}:
     get:
       summary: Read client
       operationId: readClient
+      tags:
+        - Clients
       parameters:
       - description: Client ID
         in: path
@@ -56,10 +62,12 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ReadClientResponse'
+                $ref: '#/components/schemas/OneClientResponse'
     put:
       summary: Update client
       operationId: updateClient
+      tags:
+        - Clients
       requestBody:
         content:
           application/json:
@@ -78,10 +86,12 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UpdateClientResponse'
+                $ref: '#/components/schemas/OneClientResponse'
     delete:
       summary: Delete client
       operationId: deleteClient
+      tags:
+        - Clients
       parameters:
       - description: Client ID
         in: path
@@ -96,6 +106,8 @@ paths:
     post:
       summary: Add a secret to a client
       operationId: createSecret
+      tags:
+        - Clients
       parameters:
       - description: Client ID
         in: path
@@ -114,11 +126,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CreateSecretResponse'
+                $ref: '#/components/schemas/OneSecretResponse'
   /clients/{clientId}/secrets/{secretId}:
     delete:
       summary: Delete a secret from a client
       operationId: deleteSecret
+      tags:
+        - Clients
       parameters:
       - description: Client ID
         in: path
@@ -139,6 +153,8 @@ paths:
     put:
       summary: Add scope to client
       operationId: addScopeToClient
+      tags:
+        - Clients
       parameters:
       - description: Client ID
         in: path
@@ -158,6 +174,8 @@ paths:
     delete:
       summary: Delete scope from client
       operationId: deleteScopeFromClient
+      tags:
+        - Clients
       parameters:
       - description: Client ID
         in: path
@@ -179,17 +197,21 @@ paths:
       summary: List scopes
       description: List Scopes
       operationId: listScopes
+      tags:
+        - Scopes
       responses:
         200:
           description: List of scopes
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ListScopesResponse'
+                $ref: '#/components/schemas/ManyScopesResponse'
     post:
       summary: Create scope
       description: Create scope
       operationId: createScope
+      tags:
+        - Scopes
       requestBody:
         content:
           application/json:
@@ -201,12 +223,14 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CreateScopeResponse'
+                $ref: '#/components/schemas/OneScopeResponse'
   /scopes/{scopeId}:
     get:
       summary: Read scope
       description: Read scope
       operationId: readScope
+      tags:
+        - Scopes
       parameters:
       - description: Scope ID
         in: path
@@ -220,11 +244,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ReadScopeResponse'
+                $ref: '#/components/schemas/OneScopeResponse'
     put:
       summary: Update scope
       description: Update scope
       operationId: updateScope
+      tags:
+        - Scopes
       parameters:
       - description: Scope ID
         in: path
@@ -243,11 +269,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UpdateScopeResponse'
+                $ref: '#/components/schemas/OneScopeResponse'
     delete:
       summary: Delete scope
       description: Delete scope
       operationId: deleteScope
+      tags:
+        - Scopes
       parameters:
       - description: Scope ID
         in: path
@@ -263,6 +291,8 @@ paths:
       summary: Add a transient scope to a scope
       description: Add a transient scope to a scope
       operationId: addTransientScope
+      tags:
+        - Scopes
       parameters:
       - description: Scope ID
         in: path
@@ -283,6 +313,8 @@ paths:
       summary: Delete a transient scope from a scope
       description: Delete a transient scope from a scope
       operationId: deleteTransientScope
+      tags:
+        - Scopes
       parameters:
       - description: Scope ID
         in: path
@@ -299,6 +331,39 @@ paths:
       responses:
         204:
           description: "Transient scope deleted"
+  /users:
+    get:
+      summary: List users
+      operationId: listUsers
+      tags:
+        - Users
+      responses:
+        200:
+          description: List of users
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ManyUsersResponse'
+  /users/{userId}:
+    get:
+      summary: Read user
+      operationId: readUser
+      tags:
+        - Users
+      parameters:
+        - description: User ID
+          in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Retrieved user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OneUserResponse'
 components:
   schemas:
     Metadata:
@@ -406,53 +471,66 @@ components:
         - id
         - lastDigits
         - clear
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          example: 3bb03708-312f-48a0-821a-e765837dc2c4
+        subject:
+          type: string
+          example: Jane Doe
+        email:
+          type: string
+          example: user1@orga1.com
     CreateClientRequest:
       $ref: '#/components/schemas/ClientOptions'
-    CreateClientResponse:
+    UpdateClientRequest:
+      $ref: '#/components/schemas/ClientOptions'
+    OneClientResponse:
       type: object
       properties:
         data:
           $ref: '#/components/schemas/Client'
-    ListClientsResponse:
+    ManyClientsResponse:
       type: object
       properties:
         data:
           type: array
           items:
             $ref: '#/components/schemas/Client'
-    UpdateClientRequest:
-      $ref: '#/components/schemas/ClientOptions'
-    UpdateClientResponse:
-      $ref: '#/components/schemas/CreateClientResponse'
-    ReadClientResponse:
+    CreateScopeRequest:
+      $ref: '#/components/schemas/ScopeOptions'
+    UpdateScopeRequest:
+      $ref: '#/components/schemas/ScopeOptions'
+    OneScopeResponse:
       type: object
       properties:
         data:
-          $ref: '#/components/schemas/Client'
-    ListScopesResponse:
+          $ref: '#/components/schemas/Scope'
+    ManyScopesResponse:
       type: object
       properties:
         data:
           type: array
           items:
             $ref: '#/components/schemas/Scope'
-    CreateScopeRequest:
-      $ref: '#/components/schemas/ScopeOptions'
-    CreateScopeResponse:
-      type: object
-      properties:
-        data:
-          $ref: '#/components/schemas/Scope'
-    ReadScopeResponse:
-      $ref: '#/components/schemas/CreateScopeResponse'
-    UpdateScopeRequest:
-      $ref: '#/components/schemas/ScopeOptions'
-    UpdateScopeResponse:
-      $ref: '#/components/schemas/CreateScopeResponse'
     CreateSecretRequest:
       $ref: '#/components/schemas/SecretOptions'
-    CreateSecretResponse:
+    OneSecretResponse:
       type: object
       properties:
         data:
           $ref: '#/components/schemas/Secret'
+    OneUserResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/User'
+    ManyUsersResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'

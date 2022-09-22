@@ -14,30 +14,30 @@ import (
 	"encoding/json"
 )
 
-// CreateClientResponse struct for CreateClientResponse
-type CreateClientResponse struct {
+// OneClientResponse struct for OneClientResponse
+type OneClientResponse struct {
 	Data *Client `json:"data,omitempty"`
 }
 
-// NewCreateClientResponse instantiates a new CreateClientResponse object
+// NewOneClientResponse instantiates a new OneClientResponse object
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewCreateClientResponse() *CreateClientResponse {
-	this := CreateClientResponse{}
+func NewOneClientResponse() *OneClientResponse {
+	this := OneClientResponse{}
 	return &this
 }
 
-// NewCreateClientResponseWithDefaults instantiates a new CreateClientResponse object
+// NewOneClientResponseWithDefaults instantiates a new OneClientResponse object
 // This constructor will only assign default values to properties that have it defined,
 // but it doesn't guarantee that properties required by API are set
-func NewCreateClientResponseWithDefaults() *CreateClientResponse {
-	this := CreateClientResponse{}
+func NewOneClientResponseWithDefaults() *OneClientResponse {
+	this := OneClientResponse{}
 	return &this
 }
 
 // GetData returns the Data field value if set, zero value otherwise.
-func (o *CreateClientResponse) GetData() Client {
+func (o *OneClientResponse) GetData() Client {
 	if o == nil || o.Data == nil {
 		var ret Client
 		return ret
@@ -47,7 +47,7 @@ func (o *CreateClientResponse) GetData() Client {
 
 // GetDataOk returns a tuple with the Data field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *CreateClientResponse) GetDataOk() (*Client, bool) {
+func (o *OneClientResponse) GetDataOk() (*Client, bool) {
 	if o == nil || o.Data == nil {
 		return nil, false
 	}
@@ -55,7 +55,7 @@ func (o *CreateClientResponse) GetDataOk() (*Client, bool) {
 }
 
 // HasData returns a boolean if a field has been set.
-func (o *CreateClientResponse) HasData() bool {
+func (o *OneClientResponse) HasData() bool {
 	if o != nil && o.Data != nil {
 		return true
 	}
@@ -64,11 +64,11 @@ func (o *CreateClientResponse) HasData() bool {
 }
 
 // SetData gets a reference to the given Client and assigns it to the Data field.
-func (o *CreateClientResponse) SetData(v Client) {
+func (o *OneClientResponse) SetData(v Client) {
 	o.Data = &v
 }
 
-func (o CreateClientResponse) MarshalJSON() ([]byte, error) {
+func (o OneClientResponse) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
 	if o.Data != nil {
 		toSerialize["data"] = o.Data
@@ -76,38 +76,38 @@ func (o CreateClientResponse) MarshalJSON() ([]byte, error) {
 	return json.Marshal(toSerialize)
 }
 
-type NullableCreateClientResponse struct {
-	value *CreateClientResponse
+type NullableOneClientResponse struct {
+	value *OneClientResponse
 	isSet bool
 }
 
-func (v NullableCreateClientResponse) Get() *CreateClientResponse {
+func (v NullableOneClientResponse) Get() *OneClientResponse {
 	return v.value
 }
 
-func (v *NullableCreateClientResponse) Set(val *CreateClientResponse) {
+func (v *NullableOneClientResponse) Set(val *OneClientResponse) {
 	v.value = val
 	v.isSet = true
 }
 
-func (v NullableCreateClientResponse) IsSet() bool {
+func (v NullableOneClientResponse) IsSet() bool {
 	return v.isSet
 }
 
-func (v *NullableCreateClientResponse) Unset() {
+func (v *NullableOneClientResponse) Unset() {
 	v.value = nil
 	v.isSet = false
 }
 
-func NewNullableCreateClientResponse(val *CreateClientResponse) *NullableCreateClientResponse {
-	return &NullableCreateClientResponse{value: val, isSet: true}
+func NewNullableOneClientResponse(val *OneClientResponse) *NullableOneClientResponse {
+	return &NullableOneClientResponse{value: val, isSet: true}
 }
 
-func (v NullableCreateClientResponse) MarshalJSON() ([]byte, error) {
+func (v NullableOneClientResponse) MarshalJSON() ([]byte, error) {
 	return json.Marshal(v.value)
 }
 
-func (v *NullableCreateClientResponse) UnmarshalJSON(src []byte) error {
+func (v *NullableOneClientResponse) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }

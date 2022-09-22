@@ -14,30 +14,30 @@ import (
 	"encoding/json"
 )
 
-// ListScopesResponse struct for ListScopesResponse
-type ListScopesResponse struct {
+// ManyScopesResponse struct for ManyScopesResponse
+type ManyScopesResponse struct {
 	Data []Scope `json:"data,omitempty"`
 }
 
-// NewListScopesResponse instantiates a new ListScopesResponse object
+// NewManyScopesResponse instantiates a new ManyScopesResponse object
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewListScopesResponse() *ListScopesResponse {
-	this := ListScopesResponse{}
+func NewManyScopesResponse() *ManyScopesResponse {
+	this := ManyScopesResponse{}
 	return &this
 }
 
-// NewListScopesResponseWithDefaults instantiates a new ListScopesResponse object
+// NewManyScopesResponseWithDefaults instantiates a new ManyScopesResponse object
 // This constructor will only assign default values to properties that have it defined,
 // but it doesn't guarantee that properties required by API are set
-func NewListScopesResponseWithDefaults() *ListScopesResponse {
-	this := ListScopesResponse{}
+func NewManyScopesResponseWithDefaults() *ManyScopesResponse {
+	this := ManyScopesResponse{}
 	return &this
 }
 
 // GetData returns the Data field value if set, zero value otherwise.
-func (o *ListScopesResponse) GetData() []Scope {
+func (o *ManyScopesResponse) GetData() []Scope {
 	if o == nil || o.Data == nil {
 		var ret []Scope
 		return ret
@@ -47,7 +47,7 @@ func (o *ListScopesResponse) GetData() []Scope {
 
 // GetDataOk returns a tuple with the Data field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *ListScopesResponse) GetDataOk() ([]Scope, bool) {
+func (o *ManyScopesResponse) GetDataOk() ([]Scope, bool) {
 	if o == nil || o.Data == nil {
 		return nil, false
 	}
@@ -55,7 +55,7 @@ func (o *ListScopesResponse) GetDataOk() ([]Scope, bool) {
 }
 
 // HasData returns a boolean if a field has been set.
-func (o *ListScopesResponse) HasData() bool {
+func (o *ManyScopesResponse) HasData() bool {
 	if o != nil && o.Data != nil {
 		return true
 	}
@@ -64,11 +64,11 @@ func (o *ListScopesResponse) HasData() bool {
 }
 
 // SetData gets a reference to the given []Scope and assigns it to the Data field.
-func (o *ListScopesResponse) SetData(v []Scope) {
+func (o *ManyScopesResponse) SetData(v []Scope) {
 	o.Data = v
 }
 
-func (o ListScopesResponse) MarshalJSON() ([]byte, error) {
+func (o ManyScopesResponse) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
 	if o.Data != nil {
 		toSerialize["data"] = o.Data
@@ -76,38 +76,38 @@ func (o ListScopesResponse) MarshalJSON() ([]byte, error) {
 	return json.Marshal(toSerialize)
 }
 
-type NullableListScopesResponse struct {
-	value *ListScopesResponse
+type NullableManyScopesResponse struct {
+	value *ManyScopesResponse
 	isSet bool
 }
 
-func (v NullableListScopesResponse) Get() *ListScopesResponse {
+func (v NullableManyScopesResponse) Get() *ManyScopesResponse {
 	return v.value
 }
 
-func (v *NullableListScopesResponse) Set(val *ListScopesResponse) {
+func (v *NullableManyScopesResponse) Set(val *ManyScopesResponse) {
 	v.value = val
 	v.isSet = true
 }
 
-func (v NullableListScopesResponse) IsSet() bool {
+func (v NullableManyScopesResponse) IsSet() bool {
 	return v.isSet
 }
 
-func (v *NullableListScopesResponse) Unset() {
+func (v *NullableManyScopesResponse) Unset() {
 	v.value = nil
 	v.isSet = false
 }
 
-func NewNullableListScopesResponse(val *ListScopesResponse) *NullableListScopesResponse {
-	return &NullableListScopesResponse{value: val, isSet: true}
+func NewNullableManyScopesResponse(val *ManyScopesResponse) *NullableManyScopesResponse {
+	return &NullableManyScopesResponse{value: val, isSet: true}
 }
 
-func (v NullableListScopesResponse) MarshalJSON() ([]byte, error) {
+func (v NullableManyScopesResponse) MarshalJSON() ([]byte, error) {
 	return json.Marshal(v.value)
 }
 
-func (v *NullableListScopesResponse) UnmarshalJSON(src []byte) error {
+func (v *NullableManyScopesResponse) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }

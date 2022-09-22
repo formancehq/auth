@@ -1,52 +1,52 @@
-# CreateScopeResponse
+# OneClientResponse
 
 ## Properties
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**Data** | Pointer to [**Scope**](Scope.md) |  | [optional] 
+**Data** | Pointer to [**Client**](Client.md) |  | [optional] 
 
 ## Methods
 
-### NewCreateScopeResponse
+### NewOneClientResponse
 
-`func NewCreateScopeResponse() *CreateScopeResponse`
+`func NewOneClientResponse() *OneClientResponse`
 
-NewCreateScopeResponse instantiates a new CreateScopeResponse object
+NewOneClientResponse instantiates a new OneClientResponse object
 This constructor will assign default values to properties that have it defined,
 and makes sure properties required by API are set, but the set of arguments
 will change when the set of required properties is changed
 
-### NewCreateScopeResponseWithDefaults
+### NewOneClientResponseWithDefaults
 
-`func NewCreateScopeResponseWithDefaults() *CreateScopeResponse`
+`func NewOneClientResponseWithDefaults() *OneClientResponse`
 
-NewCreateScopeResponseWithDefaults instantiates a new CreateScopeResponse object
+NewOneClientResponseWithDefaults instantiates a new OneClientResponse object
 This constructor will only assign default values to properties that have it defined,
 but it doesn't guarantee that properties required by API are set
 
 ### GetData
 
-`func (o *CreateScopeResponse) GetData() Scope`
+`func (o *OneClientResponse) GetData() Client`
 
 GetData returns the Data field if non-nil, zero value otherwise.
 
 ### GetDataOk
 
-`func (o *CreateScopeResponse) GetDataOk() (*Scope, bool)`
+`func (o *OneClientResponse) GetDataOk() (*Client, bool)`
 
 GetDataOk returns a tuple with the Data field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetData
 
-`func (o *CreateScopeResponse) SetData(v Scope)`
+`func (o *OneClientResponse) SetData(v Client)`
 
 SetData sets Data field to given value.
 
 ### HasData
 
-`func (o *CreateScopeResponse) HasData() bool`
+`func (o *OneClientResponse) HasData() bool`
 
 HasData returns a boolean if a field has been set.
 

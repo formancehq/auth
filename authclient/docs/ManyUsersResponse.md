@@ -1,52 +1,52 @@
-# ListScopesResponse
+# ManyUsersResponse
 
 ## Properties
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**Data** | Pointer to [**[]Scope**](Scope.md) |  | [optional] 
+**Data** | Pointer to [**[]User**](User.md) |  | [optional] 
 
 ## Methods
 
-### NewListScopesResponse
+### NewManyUsersResponse
 
-`func NewListScopesResponse() *ListScopesResponse`
+`func NewManyUsersResponse() *ManyUsersResponse`
 
-NewListScopesResponse instantiates a new ListScopesResponse object
+NewManyUsersResponse instantiates a new ManyUsersResponse object
 This constructor will assign default values to properties that have it defined,
 and makes sure properties required by API are set, but the set of arguments
 will change when the set of required properties is changed
 
-### NewListScopesResponseWithDefaults
+### NewManyUsersResponseWithDefaults
 
-`func NewListScopesResponseWithDefaults() *ListScopesResponse`
+`func NewManyUsersResponseWithDefaults() *ManyUsersResponse`
 
-NewListScopesResponseWithDefaults instantiates a new ListScopesResponse object
+NewManyUsersResponseWithDefaults instantiates a new ManyUsersResponse object
 This constructor will only assign default values to properties that have it defined,
 but it doesn't guarantee that properties required by API are set
 
 ### GetData
 
-`func (o *ListScopesResponse) GetData() []Scope`
+`func (o *ManyUsersResponse) GetData() []User`
 
 GetData returns the Data field if non-nil, zero value otherwise.
 
 ### GetDataOk
 
-`func (o *ListScopesResponse) GetDataOk() (*[]Scope, bool)`
+`func (o *ManyUsersResponse) GetDataOk() (*[]User, bool)`
 
 GetDataOk returns a tuple with the Data field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetData
 
-`func (o *ListScopesResponse) SetData(v []Scope)`
+`func (o *ManyUsersResponse) SetData(v []User)`
 
 SetData sets Data field to given value.
 
 ### HasData
 
-`func (o *ListScopesResponse) HasData() bool`
+`func (o *ManyUsersResponse) HasData() bool`
 
 HasData returns a boolean if a field has been set.
 

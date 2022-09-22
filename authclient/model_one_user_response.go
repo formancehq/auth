@@ -14,32 +14,32 @@ import (
 	"encoding/json"
 )
 
-// CreateSecretResponse struct for CreateSecretResponse
-type CreateSecretResponse struct {
-	Data *Secret `json:"data,omitempty"`
+// OneUserResponse struct for OneUserResponse
+type OneUserResponse struct {
+	Data *User `json:"data,omitempty"`
 }
 
-// NewCreateSecretResponse instantiates a new CreateSecretResponse object
+// NewOneUserResponse instantiates a new OneUserResponse object
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewCreateSecretResponse() *CreateSecretResponse {
-	this := CreateSecretResponse{}
+func NewOneUserResponse() *OneUserResponse {
+	this := OneUserResponse{}
 	return &this
 }
 
-// NewCreateSecretResponseWithDefaults instantiates a new CreateSecretResponse object
+// NewOneUserResponseWithDefaults instantiates a new OneUserResponse object
 // This constructor will only assign default values to properties that have it defined,
 // but it doesn't guarantee that properties required by API are set
-func NewCreateSecretResponseWithDefaults() *CreateSecretResponse {
-	this := CreateSecretResponse{}
+func NewOneUserResponseWithDefaults() *OneUserResponse {
+	this := OneUserResponse{}
 	return &this
 }
 
 // GetData returns the Data field value if set, zero value otherwise.
-func (o *CreateSecretResponse) GetData() Secret {
+func (o *OneUserResponse) GetData() User {
 	if o == nil || o.Data == nil {
-		var ret Secret
+		var ret User
 		return ret
 	}
 	return *o.Data
@@ -47,7 +47,7 @@ func (o *CreateSecretResponse) GetData() Secret {
 
 // GetDataOk returns a tuple with the Data field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *CreateSecretResponse) GetDataOk() (*Secret, bool) {
+func (o *OneUserResponse) GetDataOk() (*User, bool) {
 	if o == nil || o.Data == nil {
 		return nil, false
 	}
@@ -55,7 +55,7 @@ func (o *CreateSecretResponse) GetDataOk() (*Secret, bool) {
 }
 
 // HasData returns a boolean if a field has been set.
-func (o *CreateSecretResponse) HasData() bool {
+func (o *OneUserResponse) HasData() bool {
 	if o != nil && o.Data != nil {
 		return true
 	}
@@ -63,12 +63,12 @@ func (o *CreateSecretResponse) HasData() bool {
 	return false
 }
 
-// SetData gets a reference to the given Secret and assigns it to the Data field.
-func (o *CreateSecretResponse) SetData(v Secret) {
+// SetData gets a reference to the given User and assigns it to the Data field.
+func (o *OneUserResponse) SetData(v User) {
 	o.Data = &v
 }
 
-func (o CreateSecretResponse) MarshalJSON() ([]byte, error) {
+func (o OneUserResponse) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
 	if o.Data != nil {
 		toSerialize["data"] = o.Data
@@ -76,38 +76,38 @@ func (o CreateSecretResponse) MarshalJSON() ([]byte, error) {
 	return json.Marshal(toSerialize)
 }
 
-type NullableCreateSecretResponse struct {
-	value *CreateSecretResponse
+type NullableOneUserResponse struct {
+	value *OneUserResponse
 	isSet bool
 }
 
-func (v NullableCreateSecretResponse) Get() *CreateSecretResponse {
+func (v NullableOneUserResponse) Get() *OneUserResponse {
 	return v.value
 }
 
-func (v *NullableCreateSecretResponse) Set(val *CreateSecretResponse) {
+func (v *NullableOneUserResponse) Set(val *OneUserResponse) {
 	v.value = val
 	v.isSet = true
 }
 
-func (v NullableCreateSecretResponse) IsSet() bool {
+func (v NullableOneUserResponse) IsSet() bool {
 	return v.isSet
 }
 
-func (v *NullableCreateSecretResponse) Unset() {
+func (v *NullableOneUserResponse) Unset() {
 	v.value = nil
 	v.isSet = false
 }
 
-func NewNullableCreateSecretResponse(val *CreateSecretResponse) *NullableCreateSecretResponse {
-	return &NullableCreateSecretResponse{value: val, isSet: true}
+func NewNullableOneUserResponse(val *OneUserResponse) *NullableOneUserResponse {
+	return &NullableOneUserResponse{value: val, isSet: true}
 }
 
-func (v NullableCreateSecretResponse) MarshalJSON() ([]byte, error) {
+func (v NullableOneUserResponse) MarshalJSON() ([]byte, error) {
 	return json.Marshal(v.value)
 }
 
-func (v *NullableCreateSecretResponse) UnmarshalJSON(src []byte) error {
+func (v *NullableOneUserResponse) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }

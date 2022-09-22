@@ -1,52 +1,52 @@
-# CreateSecretResponse
+# ManyScopesResponse
 
 ## Properties
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**Data** | Pointer to [**Secret**](Secret.md) |  | [optional] 
+**Data** | Pointer to [**[]Scope**](Scope.md) |  | [optional] 
 
 ## Methods
 
-### NewCreateSecretResponse
+### NewManyScopesResponse
 
-`func NewCreateSecretResponse() *CreateSecretResponse`
+`func NewManyScopesResponse() *ManyScopesResponse`
 
-NewCreateSecretResponse instantiates a new CreateSecretResponse object
+NewManyScopesResponse instantiates a new ManyScopesResponse object
 This constructor will assign default values to properties that have it defined,
 and makes sure properties required by API are set, but the set of arguments
 will change when the set of required properties is changed
 
-### NewCreateSecretResponseWithDefaults
+### NewManyScopesResponseWithDefaults
 
-`func NewCreateSecretResponseWithDefaults() *CreateSecretResponse`
+`func NewManyScopesResponseWithDefaults() *ManyScopesResponse`
 
-NewCreateSecretResponseWithDefaults instantiates a new CreateSecretResponse object
+NewManyScopesResponseWithDefaults instantiates a new ManyScopesResponse object
 This constructor will only assign default values to properties that have it defined,
 but it doesn't guarantee that properties required by API are set
 
 ### GetData
 
-`func (o *CreateSecretResponse) GetData() Secret`
+`func (o *ManyScopesResponse) GetData() []Scope`
 
 GetData returns the Data field if non-nil, zero value otherwise.
 
 ### GetDataOk
 
-`func (o *CreateSecretResponse) GetDataOk() (*Secret, bool)`
+`func (o *ManyScopesResponse) GetDataOk() (*[]Scope, bool)`
 
 GetDataOk returns a tuple with the Data field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetData
 
-`func (o *CreateSecretResponse) SetData(v Secret)`
+`func (o *ManyScopesResponse) SetData(v []Scope)`
 
 SetData sets Data field to given value.
 
 ### HasData
 
-`func (o *CreateSecretResponse) HasData() bool`
+`func (o *ManyScopesResponse) HasData() bool`
 
 HasData returns a boolean if a field has been set.
 

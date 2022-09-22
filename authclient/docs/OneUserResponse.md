@@ -1,52 +1,52 @@
-# ReadClientResponse
+# OneUserResponse
 
 ## Properties
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**Data** | Pointer to [**Client**](Client.md) |  | [optional] 
+**Data** | Pointer to [**User**](User.md) |  | [optional] 
 
 ## Methods
 
-### NewReadClientResponse
+### NewOneUserResponse
 
-`func NewReadClientResponse() *ReadClientResponse`
+`func NewOneUserResponse() *OneUserResponse`
 
-NewReadClientResponse instantiates a new ReadClientResponse object
+NewOneUserResponse instantiates a new OneUserResponse object
 This constructor will assign default values to properties that have it defined,
 and makes sure properties required by API are set, but the set of arguments
 will change when the set of required properties is changed
 
-### NewReadClientResponseWithDefaults
+### NewOneUserResponseWithDefaults
 
-`func NewReadClientResponseWithDefaults() *ReadClientResponse`
+`func NewOneUserResponseWithDefaults() *OneUserResponse`
 
-NewReadClientResponseWithDefaults instantiates a new ReadClientResponse object
+NewOneUserResponseWithDefaults instantiates a new OneUserResponse object
 This constructor will only assign default values to properties that have it defined,
 but it doesn't guarantee that properties required by API are set
 
 ### GetData
 
-`func (o *ReadClientResponse) GetData() Client`
+`func (o *OneUserResponse) GetData() User`
 
 GetData returns the Data field if non-nil, zero value otherwise.
 
 ### GetDataOk
 
-`func (o *ReadClientResponse) GetDataOk() (*Client, bool)`
+`func (o *OneUserResponse) GetDataOk() (*User, bool)`
 
 GetDataOk returns a tuple with the Data field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetData
 
-`func (o *ReadClientResponse) SetData(v Client)`
+`func (o *OneUserResponse) SetData(v User)`
 
 SetData sets Data field to given value.
 
 ### HasData
 
-`func (o *ReadClientResponse) HasData() bool`
+`func (o *OneUserResponse) HasData() bool`
 
 HasData returns a boolean if a field has been set.
 
