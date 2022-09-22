@@ -28,12 +28,14 @@ type ApiListUsersRequest struct {
 	ApiService *UsersApiService
 }
 
-func (r ApiListUsersRequest) Execute() (*ManyUsersResponse, *http.Response, error) {
+func (r ApiListUsersRequest) Execute() (*ListUsersResponse, *http.Response, error) {
 	return r.ApiService.ListUsersExecute(r)
 }
 
 /*
 ListUsers List users
+
+List users
 
  @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  @return ApiListUsersRequest
@@ -46,13 +48,13 @@ func (a *UsersApiService) ListUsers(ctx context.Context) ApiListUsersRequest {
 }
 
 // Execute executes the request
-//  @return ManyUsersResponse
-func (a *UsersApiService) ListUsersExecute(r ApiListUsersRequest) (*ManyUsersResponse, *http.Response, error) {
+//  @return ListUsersResponse
+func (a *UsersApiService) ListUsersExecute(r ApiListUsersRequest) (*ListUsersResponse, *http.Response, error) {
 	var (
 		localVarHTTPMethod   = http.MethodGet
 		localVarPostBody     interface{}
 		formFiles            []formFile
-		localVarReturnValue  *ManyUsersResponse
+		localVarReturnValue  *ListUsersResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "UsersApiService.ListUsers")
@@ -126,12 +128,14 @@ type ApiReadUserRequest struct {
 	userId string
 }
 
-func (r ApiReadUserRequest) Execute() (*OneUserResponse, *http.Response, error) {
+func (r ApiReadUserRequest) Execute() (*ReadUserResponse, *http.Response, error) {
 	return r.ApiService.ReadUserExecute(r)
 }
 
 /*
 ReadUser Read user
+
+Read user
 
  @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  @param userId User ID
@@ -146,13 +150,13 @@ func (a *UsersApiService) ReadUser(ctx context.Context, userId string) ApiReadUs
 }
 
 // Execute executes the request
-//  @return OneUserResponse
-func (a *UsersApiService) ReadUserExecute(r ApiReadUserRequest) (*OneUserResponse, *http.Response, error) {
+//  @return ReadUserResponse
+func (a *UsersApiService) ReadUserExecute(r ApiReadUserRequest) (*ReadUserResponse, *http.Response, error) {
 	var (
 		localVarHTTPMethod   = http.MethodGet
 		localVarPostBody     interface{}
 		formFiles            []formFile
-		localVarReturnValue  *OneUserResponse
+		localVarReturnValue  *ReadUserResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "UsersApiService.ReadUser")

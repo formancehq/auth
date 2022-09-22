@@ -1,4 +1,4 @@
-# OneClientResponse
+# ReadClientResponse
 
 ## Properties
 
@@ -8,45 +8,45 @@ Name | Type | Description | Notes
 
 ## Methods
 
-### NewOneClientResponse
+### NewReadClientResponse
 
-`func NewOneClientResponse() *OneClientResponse`
+`func NewReadClientResponse() *ReadClientResponse`
 
-NewOneClientResponse instantiates a new OneClientResponse object
+NewReadClientResponse instantiates a new ReadClientResponse object
 This constructor will assign default values to properties that have it defined,
 and makes sure properties required by API are set, but the set of arguments
 will change when the set of required properties is changed
 
-### NewOneClientResponseWithDefaults
+### NewReadClientResponseWithDefaults
 
-`func NewOneClientResponseWithDefaults() *OneClientResponse`
+`func NewReadClientResponseWithDefaults() *ReadClientResponse`
 
-NewOneClientResponseWithDefaults instantiates a new OneClientResponse object
+NewReadClientResponseWithDefaults instantiates a new ReadClientResponse object
 This constructor will only assign default values to properties that have it defined,
 but it doesn't guarantee that properties required by API are set
 
 ### GetData
 
-`func (o *OneClientResponse) GetData() Client`
+`func (o *ReadClientResponse) GetData() Client`
 
 GetData returns the Data field if non-nil, zero value otherwise.
 
 ### GetDataOk
 
-`func (o *OneClientResponse) GetDataOk() (*Client, bool)`
+`func (o *ReadClientResponse) GetDataOk() (*Client, bool)`
 
 GetDataOk returns a tuple with the Data field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetData
 
-`func (o *OneClientResponse) SetData(v Client)`
+`func (o *ReadClientResponse) SetData(v Client)`
 
 SetData sets Data field to given value.
 
 ### HasData
 
-`func (o *OneClientResponse) HasData() bool`
+`func (o *ReadClientResponse) HasData() bool`
 
 HasData returns a boolean if a field has been set.
 

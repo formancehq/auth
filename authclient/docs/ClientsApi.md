@@ -87,7 +87,7 @@ No authorization required
 
 ## CreateClient
 
-> OneClientResponse CreateClient(ctx).Body(body).Execute()
+> CreateClientResponse CreateClient(ctx).Body(body).Execute()
 
 Create client
 
@@ -113,7 +113,7 @@ func main() {
         fmt.Fprintf(os.Stderr, "Error when calling `ClientsApi.CreateClient``: %v\n", err)
         fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
     }
-    // response from `CreateClient`: OneClientResponse
+    // response from `CreateClient`: CreateClientResponse
     fmt.Fprintf(os.Stdout, "Response from `ClientsApi.CreateClient`: %v\n", resp)
 }
 ```
@@ -133,7 +133,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**OneClientResponse**](OneClientResponse.md)
+[**CreateClientResponse**](CreateClientResponse.md)
 
 ### Authorization
 
@@ -151,7 +151,7 @@ No authorization required
 
 ## CreateSecret
 
-> OneSecretResponse CreateSecret(ctx, clientId).Body(body).Execute()
+> CreateSecretResponse CreateSecret(ctx, clientId).Body(body).Execute()
 
 Add a secret to a client
 
@@ -178,7 +178,7 @@ func main() {
         fmt.Fprintf(os.Stderr, "Error when calling `ClientsApi.CreateSecret``: %v\n", err)
         fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
     }
-    // response from `CreateSecret`: OneSecretResponse
+    // response from `CreateSecret`: CreateSecretResponse
     fmt.Fprintf(os.Stdout, "Response from `ClientsApi.CreateSecret`: %v\n", resp)
 }
 ```
@@ -203,7 +203,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**OneSecretResponse**](OneSecretResponse.md)
+[**CreateSecretResponse**](CreateSecretResponse.md)
 
 ### Authorization
 
@@ -425,7 +425,7 @@ No authorization required
 
 ## ListClients
 
-> ManyClientsResponse ListClients(ctx).Execute()
+> ListClientsResponse ListClients(ctx).Execute()
 
 List clients
 
@@ -450,7 +450,7 @@ func main() {
         fmt.Fprintf(os.Stderr, "Error when calling `ClientsApi.ListClients``: %v\n", err)
         fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
     }
-    // response from `ListClients`: ManyClientsResponse
+    // response from `ListClients`: ListClientsResponse
     fmt.Fprintf(os.Stdout, "Response from `ClientsApi.ListClients`: %v\n", resp)
 }
 ```
@@ -466,7 +466,7 @@ Other parameters are passed through a pointer to a apiListClientsRequest struct 
 
 ### Return type
 
-[**ManyClientsResponse**](ManyClientsResponse.md)
+[**ListClientsResponse**](ListClientsResponse.md)
 
 ### Authorization
 
@@ -484,7 +484,7 @@ No authorization required
 
 ## ReadClient
 
-> OneClientResponse ReadClient(ctx, clientId).Execute()
+> ReadClientResponse ReadClient(ctx, clientId).Execute()
 
 Read client
 
@@ -510,7 +510,7 @@ func main() {
         fmt.Fprintf(os.Stderr, "Error when calling `ClientsApi.ReadClient``: %v\n", err)
         fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
     }
-    // response from `ReadClient`: OneClientResponse
+    // response from `ReadClient`: ReadClientResponse
     fmt.Fprintf(os.Stdout, "Response from `ClientsApi.ReadClient`: %v\n", resp)
 }
 ```
@@ -534,7 +534,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**OneClientResponse**](OneClientResponse.md)
+[**ReadClientResponse**](ReadClientResponse.md)
 
 ### Authorization
 
@@ -552,7 +552,7 @@ No authorization required
 
 ## UpdateClient
 
-> OneClientResponse UpdateClient(ctx, clientId).Body(body).Execute()
+> CreateClientResponse UpdateClient(ctx, clientId).Body(body).Execute()
 
 Update client
 
@@ -579,7 +579,7 @@ func main() {
         fmt.Fprintf(os.Stderr, "Error when calling `ClientsApi.UpdateClient``: %v\n", err)
         fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
     }
-    // response from `UpdateClient`: OneClientResponse
+    // response from `UpdateClient`: CreateClientResponse
     fmt.Fprintf(os.Stdout, "Response from `ClientsApi.UpdateClient`: %v\n", resp)
 }
 ```
@@ -604,7 +604,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**OneClientResponse**](OneClientResponse.md)
+[**CreateClientResponse**](CreateClientResponse.md)
 
 ### Authorization
 

@@ -1,4 +1,4 @@
-# ManyUsersResponse
+# ListUsersResponse
 
 ## Properties
 
@@ -8,45 +8,45 @@ Name | Type | Description | Notes
 
 ## Methods
 
-### NewManyUsersResponse
+### NewListUsersResponse
 
-`func NewManyUsersResponse() *ManyUsersResponse`
+`func NewListUsersResponse() *ListUsersResponse`
 
-NewManyUsersResponse instantiates a new ManyUsersResponse object
+NewListUsersResponse instantiates a new ListUsersResponse object
 This constructor will assign default values to properties that have it defined,
 and makes sure properties required by API are set, but the set of arguments
 will change when the set of required properties is changed
 
-### NewManyUsersResponseWithDefaults
+### NewListUsersResponseWithDefaults
 
-`func NewManyUsersResponseWithDefaults() *ManyUsersResponse`
+`func NewListUsersResponseWithDefaults() *ListUsersResponse`
 
-NewManyUsersResponseWithDefaults instantiates a new ManyUsersResponse object
+NewListUsersResponseWithDefaults instantiates a new ListUsersResponse object
 This constructor will only assign default values to properties that have it defined,
 but it doesn't guarantee that properties required by API are set
 
 ### GetData
 
-`func (o *ManyUsersResponse) GetData() []User`
+`func (o *ListUsersResponse) GetData() []User`
 
 GetData returns the Data field if non-nil, zero value otherwise.
 
 ### GetDataOk
 
-`func (o *ManyUsersResponse) GetDataOk() (*[]User, bool)`
+`func (o *ListUsersResponse) GetDataOk() (*[]User, bool)`
 
 GetDataOk returns a tuple with the Data field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetData
 
-`func (o *ManyUsersResponse) SetData(v []User)`
+`func (o *ListUsersResponse) SetData(v []User)`
 
 SetData sets Data field to given value.
 
 ### HasData
 
-`func (o *ManyUsersResponse) HasData() bool`
+`func (o *ListUsersResponse) HasData() bool`
 
 HasData returns a boolean if a field has been set.
 

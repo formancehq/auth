@@ -19,7 +19,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ManyClientsResponse'
+                $ref: '#/components/schemas/ListClientsResponse'
           description: List of clients
       summary: List clients
       tags:
@@ -36,7 +36,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OneClientResponse'
+                $ref: '#/components/schemas/CreateClientResponse'
           description: Client created
       summary: Create client
       tags:
@@ -75,7 +75,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OneClientResponse'
+                $ref: '#/components/schemas/ReadClientResponse'
           description: Retrieved client
       summary: Read client
       tags:
@@ -101,7 +101,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OneClientResponse'
+                $ref: '#/components/schemas/UpdateClientResponse'
           description: Updated client
       summary: Update client
       tags:
@@ -128,7 +128,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OneSecretResponse'
+                $ref: '#/components/schemas/CreateSecretResponse'
           description: Created secret
       summary: Add a secret to a client
       tags:
@@ -219,7 +219,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ManyScopesResponse'
+                $ref: '#/components/schemas/ListScopesResponse'
           description: List of scopes
       summary: List scopes
       tags:
@@ -237,7 +237,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OneScopeResponse'
+                $ref: '#/components/schemas/CreateScopeResponse'
           description: Created scope
       summary: Create scope
       tags:
@@ -278,7 +278,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OneScopeResponse'
+                $ref: '#/components/schemas/ReadScopeResponse'
           description: Retrieved scope
       summary: Read scope
       tags:
@@ -305,7 +305,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OneScopeResponse'
+                $ref: '#/components/schemas/UpdateScopeResponse'
           description: Updated scope
       summary: Update scope
       tags:
@@ -365,19 +365,21 @@ paths:
       - Scopes
   /users:
     get:
+      description: List users
       operationId: listUsers
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ManyUsersResponse'
+                $ref: '#/components/schemas/ListUsersResponse'
           description: List of users
       summary: List users
       tags:
       - Users
   /users/{userId}:
     get:
+      description: Read user
       operationId: readUser
       parameters:
       - description: User ID
@@ -393,7 +395,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OneUserResponse'
+                $ref: '#/components/schemas/ReadUserResponse'
           description: Retrieved user
       summary: Read user
       tags:
@@ -519,16 +521,14 @@ components:
       type: object
     CreateClientRequest:
       $ref: '#/components/schemas/ClientOptions'
-    UpdateClientRequest:
-      $ref: '#/components/schemas/ClientOptions'
-    OneClientResponse:
+    CreateClientResponse:
       example:
         data: null
       properties:
         data:
           $ref: '#/components/schemas/Client'
       type: object
-    ManyClientsResponse:
+    ListClientsResponse:
       example:
         data:
         - null
@@ -539,18 +539,18 @@ components:
             $ref: '#/components/schemas/Client'
           type: array
       type: object
-    CreateScopeRequest:
-      $ref: '#/components/schemas/ScopeOptions'
-    UpdateScopeRequest:
-      $ref: '#/components/schemas/ScopeOptions'
-    OneScopeResponse:
+    UpdateClientRequest:
+      $ref: '#/components/schemas/ClientOptions'
+    UpdateClientResponse:
+      $ref: '#/components/schemas/CreateClientResponse'
+    ReadClientResponse:
       example:
         data: null
       properties:
         data:
-          $ref: '#/components/schemas/Scope'
+          $ref: '#/components/schemas/Client'
       type: object
-    ManyScopesResponse:
+    ListScopesResponse:
       example:
         data:
         - null
@@ -561,16 +561,31 @@ components:
             $ref: '#/components/schemas/Scope'
           type: array
       type: object
+    CreateScopeRequest:
+      $ref: '#/components/schemas/ScopeOptions'
+    CreateScopeResponse:
+      example:
+        data: null
+      properties:
+        data:
+          $ref: '#/components/schemas/Scope'
+      type: object
+    ReadScopeResponse:
+      $ref: '#/components/schemas/CreateScopeResponse'
+    UpdateScopeRequest:
+      $ref: '#/components/schemas/ScopeOptions'
+    UpdateScopeResponse:
+      $ref: '#/components/schemas/CreateScopeResponse'
     CreateSecretRequest:
       $ref: '#/components/schemas/SecretOptions'
-    OneSecretResponse:
+    CreateSecretResponse:
       example:
         data: null
       properties:
         data:
           $ref: '#/components/schemas/Secret'
       type: object
-    OneUserResponse:
+    ReadUserResponse:
       example:
         data:
           subject: Jane Doe
@@ -580,7 +595,7 @@ components:
         data:
           $ref: '#/components/schemas/User'
       type: object
-    ManyUsersResponse:
+    ListUsersResponse:
       example:
         data:
         - subject: Jane Doe

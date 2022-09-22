@@ -130,7 +130,7 @@ func (r ApiCreateScopeRequest) Body(body ScopeOptions) ApiCreateScopeRequest {
 	return r
 }
 
-func (r ApiCreateScopeRequest) Execute() (*OneScopeResponse, *http.Response, error) {
+func (r ApiCreateScopeRequest) Execute() (*CreateScopeResponse, *http.Response, error) {
 	return r.ApiService.CreateScopeExecute(r)
 }
 
@@ -150,13 +150,13 @@ func (a *ScopesApiService) CreateScope(ctx context.Context) ApiCreateScopeReques
 }
 
 // Execute executes the request
-//  @return OneScopeResponse
-func (a *ScopesApiService) CreateScopeExecute(r ApiCreateScopeRequest) (*OneScopeResponse, *http.Response, error) {
+//  @return CreateScopeResponse
+func (a *ScopesApiService) CreateScopeExecute(r ApiCreateScopeRequest) (*CreateScopeResponse, *http.Response, error) {
 	var (
 		localVarHTTPMethod   = http.MethodPost
 		localVarPostBody     interface{}
 		formFiles            []formFile
-		localVarReturnValue  *OneScopeResponse
+		localVarReturnValue  *CreateScopeResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ScopesApiService.CreateScope")
@@ -419,7 +419,7 @@ type ApiListScopesRequest struct {
 	ApiService *ScopesApiService
 }
 
-func (r ApiListScopesRequest) Execute() (*ManyScopesResponse, *http.Response, error) {
+func (r ApiListScopesRequest) Execute() (*ListScopesResponse, *http.Response, error) {
 	return r.ApiService.ListScopesExecute(r)
 }
 
@@ -439,13 +439,13 @@ func (a *ScopesApiService) ListScopes(ctx context.Context) ApiListScopesRequest 
 }
 
 // Execute executes the request
-//  @return ManyScopesResponse
-func (a *ScopesApiService) ListScopesExecute(r ApiListScopesRequest) (*ManyScopesResponse, *http.Response, error) {
+//  @return ListScopesResponse
+func (a *ScopesApiService) ListScopesExecute(r ApiListScopesRequest) (*ListScopesResponse, *http.Response, error) {
 	var (
 		localVarHTTPMethod   = http.MethodGet
 		localVarPostBody     interface{}
 		formFiles            []formFile
-		localVarReturnValue  *ManyScopesResponse
+		localVarReturnValue  *ListScopesResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ScopesApiService.ListScopes")
@@ -519,7 +519,7 @@ type ApiReadScopeRequest struct {
 	scopeId string
 }
 
-func (r ApiReadScopeRequest) Execute() (*OneScopeResponse, *http.Response, error) {
+func (r ApiReadScopeRequest) Execute() (*CreateScopeResponse, *http.Response, error) {
 	return r.ApiService.ReadScopeExecute(r)
 }
 
@@ -541,13 +541,13 @@ func (a *ScopesApiService) ReadScope(ctx context.Context, scopeId string) ApiRea
 }
 
 // Execute executes the request
-//  @return OneScopeResponse
-func (a *ScopesApiService) ReadScopeExecute(r ApiReadScopeRequest) (*OneScopeResponse, *http.Response, error) {
+//  @return CreateScopeResponse
+func (a *ScopesApiService) ReadScopeExecute(r ApiReadScopeRequest) (*CreateScopeResponse, *http.Response, error) {
 	var (
 		localVarHTTPMethod   = http.MethodGet
 		localVarPostBody     interface{}
 		formFiles            []formFile
-		localVarReturnValue  *OneScopeResponse
+		localVarReturnValue  *CreateScopeResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ScopesApiService.ReadScope")
@@ -628,7 +628,7 @@ func (r ApiUpdateScopeRequest) Body(body ScopeOptions) ApiUpdateScopeRequest {
 	return r
 }
 
-func (r ApiUpdateScopeRequest) Execute() (*OneScopeResponse, *http.Response, error) {
+func (r ApiUpdateScopeRequest) Execute() (*CreateScopeResponse, *http.Response, error) {
 	return r.ApiService.UpdateScopeExecute(r)
 }
 
@@ -650,13 +650,13 @@ func (a *ScopesApiService) UpdateScope(ctx context.Context, scopeId string) ApiU
 }
 
 // Execute executes the request
-//  @return OneScopeResponse
-func (a *ScopesApiService) UpdateScopeExecute(r ApiUpdateScopeRequest) (*OneScopeResponse, *http.Response, error) {
+//  @return CreateScopeResponse
+func (a *ScopesApiService) UpdateScopeExecute(r ApiUpdateScopeRequest) (*CreateScopeResponse, *http.Response, error) {
 	var (
 		localVarHTTPMethod   = http.MethodPut
 		localVarPostBody     interface{}
 		formFiles            []formFile
-		localVarReturnValue  *OneScopeResponse
+		localVarReturnValue  *CreateScopeResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ScopesApiService.UpdateScope")

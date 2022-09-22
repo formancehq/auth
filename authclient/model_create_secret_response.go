@@ -14,40 +14,40 @@ import (
 	"encoding/json"
 )
 
-// ManyClientsResponse struct for ManyClientsResponse
-type ManyClientsResponse struct {
-	Data []Client `json:"data,omitempty"`
+// CreateSecretResponse struct for CreateSecretResponse
+type CreateSecretResponse struct {
+	Data *Secret `json:"data,omitempty"`
 }
 
-// NewManyClientsResponse instantiates a new ManyClientsResponse object
+// NewCreateSecretResponse instantiates a new CreateSecretResponse object
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewManyClientsResponse() *ManyClientsResponse {
-	this := ManyClientsResponse{}
+func NewCreateSecretResponse() *CreateSecretResponse {
+	this := CreateSecretResponse{}
 	return &this
 }
 
-// NewManyClientsResponseWithDefaults instantiates a new ManyClientsResponse object
+// NewCreateSecretResponseWithDefaults instantiates a new CreateSecretResponse object
 // This constructor will only assign default values to properties that have it defined,
 // but it doesn't guarantee that properties required by API are set
-func NewManyClientsResponseWithDefaults() *ManyClientsResponse {
-	this := ManyClientsResponse{}
+func NewCreateSecretResponseWithDefaults() *CreateSecretResponse {
+	this := CreateSecretResponse{}
 	return &this
 }
 
 // GetData returns the Data field value if set, zero value otherwise.
-func (o *ManyClientsResponse) GetData() []Client {
+func (o *CreateSecretResponse) GetData() Secret {
 	if o == nil || o.Data == nil {
-		var ret []Client
+		var ret Secret
 		return ret
 	}
-	return o.Data
+	return *o.Data
 }
 
 // GetDataOk returns a tuple with the Data field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *ManyClientsResponse) GetDataOk() ([]Client, bool) {
+func (o *CreateSecretResponse) GetDataOk() (*Secret, bool) {
 	if o == nil || o.Data == nil {
 		return nil, false
 	}
@@ -55,7 +55,7 @@ func (o *ManyClientsResponse) GetDataOk() ([]Client, bool) {
 }
 
 // HasData returns a boolean if a field has been set.
-func (o *ManyClientsResponse) HasData() bool {
+func (o *CreateSecretResponse) HasData() bool {
 	if o != nil && o.Data != nil {
 		return true
 	}
@@ -63,12 +63,12 @@ func (o *ManyClientsResponse) HasData() bool {
 	return false
 }
 
-// SetData gets a reference to the given []Client and assigns it to the Data field.
-func (o *ManyClientsResponse) SetData(v []Client) {
-	o.Data = v
+// SetData gets a reference to the given Secret and assigns it to the Data field.
+func (o *CreateSecretResponse) SetData(v Secret) {
+	o.Data = &v
 }
 
-func (o ManyClientsResponse) MarshalJSON() ([]byte, error) {
+func (o CreateSecretResponse) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
 	if o.Data != nil {
 		toSerialize["data"] = o.Data
@@ -76,38 +76,38 @@ func (o ManyClientsResponse) MarshalJSON() ([]byte, error) {
 	return json.Marshal(toSerialize)
 }
 
-type NullableManyClientsResponse struct {
-	value *ManyClientsResponse
+type NullableCreateSecretResponse struct {
+	value *CreateSecretResponse
 	isSet bool
 }
 
-func (v NullableManyClientsResponse) Get() *ManyClientsResponse {
+func (v NullableCreateSecretResponse) Get() *CreateSecretResponse {
 	return v.value
 }
 
-func (v *NullableManyClientsResponse) Set(val *ManyClientsResponse) {
+func (v *NullableCreateSecretResponse) Set(val *CreateSecretResponse) {
 	v.value = val
 	v.isSet = true
 }
 
-func (v NullableManyClientsResponse) IsSet() bool {
+func (v NullableCreateSecretResponse) IsSet() bool {
 	return v.isSet
 }
 
-func (v *NullableManyClientsResponse) Unset() {
+func (v *NullableCreateSecretResponse) Unset() {
 	v.value = nil
 	v.isSet = false
 }
 
-func NewNullableManyClientsResponse(val *ManyClientsResponse) *NullableManyClientsResponse {
-	return &NullableManyClientsResponse{value: val, isSet: true}
+func NewNullableCreateSecretResponse(val *CreateSecretResponse) *NullableCreateSecretResponse {
+	return &NullableCreateSecretResponse{value: val, isSet: true}
 }
 
-func (v NullableManyClientsResponse) MarshalJSON() ([]byte, error) {
+func (v NullableCreateSecretResponse) MarshalJSON() ([]byte, error) {
 	return json.Marshal(v.value)
 }
 
-func (v *NullableManyClientsResponse) UnmarshalJSON(src []byte) error {
+func (v *NullableCreateSecretResponse) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }

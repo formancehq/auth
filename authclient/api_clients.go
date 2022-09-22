@@ -128,7 +128,7 @@ func (r ApiCreateClientRequest) Body(body ClientOptions) ApiCreateClientRequest 
 	return r
 }
 
-func (r ApiCreateClientRequest) Execute() (*OneClientResponse, *http.Response, error) {
+func (r ApiCreateClientRequest) Execute() (*CreateClientResponse, *http.Response, error) {
 	return r.ApiService.CreateClientExecute(r)
 }
 
@@ -146,13 +146,13 @@ func (a *ClientsApiService) CreateClient(ctx context.Context) ApiCreateClientReq
 }
 
 // Execute executes the request
-//  @return OneClientResponse
-func (a *ClientsApiService) CreateClientExecute(r ApiCreateClientRequest) (*OneClientResponse, *http.Response, error) {
+//  @return CreateClientResponse
+func (a *ClientsApiService) CreateClientExecute(r ApiCreateClientRequest) (*CreateClientResponse, *http.Response, error) {
 	var (
 		localVarHTTPMethod   = http.MethodPost
 		localVarPostBody     interface{}
 		formFiles            []formFile
-		localVarReturnValue  *OneClientResponse
+		localVarReturnValue  *CreateClientResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ClientsApiService.CreateClient")
@@ -234,7 +234,7 @@ func (r ApiCreateSecretRequest) Body(body SecretOptions) ApiCreateSecretRequest 
 	return r
 }
 
-func (r ApiCreateSecretRequest) Execute() (*OneSecretResponse, *http.Response, error) {
+func (r ApiCreateSecretRequest) Execute() (*CreateSecretResponse, *http.Response, error) {
 	return r.ApiService.CreateSecretExecute(r)
 }
 
@@ -254,13 +254,13 @@ func (a *ClientsApiService) CreateSecret(ctx context.Context, clientId string) A
 }
 
 // Execute executes the request
-//  @return OneSecretResponse
-func (a *ClientsApiService) CreateSecretExecute(r ApiCreateSecretRequest) (*OneSecretResponse, *http.Response, error) {
+//  @return CreateSecretResponse
+func (a *ClientsApiService) CreateSecretExecute(r ApiCreateSecretRequest) (*CreateSecretResponse, *http.Response, error) {
 	var (
 		localVarHTTPMethod   = http.MethodPost
 		localVarPostBody     interface{}
 		formFiles            []formFile
-		localVarReturnValue  *OneSecretResponse
+		localVarReturnValue  *CreateSecretResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ClientsApiService.CreateSecret")
@@ -614,7 +614,7 @@ type ApiListClientsRequest struct {
 	ApiService *ClientsApiService
 }
 
-func (r ApiListClientsRequest) Execute() (*ManyClientsResponse, *http.Response, error) {
+func (r ApiListClientsRequest) Execute() (*ListClientsResponse, *http.Response, error) {
 	return r.ApiService.ListClientsExecute(r)
 }
 
@@ -632,13 +632,13 @@ func (a *ClientsApiService) ListClients(ctx context.Context) ApiListClientsReque
 }
 
 // Execute executes the request
-//  @return ManyClientsResponse
-func (a *ClientsApiService) ListClientsExecute(r ApiListClientsRequest) (*ManyClientsResponse, *http.Response, error) {
+//  @return ListClientsResponse
+func (a *ClientsApiService) ListClientsExecute(r ApiListClientsRequest) (*ListClientsResponse, *http.Response, error) {
 	var (
 		localVarHTTPMethod   = http.MethodGet
 		localVarPostBody     interface{}
 		formFiles            []formFile
-		localVarReturnValue  *ManyClientsResponse
+		localVarReturnValue  *ListClientsResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ClientsApiService.ListClients")
@@ -712,7 +712,7 @@ type ApiReadClientRequest struct {
 	clientId string
 }
 
-func (r ApiReadClientRequest) Execute() (*OneClientResponse, *http.Response, error) {
+func (r ApiReadClientRequest) Execute() (*ReadClientResponse, *http.Response, error) {
 	return r.ApiService.ReadClientExecute(r)
 }
 
@@ -732,13 +732,13 @@ func (a *ClientsApiService) ReadClient(ctx context.Context, clientId string) Api
 }
 
 // Execute executes the request
-//  @return OneClientResponse
-func (a *ClientsApiService) ReadClientExecute(r ApiReadClientRequest) (*OneClientResponse, *http.Response, error) {
+//  @return ReadClientResponse
+func (a *ClientsApiService) ReadClientExecute(r ApiReadClientRequest) (*ReadClientResponse, *http.Response, error) {
 	var (
 		localVarHTTPMethod   = http.MethodGet
 		localVarPostBody     interface{}
 		formFiles            []formFile
-		localVarReturnValue  *OneClientResponse
+		localVarReturnValue  *ReadClientResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ClientsApiService.ReadClient")
@@ -819,7 +819,7 @@ func (r ApiUpdateClientRequest) Body(body ClientOptions) ApiUpdateClientRequest 
 	return r
 }
 
-func (r ApiUpdateClientRequest) Execute() (*OneClientResponse, *http.Response, error) {
+func (r ApiUpdateClientRequest) Execute() (*CreateClientResponse, *http.Response, error) {
 	return r.ApiService.UpdateClientExecute(r)
 }
 
@@ -839,13 +839,13 @@ func (a *ClientsApiService) UpdateClient(ctx context.Context, clientId string) A
 }
 
 // Execute executes the request
-//  @return OneClientResponse
-func (a *ClientsApiService) UpdateClientExecute(r ApiUpdateClientRequest) (*OneClientResponse, *http.Response, error) {
+//  @return CreateClientResponse
+func (a *ClientsApiService) UpdateClientExecute(r ApiUpdateClientRequest) (*CreateClientResponse, *http.Response, error) {
 	var (
 		localVarHTTPMethod   = http.MethodPut
 		localVarPostBody     interface{}
 		formFiles            []formFile
-		localVarReturnValue  *OneClientResponse
+		localVarReturnValue  *CreateClientResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ClientsApiService.UpdateClient")

@@ -87,7 +87,7 @@ No authorization required
 
 ## CreateScope
 
-> OneScopeResponse CreateScope(ctx).Body(body).Execute()
+> CreateScopeResponse CreateScope(ctx).Body(body).Execute()
 
 Create scope
 
@@ -115,7 +115,7 @@ func main() {
         fmt.Fprintf(os.Stderr, "Error when calling `ScopesApi.CreateScope``: %v\n", err)
         fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
     }
-    // response from `CreateScope`: OneScopeResponse
+    // response from `CreateScope`: CreateScopeResponse
     fmt.Fprintf(os.Stdout, "Response from `ScopesApi.CreateScope`: %v\n", resp)
 }
 ```
@@ -135,7 +135,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**OneScopeResponse**](OneScopeResponse.md)
+[**CreateScopeResponse**](CreateScopeResponse.md)
 
 ### Authorization
 
@@ -292,7 +292,7 @@ No authorization required
 
 ## ListScopes
 
-> ManyScopesResponse ListScopes(ctx).Execute()
+> ListScopesResponse ListScopes(ctx).Execute()
 
 List scopes
 
@@ -319,7 +319,7 @@ func main() {
         fmt.Fprintf(os.Stderr, "Error when calling `ScopesApi.ListScopes``: %v\n", err)
         fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
     }
-    // response from `ListScopes`: ManyScopesResponse
+    // response from `ListScopes`: ListScopesResponse
     fmt.Fprintf(os.Stdout, "Response from `ScopesApi.ListScopes`: %v\n", resp)
 }
 ```
@@ -335,7 +335,7 @@ Other parameters are passed through a pointer to a apiListScopesRequest struct v
 
 ### Return type
 
-[**ManyScopesResponse**](ManyScopesResponse.md)
+[**ListScopesResponse**](ListScopesResponse.md)
 
 ### Authorization
 
@@ -353,7 +353,7 @@ No authorization required
 
 ## ReadScope
 
-> OneScopeResponse ReadScope(ctx, scopeId).Execute()
+> CreateScopeResponse ReadScope(ctx, scopeId).Execute()
 
 Read scope
 
@@ -381,7 +381,7 @@ func main() {
         fmt.Fprintf(os.Stderr, "Error when calling `ScopesApi.ReadScope``: %v\n", err)
         fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
     }
-    // response from `ReadScope`: OneScopeResponse
+    // response from `ReadScope`: CreateScopeResponse
     fmt.Fprintf(os.Stdout, "Response from `ScopesApi.ReadScope`: %v\n", resp)
 }
 ```
@@ -405,7 +405,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**OneScopeResponse**](OneScopeResponse.md)
+[**CreateScopeResponse**](CreateScopeResponse.md)
 
 ### Authorization
 
@@ -423,7 +423,7 @@ No authorization required
 
 ## UpdateScope
 
-> OneScopeResponse UpdateScope(ctx, scopeId).Body(body).Execute()
+> CreateScopeResponse UpdateScope(ctx, scopeId).Body(body).Execute()
 
 Update scope
 
@@ -452,7 +452,7 @@ func main() {
         fmt.Fprintf(os.Stderr, "Error when calling `ScopesApi.UpdateScope``: %v\n", err)
         fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
     }
-    // response from `UpdateScope`: OneScopeResponse
+    // response from `UpdateScope`: CreateScopeResponse
     fmt.Fprintf(os.Stdout, "Response from `ScopesApi.UpdateScope`: %v\n", resp)
 }
 ```
@@ -477,7 +477,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**OneScopeResponse**](OneScopeResponse.md)
+[**CreateScopeResponse**](CreateScopeResponse.md)
 
 ### Authorization
 

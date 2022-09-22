@@ -11,9 +11,11 @@ Method | HTTP request | Description
 
 ## ListUsers
 
-> ManyUsersResponse ListUsers(ctx).Execute()
+> ListUsersResponse ListUsers(ctx).Execute()
 
 List users
+
+
 
 ### Example
 
@@ -36,7 +38,7 @@ func main() {
         fmt.Fprintf(os.Stderr, "Error when calling `UsersApi.ListUsers``: %v\n", err)
         fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
     }
-    // response from `ListUsers`: ManyUsersResponse
+    // response from `ListUsers`: ListUsersResponse
     fmt.Fprintf(os.Stdout, "Response from `UsersApi.ListUsers`: %v\n", resp)
 }
 ```
@@ -52,7 +54,7 @@ Other parameters are passed through a pointer to a apiListUsersRequest struct vi
 
 ### Return type
 
-[**ManyUsersResponse**](ManyUsersResponse.md)
+[**ListUsersResponse**](ListUsersResponse.md)
 
 ### Authorization
 
@@ -70,9 +72,11 @@ No authorization required
 
 ## ReadUser
 
-> OneUserResponse ReadUser(ctx, userId).Execute()
+> ReadUserResponse ReadUser(ctx, userId).Execute()
 
 Read user
+
+
 
 ### Example
 
@@ -96,7 +100,7 @@ func main() {
         fmt.Fprintf(os.Stderr, "Error when calling `UsersApi.ReadUser``: %v\n", err)
         fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
     }
-    // response from `ReadUser`: OneUserResponse
+    // response from `ReadUser`: ReadUserResponse
     fmt.Fprintf(os.Stdout, "Response from `UsersApi.ReadUser`: %v\n", resp)
 }
 ```
@@ -120,7 +124,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**OneUserResponse**](OneUserResponse.md)
+[**ReadUserResponse**](ReadUserResponse.md)
 
 ### Authorization
 

@@ -5,12 +5,12 @@ info:
   version: "AUTH_VERSION"
 
 servers:
-- url: https://{organization}.o.formance.cloud/auth
-  description: Production server
-  variables:
-    organization:
-      description: The organization on which the auth server is located
-      default: ""
+  - url: https://{organization}.o.formance.cloud/auth
+    description: Production server
+    variables:
+      organization:
+        description: The organization on which the auth server is located
+        default: ""
 
 paths:
   /clients:
@@ -25,7 +25,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ManyClientsResponse'
+                $ref: '#/components/schemas/ListClientsResponse'
     post:
       summary: Create client
       operationId: createClient
@@ -42,7 +42,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OneClientResponse'
+                $ref: '#/components/schemas/CreateClientResponse'
   /clients/{clientId}:
     get:
       summary: Read client
@@ -50,19 +50,19 @@ paths:
       tags:
         - Clients
       parameters:
-      - description: Client ID
-        in: path
-        name: clientId
-        required: true
-        schema:
-          type: string
+        - description: Client ID
+          in: path
+          name: clientId
+          required: true
+          schema:
+            type: string
       responses:
         "200":
           description: Retrieved client
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OneClientResponse'
+                $ref: '#/components/schemas/ReadClientResponse'
     put:
       summary: Update client
       operationId: updateClient
@@ -74,31 +74,31 @@ paths:
             schema:
               $ref: '#/components/schemas/UpdateClientRequest'
       parameters:
-      - description: Client ID
-        in: path
-        name: clientId
-        required: true
-        schema:
-          type: string
+        - description: Client ID
+          in: path
+          name: clientId
+          required: true
+          schema:
+            type: string
       responses:
         "200":
           description: Updated client
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OneClientResponse'
+                $ref: '#/components/schemas/UpdateClientResponse'
     delete:
       summary: Delete client
       operationId: deleteClient
       tags:
         - Clients
       parameters:
-      - description: Client ID
-        in: path
-        name: clientId
-        required: true
-        schema:
-          type: string
+        - description: Client ID
+          in: path
+          name: clientId
+          required: true
+          schema:
+            type: string
       responses:
         "204":
           description: Client deleted
@@ -109,12 +109,12 @@ paths:
       tags:
         - Clients
       parameters:
-      - description: Client ID
-        in: path
-        name: clientId
-        required: true
-        schema:
-          type: string
+        - description: Client ID
+          in: path
+          name: clientId
+          required: true
+          schema:
+            type: string
       requestBody:
         content:
           application/json:
@@ -126,7 +126,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OneSecretResponse'
+                $ref: '#/components/schemas/CreateSecretResponse'
   /clients/{clientId}/secrets/{secretId}:
     delete:
       summary: Delete a secret from a client
@@ -134,18 +134,18 @@ paths:
       tags:
         - Clients
       parameters:
-      - description: Client ID
-        in: path
-        name: clientId
-        required: true
-        schema:
-          type: string
-      - description: Secret ID
-        in: path
-        name: secretId
-        required: true
-        schema:
-          type: string
+        - description: Client ID
+          in: path
+          name: clientId
+          required: true
+          schema:
+            type: string
+        - description: Secret ID
+          in: path
+          name: secretId
+          required: true
+          schema:
+            type: string
       responses:
         204:
           description: Secret deleted
@@ -156,18 +156,18 @@ paths:
       tags:
         - Clients
       parameters:
-      - description: Client ID
-        in: path
-        name: clientId
-        required: true
-        schema:
-          type: string
-      - description: Scope ID
-        in: path
-        name: scopeId
-        required: true
-        schema:
-          type: string
+        - description: Client ID
+          in: path
+          name: clientId
+          required: true
+          schema:
+            type: string
+        - description: Scope ID
+          in: path
+          name: scopeId
+          required: true
+          schema:
+            type: string
       responses:
         "204":
           description: Scope added to client
@@ -177,18 +177,18 @@ paths:
       tags:
         - Clients
       parameters:
-      - description: Client ID
-        in: path
-        name: clientId
-        required: true
-        schema:
-          type: string
-      - description: Scope ID
-        in: path
-        name: scopeId
-        required: true
-        schema:
-          type: string
+        - description: Client ID
+          in: path
+          name: clientId
+          required: true
+          schema:
+            type: string
+        - description: Scope ID
+          in: path
+          name: scopeId
+          required: true
+          schema:
+            type: string
       responses:
         "204":
           description: Scope deleted from client
@@ -205,7 +205,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ManyScopesResponse'
+                $ref: '#/components/schemas/ListScopesResponse'
     post:
       summary: Create scope
       description: Create scope
@@ -223,7 +223,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OneScopeResponse'
+                $ref: '#/components/schemas/CreateScopeResponse'
   /scopes/{scopeId}:
     get:
       summary: Read scope
@@ -232,19 +232,19 @@ paths:
       tags:
         - Scopes
       parameters:
-      - description: Scope ID
-        in: path
-        name: scopeId
-        required: true
-        schema:
-          type: string
+        - description: Scope ID
+          in: path
+          name: scopeId
+          required: true
+          schema:
+            type: string
       responses:
         200:
           description: Retrieved scope
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OneScopeResponse'
+                $ref: '#/components/schemas/ReadScopeResponse'
     put:
       summary: Update scope
       description: Update scope
@@ -252,12 +252,12 @@ paths:
       tags:
         - Scopes
       parameters:
-      - description: Scope ID
-        in: path
-        name: scopeId
-        required: true
-        schema:
-          type: string
+        - description: Scope ID
+          in: path
+          name: scopeId
+          required: true
+          schema:
+            type: string
       requestBody:
         content:
           application/json:
@@ -269,7 +269,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OneScopeResponse'
+                $ref: '#/components/schemas/UpdateScopeResponse'
     delete:
       summary: Delete scope
       description: Delete scope
@@ -277,12 +277,12 @@ paths:
       tags:
         - Scopes
       parameters:
-      - description: Scope ID
-        in: path
-        name: scopeId
-        required: true
-        schema:
-          type: string
+        - description: Scope ID
+          in: path
+          name: scopeId
+          required: true
+          schema:
+            type: string
       responses:
         204:
           description: "Scope deleted"
@@ -294,18 +294,18 @@ paths:
       tags:
         - Scopes
       parameters:
-      - description: Scope ID
-        in: path
-        name: scopeId
-        required: true
-        schema:
-          type: string
-      - description: Transient scope ID
-        in: path
-        name: transientScopeId
-        required: true
-        schema:
-          type: string
+        - description: Scope ID
+          in: path
+          name: scopeId
+          required: true
+          schema:
+            type: string
+        - description: Transient scope ID
+          in: path
+          name: transientScopeId
+          required: true
+          schema:
+            type: string
       responses:
         204:
           description: "Scope added"
@@ -316,24 +316,25 @@ paths:
       tags:
         - Scopes
       parameters:
-      - description: Scope ID
-        in: path
-        name: scopeId
-        required: true
-        schema:
-          type: string
-      - description: Transient scope ID
-        in: path
-        name: transientScopeId
-        required: true
-        schema:
-          type: string
+        - description: Scope ID
+          in: path
+          name: scopeId
+          required: true
+          schema:
+            type: string
+        - description: Transient scope ID
+          in: path
+          name: transientScopeId
+          required: true
+          schema:
+            type: string
       responses:
         204:
           description: "Transient scope deleted"
   /users:
     get:
       summary: List users
+      description: List users
       operationId: listUsers
       tags:
         - Users
@@ -343,10 +344,11 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ManyUsersResponse'
+                $ref: '#/components/schemas/ListUsersResponse'
   /users/{userId}:
     get:
       summary: Read user
+      description: Read user
       operationId: readUser
       tags:
         - Users
@@ -363,7 +365,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OneUserResponse'
+                $ref: '#/components/schemas/ReadUserResponse'
 components:
   schemas:
     Metadata:
@@ -392,7 +394,7 @@ components:
         metadata:
           $ref: '#/components/schemas/Metadata'
       required:
-      - name
+        - name
     ClientSecret:
       type: object
       properties:
@@ -405,26 +407,26 @@ components:
         metadata:
           $ref: '#/components/schemas/Metadata'
       required:
-      - id
-      - lastDigits
-      - name
+        - id
+        - lastDigits
+        - name
     Client:
       allOf:
-      - $ref: '#/components/schemas/ClientOptions'
-      - type: object
-        properties:
-          id:
-            type: string
-          scopes:
-            type: array
-            items:
+        - $ref: '#/components/schemas/ClientOptions'
+        - type: object
+          properties:
+            id:
               type: string
-          secrets:
-            type: array
-            items:
-              $ref: '#/components/schemas/ClientSecret'
-        required:
-        - id
+            scopes:
+              type: array
+              items:
+                type: string
+            secrets:
+              type: array
+              items:
+                $ref: '#/components/schemas/ClientSecret'
+          required:
+            - id
     ScopeOptions:
       type: object
       properties:
@@ -433,20 +435,20 @@ components:
         metadata:
           $ref: '#/components/schemas/Metadata'
       required:
-      - label
+        - label
     Scope:
       allOf:
-      - $ref: '#/components/schemas/ScopeOptions'
-      - type: object
-        properties:
-          id:
-            type: string
-          transient:
-            type: array
-            items:
+        - $ref: '#/components/schemas/ScopeOptions'
+        - type: object
+          properties:
+            id:
               type: string
-        required:
-        - id
+            transient:
+              type: array
+              items:
+                type: string
+          required:
+            - id
     SecretOptions:
       type: object
       properties:
@@ -455,22 +457,22 @@ components:
         metadata:
           $ref: '#/components/schemas/Metadata'
       required:
-      - name
+        - name
     Secret:
       allOf:
-      - $ref: '#/components/schemas/SecretOptions'
-      - type: object
-        properties:
-          id:
-            type: string
-          lastDigits:
-            type: string
-          clear:
-            type: string
-        required:
-        - id
-        - lastDigits
-        - clear
+        - $ref: '#/components/schemas/SecretOptions'
+        - type: object
+          properties:
+            id:
+              type: string
+            lastDigits:
+              type: string
+            clear:
+              type: string
+          required:
+            - id
+            - lastDigits
+            - clear
     User:
       type: object
       properties:
@@ -485,49 +487,60 @@ components:
           example: user1@orga1.com
     CreateClientRequest:
       $ref: '#/components/schemas/ClientOptions'
-    UpdateClientRequest:
-      $ref: '#/components/schemas/ClientOptions'
-    OneClientResponse:
+    CreateClientResponse:
       type: object
       properties:
         data:
           $ref: '#/components/schemas/Client'
-    ManyClientsResponse:
+    ListClientsResponse:
       type: object
       properties:
         data:
           type: array
           items:
             $ref: '#/components/schemas/Client'
-    CreateScopeRequest:
-      $ref: '#/components/schemas/ScopeOptions'
-    UpdateScopeRequest:
-      $ref: '#/components/schemas/ScopeOptions'
-    OneScopeResponse:
+    UpdateClientRequest:
+      $ref: '#/components/schemas/ClientOptions'
+    UpdateClientResponse:
+      $ref: '#/components/schemas/CreateClientResponse'
+    ReadClientResponse:
       type: object
       properties:
         data:
-          $ref: '#/components/schemas/Scope'
-    ManyScopesResponse:
+          $ref: '#/components/schemas/Client'
+    ListScopesResponse:
       type: object
       properties:
         data:
           type: array
           items:
             $ref: '#/components/schemas/Scope'
+    CreateScopeRequest:
+      $ref: '#/components/schemas/ScopeOptions'
+    CreateScopeResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/Scope'
+    ReadScopeResponse:
+      $ref: '#/components/schemas/CreateScopeResponse'
+    UpdateScopeRequest:
+      $ref: '#/components/schemas/ScopeOptions'
+    UpdateScopeResponse:
+      $ref: '#/components/schemas/CreateScopeResponse'
     CreateSecretRequest:
       $ref: '#/components/schemas/SecretOptions'
-    OneSecretResponse:
+    CreateSecretResponse:
       type: object
       properties:
         data:
           $ref: '#/components/schemas/Secret'
-    OneUserResponse:
+    ReadUserResponse:
       type: object
       properties:
         data:
           $ref: '#/components/schemas/User'
-    ManyUsersResponse:
+    ListUsersResponse:
       type: object
       properties:
         data:

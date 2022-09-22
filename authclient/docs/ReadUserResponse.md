@@ -1,52 +1,52 @@
-# OneScopeResponse
+# ReadUserResponse
 
 ## Properties
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**Data** | Pointer to [**Scope**](Scope.md) |  | [optional] 
+**Data** | Pointer to [**User**](User.md) |  | [optional] 
 
 ## Methods
 
-### NewOneScopeResponse
+### NewReadUserResponse
 
-`func NewOneScopeResponse() *OneScopeResponse`
+`func NewReadUserResponse() *ReadUserResponse`
 
-NewOneScopeResponse instantiates a new OneScopeResponse object
+NewReadUserResponse instantiates a new ReadUserResponse object
 This constructor will assign default values to properties that have it defined,
 and makes sure properties required by API are set, but the set of arguments
 will change when the set of required properties is changed
 
-### NewOneScopeResponseWithDefaults
+### NewReadUserResponseWithDefaults
 
-`func NewOneScopeResponseWithDefaults() *OneScopeResponse`
+`func NewReadUserResponseWithDefaults() *ReadUserResponse`
 
-NewOneScopeResponseWithDefaults instantiates a new OneScopeResponse object
+NewReadUserResponseWithDefaults instantiates a new ReadUserResponse object
 This constructor will only assign default values to properties that have it defined,
 but it doesn't guarantee that properties required by API are set
 
 ### GetData
 
-`func (o *OneScopeResponse) GetData() Scope`
+`func (o *ReadUserResponse) GetData() User`
 
 GetData returns the Data field if non-nil, zero value otherwise.
 
 ### GetDataOk
 
-`func (o *OneScopeResponse) GetDataOk() (*Scope, bool)`
+`func (o *ReadUserResponse) GetDataOk() (*User, bool)`
 
 GetDataOk returns a tuple with the Data field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetData
 
-`func (o *OneScopeResponse) SetData(v Scope)`
+`func (o *ReadUserResponse) SetData(v User)`
 
 SetData sets Data field to given value.
 
 ### HasData
 
-`func (o *OneScopeResponse) HasData() bool`
+`func (o *ReadUserResponse) HasData() bool`
 
 HasData returns a boolean if a field has been set.
 
