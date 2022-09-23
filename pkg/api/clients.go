@@ -10,16 +10,20 @@ import (
 	"gorm.io/gorm"
 )
 
+const (
+	PathClients = "/clients"
+)
+
 func addClientRoutes(db *gorm.DB, router *mux.Router) {
-	router.Path("/clients").Methods(http.MethodPost).HandlerFunc(createClient(db))
-	router.Path("/clients").Methods(http.MethodGet).HandlerFunc(listClients(db))
-	router.Path("/clients/{clientId}").Methods(http.MethodPut).HandlerFunc(updateClient(db))
-	router.Path("/clients/{clientId}").Methods(http.MethodGet).HandlerFunc(readClient(db))
-	router.Path("/clients/{clientId}").Methods(http.MethodDelete).HandlerFunc(deleteClient(db))
-	router.Path("/clients/{clientId}/secrets").Methods(http.MethodPost).HandlerFunc(createSecret(db))
-	router.Path("/clients/{clientId}/secrets/{secretId}").Methods(http.MethodDelete).HandlerFunc(deleteSecret(db))
-	router.Path("/clients/{clientId}/scopes/{scopeId}").Methods(http.MethodPut).HandlerFunc(addScopeToClient(db))
-	router.Path("/clients/{clientId}/scopes/{scopeId}").Methods(http.MethodDelete).HandlerFunc(deleteScopeOfClient(db))
+	router.Path(PathClients).Methods(http.MethodPost).HandlerFunc(createClient(db))
+	router.Path(PathClients).Methods(http.MethodGet).HandlerFunc(listClients(db))
+	router.Path(PathClients + "/{clientId}").Methods(http.MethodPut).HandlerFunc(updateClient(db))
+	router.Path(PathClients + "/{clientId}").Methods(http.MethodGet).HandlerFunc(readClient(db))
+	router.Path(PathClients + "/{clientId}").Methods(http.MethodDelete).HandlerFunc(deleteClient(db))
+	router.Path(PathClients + "/{clientId}/secrets").Methods(http.MethodPost).HandlerFunc(createSecret(db))
+	router.Path(PathClients + "/{clientId}/secrets/{secretId}").Methods(http.MethodDelete).HandlerFunc(deleteSecret(db))
+	router.Path(PathClients + "/{clientId}/scopes/{scopeId}").Methods(http.MethodPut).HandlerFunc(addScopeToClient(db))
+	router.Path(PathClients + "/{clientId}/scopes/{scopeId}").Methods(http.MethodDelete).HandlerFunc(deleteScopeOfClient(db))
 }
 
 type clientSecretView struct {

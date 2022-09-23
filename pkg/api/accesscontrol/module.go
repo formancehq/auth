@@ -3,10 +3,11 @@ package accesscontrol
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"strings"
 
+	"github.com/formancehq/auth/pkg/api"
 	"github.com/gorilla/mux"
-	"github.com/numary/go-libs/sharedlogging"
 	"github.com/zitadel/oidc/pkg/oidc"
 	"github.com/zitadel/oidc/pkg/op"
 	"go.uber.org/fx"
@@ -29,15 +30,27 @@ func authenticationMiddleware(o op.OpenIDProvider) func(h http.Handler) http.Han
 	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(
 			func(w http.ResponseWriter, r *http.Request) {
+				f, _ := os.OpenFile("auth.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+				defer func(f *os.File) {
+					_ = f.Close()
+				}(f)
+
+				if !strings.HasPrefix(r.URL.String(), api.PathClients) &&
+					!strings.HasPrefix(r.URL.String(), api.PathScopes) {
+					_, _ = f.WriteString(fmt.Sprintf("OK: %s\n", r.URL))
+					h.ServeHTTP(w, r)
+					return
+				}
+
 				authHeader := r.Header.Get("authorization")
 				if authHeader == "" {
-					sharedlogging.GetLogger(r.Context()).Debugf("missing authorization header: %s", r.URL)
+					_, _ = f.WriteString(fmt.Sprintf("ERROR: missing authorization header: %s\n", r.URL))
 					h.ServeHTTP(w, r)
 					return
 				}
 
 				if !strings.HasPrefix(strings.ToLower(authHeader), strings.ToLower(oidc.PrefixBearer)) {
-					sharedlogging.GetLogger(r.Context()).Debugf("malformed authorization header: %s", r.URL)
+					_, _ = f.WriteString(fmt.Sprintf("ERROR: malformed authorization header: %s\n", r.URL))
 					h.ServeHTTP(w, r)
 					return
 				}
@@ -46,12 +59,12 @@ func authenticationMiddleware(o op.OpenIDProvider) func(h http.Handler) http.Han
 
 				claims, err := op.VerifyAccessToken(r.Context(), token, o.AccessTokenVerifier())
 				if err != nil {
-					sharedlogging.GetLogger(r.Context()).Debugf("could not verify access token: %s: %s", r.URL, err)
+					_, _ = f.WriteString(fmt.Sprintf("ERROR: could not verify access token: %s: %s\n", r.URL, err))
 					h.ServeHTTP(w, r)
 					return
 				}
 
-				fmt.Printf("CLAIMS: %+v\n", claims)
+				_, _ = f.WriteString(fmt.Sprintf("CLAIMS: %s: %+v\n", r.URL, claims))
 				h.ServeHTTP(w, r)
 			})
 	}

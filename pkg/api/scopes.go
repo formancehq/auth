@@ -8,14 +8,18 @@ import (
 	"gorm.io/gorm"
 )
 
+const (
+	PathScopes = "/scopes"
+)
+
 func addScopeRoutes(db *gorm.DB, router *mux.Router) {
-	router.Path("/scopes").Methods(http.MethodPost).HandlerFunc(createScope(db))
-	router.Path("/scopes").Methods(http.MethodGet).HandlerFunc(listScopes(db))
-	router.Path("/scopes/{scopeId}").Methods(http.MethodPut).HandlerFunc(updateScope(db))
-	router.Path("/scopes/{scopeId}").Methods(http.MethodGet).HandlerFunc(readScope(db))
-	router.Path("/scopes/{scopeId}").Methods(http.MethodDelete).HandlerFunc(deleteScope(db))
-	router.Path("/scopes/{scopeId}/transient/{transientScopeId}").Methods(http.MethodPut).HandlerFunc(addTriggerToScope(db))
-	router.Path("/scopes/{scopeId}/transient/{transientScopeId}").Methods(http.MethodDelete).HandlerFunc(deleteTriggerFromScope(db))
+	router.Path(PathScopes).Methods(http.MethodPost).HandlerFunc(createScope(db))
+	router.Path(PathScopes).Methods(http.MethodGet).HandlerFunc(listScopes(db))
+	router.Path(PathScopes + "/{scopeId}").Methods(http.MethodPut).HandlerFunc(updateScope(db))
+	router.Path(PathScopes + "/{scopeId}").Methods(http.MethodGet).HandlerFunc(readScope(db))
+	router.Path(PathScopes + "/{scopeId}").Methods(http.MethodDelete).HandlerFunc(deleteScope(db))
+	router.Path(PathScopes + "/{scopeId}/transient/{transientScopeId}").Methods(http.MethodPut).HandlerFunc(addTriggerToScope(db))
+	router.Path(PathScopes + "/{scopeId}/transient/{transientScopeId}").Methods(http.MethodDelete).HandlerFunc(deleteTriggerFromScope(db))
 }
 
 type scope struct {
