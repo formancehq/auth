@@ -9,6 +9,9 @@ vars:
   TIMEOUT: "1m"
   RUN: "''"
 
+env:
+  CAOS_OIDC_DEV: true
+
 tasks:
   default:
     cmds:
@@ -76,8 +79,8 @@ tasks:
 
   install-deps-demo-client:
     cmds:
-      - cd demo && rm package-lock.json && yarn install
+      - cd demo && yarn install
 
   docker:
     cmds:
-      - docker compose up -d postgres
+      - docker compose up -d postgres dex

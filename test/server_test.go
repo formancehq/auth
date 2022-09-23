@@ -20,9 +20,12 @@ func TestAuthServer(t *testing.T) {
 	require.NoError(t, err)
 
 	serverApp := fxtest.New(t,
-		cmd.AuthServerModule(context.Background(), serverBaseURL, "postgresql://auth:auth@localhost:5432/",
+		cmd.AuthServerModule(context.Background(), serverBaseURL,
+			"host=localhost user=auth password=auth dbname=auth port=5432 sslmode=disable",
 			key, cmd.ClientOptions{},
-			"https://accounts.google.com", "", ""))
+			"http://localhost:5556/dex",
+			"gateway",
+			"ZXhhbXBsZS1hcHAtc2VjcmV0"))
 
 	t.Run("start", func(t *testing.T) {
 		serverApp.RequireStart()

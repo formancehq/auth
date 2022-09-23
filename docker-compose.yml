@@ -11,6 +11,7 @@ services:
     image: ghcr.io/dexidp/dex:latest-distroless
     volumes:
       - ./dex-config.yaml:/etc/dex/config.docker.yaml
+      - ./pkg/web:/app/web
     network_mode: service:auth
 
   postgres:
@@ -32,7 +33,7 @@ services:
       context: .
       dockerfile: reflex.Dockerfile
     healthcheck:
-      test: curl -s -f -k http://127.0.0.1:8080/_healthcheck > /dev/null || exit 1
+      test: curl -s -f -k http://localhost:8080/_healthcheck > /dev/null || exit 1
       interval: 3s
       timeout: 10s
       retries: 10
@@ -48,7 +49,7 @@ services:
     environment:
       DEBUG: 1
       CONFIG: ./config.yaml
-      POSTGRES_URI: "host=postgres user=auth password=auth dbname=auth port=5432 sslmode=disable"
+      POSTGRES_URI: host=postgres user=auth password=auth dbname=auth port=5432 sslmode=disable
       CAOS_OIDC_DEV: 1
       OTEL_TRACES: true
       OTEL_TRACES_EXPORTER: jaeger
