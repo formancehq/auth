@@ -11,8 +11,10 @@ export const Info = () => {
     switch (oidcUserLoadingState){
         case OidcUserStatus.Loading:
             userInfo = <p className="card-text">User Information are loading</p>;
+            break
         case OidcUserStatus.LoadingError:
             userInfo = <p className="card-text">Fail to load user information</p>;
+            break
         default:
             userInfo = <pre className="card-text">{JSON.stringify(oidcUser, null, 2)}</pre>;
     }

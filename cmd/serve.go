@@ -2,12 +2,14 @@ package cmd
 
 import (
 	"context"
+	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
 
 	auth "github.com/formancehq/auth/pkg"
 	"github.com/formancehq/auth/pkg/api"
+	"github.com/formancehq/auth/pkg/api/accesscontrol"
 	"github.com/formancehq/auth/pkg/delegatedauth"
 	"github.com/formancehq/auth/pkg/oidc"
 	"github.com/formancehq/auth/pkg/storage/sqlstorage"
@@ -30,7 +32,7 @@ const (
 	signingKeyFlag            = "signing-key"
 	configFlag                = "config"
 
-	defaultSigningKey = `
+	DefaultSigningKey = `
 -----BEGIN RSA PRIVATE KEY-----
 MIIEpQIBAAKCAQEAth3atoCXldJgHH9EWnZQMvw5O+vVNKMcvrllEGQsLxvIA5xy
 YPnFt2xU7k1dcN5ViBqPiigVHZNeyyHcdVclg26zqjEwYUqH+OPiRFeBn0SwOG+d
@@ -60,6 +62,10 @@ EL/wy5C80pa3jahniqVgO5L6zz0ZLtRIRE7aCtCIu826gctJ1+ShIso=
 -----END RSA PRIVATE KEY-----
 `
 )
+
+type ClientOptions struct {
+	Clients []auth.ClientOptions `json:"clients" yaml:"clients"`
+}
 
 var serveCmd = &cobra.Command{
 	Use: "serve",
@@ -109,39 +115,14 @@ var serveCmd = &cobra.Command{
 			}
 		}
 
-		type clientOptions struct {
-			Clients []auth.ClientOptions `json:"clients" yaml:"clients"`
-		}
-		o := clientOptions{}
+		o := ClientOptions{}
 		if err := viper.Unmarshal(&o); err != nil {
 			return errors.Wrap(err, "unmarshal viper config")
 		}
 
-		options := []fx.Option{
-			fx.Supply(fx.Annotate(cmd.Context(), fx.As(new(context.Context)))),
-			oidc.Module(":8080", baseUrl, key),
-			api.Module(),
-			fx.Invoke(func(router *mux.Router, healthController *sharedhealth.HealthController) {
-				router.Path("/_healthcheck").HandlerFunc(healthController.Check)
-			}),
-			sqlstorage.Module(viper.GetString(postgresUriFlag), key, o.Clients),
-			delegatedauth.Module(delegatedauth.Config{
-				Issuer:       delegatedIssuer,
-				ClientID:     delegatedClientID,
-				ClientSecret: delegatedClientSecret,
-				RedirectURL:  fmt.Sprintf("%s/authorize/callback", baseUrl),
-			}),
-			fx.Invoke(func() {
-				sharedlogging.Infof("App started.")
-			}),
-			fx.NopLogger,
-		}
-
-		if tm := sharedotlptraces.CLITracesModule(viper.GetViper()); tm != nil {
-			options = append(options, tm)
-		}
-
-		app := fx.New(options...)
+		app := fx.New(
+			AuthServerModule(cmd.Context(), baseUrl, viper.GetString(postgresUriFlag), key, o,
+				delegatedIssuer, delegatedClientID, delegatedClientSecret))
 		err = app.Start(cmd.Context())
 		if err != nil {
 			return err
@@ -152,6 +133,36 @@ var serveCmd = &cobra.Command{
 	},
 }
 
+func AuthServerModule(ctx context.Context, baseUrl, postgresUri string, key *rsa.PrivateKey, o ClientOptions,
+	delegatedIssuer, delegatedClientID, delegatedClientSecret string) fx.Option {
+	options := []fx.Option{
+		fx.Supply(fx.Annotate(ctx, fx.As(new(context.Context)))),
+		oidc.Module(":8080", baseUrl, key),
+		api.Module(),
+		accesscontrol.Module(),
+		fx.Invoke(func(router *mux.Router, healthController *sharedhealth.HealthController) {
+			router.Path("/_healthcheck").HandlerFunc(healthController.Check)
+		}),
+		sqlstorage.Module(postgresUri, key, o.Clients),
+		delegatedauth.Module(delegatedauth.Config{
+			Issuer:       delegatedIssuer,
+			ClientID:     delegatedClientID,
+			ClientSecret: delegatedClientSecret,
+			RedirectURL:  fmt.Sprintf("%s/authorize/callback", baseUrl),
+		}),
+		fx.Invoke(func() {
+			sharedlogging.Infof("App started.")
+		}),
+		fx.NopLogger,
+	}
+
+	if tm := sharedotlptraces.CLITracesModule(viper.GetViper()); tm != nil {
+		options = append(options, tm)
+	}
+
+	return fx.Options(options...)
+}
+
 func init() {
 	rootCmd.AddCommand(serveCmd)
 	serveCmd.Flags().String(postgresUriFlag, "", "Postgres uri")
@@ -159,7 +170,7 @@ func init() {
 	serveCmd.Flags().String(delegatedClientIDFlag, "", "Delegated OIDC client id")
 	serveCmd.Flags().String(delegatedClientSecretFlag, "", "Delegated OIDC client secret")
 	serveCmd.Flags().String(baseUrlFlag, "http://localhost:8080", "Base service url")
-	serveCmd.Flags().String(signingKeyFlag, defaultSigningKey, "Signing key")
+	serveCmd.Flags().String(signingKeyFlag, DefaultSigningKey, "Signing key")
 
 	serveCmd.Flags().String(configFlag, "config", "Config file name without extension")
 

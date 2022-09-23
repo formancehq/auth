@@ -32,8 +32,10 @@ services:
       context: .
       dockerfile: reflex.Dockerfile
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/_healthcheck"]
-      interval: 1s
+      test: curl -s -f -k http://127.0.0.1:8080/_healthcheck > /dev/null || exit 1
+      interval: 3s
+      timeout: 10s
+      retries: 10
     entrypoint:
     - reflex
     - -r
@@ -54,7 +56,7 @@ services:
       DELEGATED_CLIENT_ID: gateway
       DELEGATED_CLIENT_SECRET: ZXhhbXBsZS1hcHAtc2VjcmV0
       DELEGATED_ISSUER: http://localhost:5556/dex
-      BASE_URL: http://127.0.0.1:8080
+      BASE_URL: http://localhost:8080
     depends_on:
     - postgres
     - jaeger
@@ -75,3 +77,6 @@ services:
     entrypoint:
       - npm
       - start
+    depends_on:
+      auth:
+        condition: service_healthy
