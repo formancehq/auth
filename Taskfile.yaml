@@ -84,3 +84,9 @@ tasks:
   docker:
     cmds:
       - docker compose up -d postgres dex
+
+  clean:
+    cmds:
+      - docker compose down
+      - docker rm -f $(docker ps -a -q) 2> /dev/null || exit 0
+      - docker volume rm $(docker volume ls -q) 2> /dev/null || exit 0

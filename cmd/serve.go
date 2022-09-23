@@ -24,6 +24,7 @@ import (
 )
 
 const (
+	httpBindAddressFlag       = "http-bind-address"
 	postgresUriFlag           = "postgres-uri"
 	delegatedClientIDFlag     = "delegated-client-id"
 	delegatedClientSecretFlag = "delegated-client-secret"
@@ -121,7 +122,9 @@ var serveCmd = &cobra.Command{
 		}
 
 		app := fx.New(
-			AuthServerModule(cmd.Context(), baseUrl, viper.GetString(postgresUriFlag), key, o,
+			AuthServerModule(cmd.Context(), baseUrl,
+				viper.GetString(httpBindAddressFlag),
+				viper.GetString(postgresUriFlag), key, o,
 				delegatedIssuer, delegatedClientID, delegatedClientSecret))
 		err = app.Start(cmd.Context())
 		if err != nil {
@@ -133,11 +136,11 @@ var serveCmd = &cobra.Command{
 	},
 }
 
-func AuthServerModule(ctx context.Context, baseUrl, postgresUri string, key *rsa.PrivateKey, o ClientOptions,
+func AuthServerModule(ctx context.Context, baseUrl, bindAddr, postgresUri string, key *rsa.PrivateKey, o ClientOptions,
 	delegatedIssuer, delegatedClientID, delegatedClientSecret string) fx.Option {
 	options := []fx.Option{
 		fx.Supply(fx.Annotate(ctx, fx.As(new(context.Context)))),
-		oidc.Module(":8080", baseUrl, key),
+		oidc.Module(bindAddr, baseUrl, key),
 		api.Module(),
 		accesscontrol.Module(),
 		fx.Invoke(func(router *mux.Router, healthController *sharedhealth.HealthController) {
@@ -165,6 +168,7 @@ func AuthServerModule(ctx context.Context, baseUrl, postgresUri string, key *rsa
 
 func init() {
 	rootCmd.AddCommand(serveCmd)
+	serveCmd.Flags().String(httpBindAddressFlag, ":8080", "Server HTTP bind address")
 	serveCmd.Flags().String(postgresUriFlag, "", "Postgres uri")
 	serveCmd.Flags().String(delegatedIssuerFlag, "", "Delegated OIDC issuer")
 	serveCmd.Flags().String(delegatedClientIDFlag, "", "Delegated OIDC client id")

@@ -20,7 +20,7 @@ func TestAuthServer(t *testing.T) {
 	require.NoError(t, err)
 
 	serverApp := fxtest.New(t,
-		cmd.AuthServerModule(context.Background(), serverBaseURL,
+		cmd.AuthServerModule(context.Background(), serverBaseURL, ":8888",
 			"host=localhost user=auth password=auth dbname=auth port=5432 sslmode=disable",
 			key, cmd.ClientOptions{},
 			"http://localhost:5556/dex",

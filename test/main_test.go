@@ -19,7 +19,7 @@ var (
 )
 
 func TestMain(m *testing.M) {
-	serverBaseURL = "http://localhost:8080"
+	serverBaseURL = "http://localhost:8888"
 
 	os.Exit(m.Run())
 }
