@@ -4,13 +4,13 @@ import (
 	"context"
 	"crypto/x509"
 	"encoding/pem"
-	"fmt"
+	"io"
 	"net/http"
-	"os"
 	"testing"
 
 	"github.com/formancehq/auth/cmd"
 	"github.com/formancehq/auth/pkg/api"
+	"github.com/formancehq/auth/pkg/api/accesscontrol"
 	"github.com/stretchr/testify/require"
 	"github.com/zitadel/oidc/pkg/oidc"
 	"go.uber.org/fx/fxtest"
@@ -40,20 +40,39 @@ func TestAuthServer(t *testing.T) {
 	})
 
 	t.Run("request without authorization header", func(t *testing.T) {
-		requestServer(t, http.MethodGet, api.PathClients, http.StatusOK)
+		req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, serverBaseURL+api.PathClients, nil)
+		require.NoError(t, err)
+		resp, err := httpClient.Do(req)
+		require.NoError(t, err)
+		require.Equal(t, http.StatusUnauthorized, resp.StatusCode)
+		b, err := io.ReadAll(resp.Body)
+		require.NoError(t, err)
+		require.Equal(t, accesscontrol.ErrMissingAuthHeader+"\n", string(b))
 	})
 
-	t.Run("request with bad token", func(t *testing.T) {
+	t.Run("request with malformed token", func(t *testing.T) {
+		req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, serverBaseURL+api.PathClients, nil)
+		req.Header.Set("Authorization", "malformed")
+		require.NoError(t, err)
+		resp, err := httpClient.Do(req)
+		require.NoError(t, err)
+		require.Equal(t, http.StatusUnauthorized, resp.StatusCode)
+		b, err := io.ReadAll(resp.Body)
+		require.NoError(t, err)
+		require.Equal(t, accesscontrol.ErrMalformedAuthHeader+"\n", string(b))
+	})
+
+	t.Run("request with unverified token", func(t *testing.T) {
 		req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, serverBaseURL+api.PathClients, nil)
 		req.Header.Set("Authorization", oidc.PrefixBearer+"invalid")
 		require.NoError(t, err)
-		_, err = httpClient.Do(req)
+		resp, err := httpClient.Do(req)
 		require.NoError(t, err)
+		require.Equal(t, http.StatusUnauthorized, resp.StatusCode)
+		b, err := io.ReadAll(resp.Body)
+		require.NoError(t, err)
+		require.Equal(t, accesscontrol.ErrVerifyAuthToken+"\n", string(b))
 	})
-
-	by, _ := os.ReadFile("auth.log")
-	fmt.Printf("LOGS FILE:\n%s", string(by))
-	_ = os.Remove("auth.log")
 
 	t.Run("stop", func(t *testing.T) {
 		serverApp.RequireStop()

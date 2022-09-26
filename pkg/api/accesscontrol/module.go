@@ -3,7 +3,6 @@ package accesscontrol
 import (
 	"fmt"
 	"net/http"
-	"os"
 	"strings"
 
 	"github.com/formancehq/auth/pkg/api"
@@ -26,32 +25,30 @@ func Module() fx.Option {
 	)
 }
 
+var (
+	ErrMissingAuthHeader   = "missing authorization header"
+	ErrMalformedAuthHeader = "malformed authorization header"
+	ErrVerifyAuthToken     = "could not verify access token"
+)
+
 func authenticationMiddleware(o op.OpenIDProvider) func(h http.Handler) http.Handler {
 	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(
 			func(w http.ResponseWriter, r *http.Request) {
-				f, _ := os.OpenFile("auth.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-				defer func(f *os.File) {
-					_ = f.Close()
-				}(f)
-
 				if !strings.HasPrefix(r.URL.String(), api.PathClients) &&
 					!strings.HasPrefix(r.URL.String(), api.PathScopes) {
-					_, _ = f.WriteString(fmt.Sprintf("OK: %s\n", r.URL))
 					h.ServeHTTP(w, r)
 					return
 				}
 
 				authHeader := r.Header.Get("authorization")
 				if authHeader == "" {
-					_, _ = f.WriteString(fmt.Sprintf("ERROR: missing authorization header: %s\n", r.URL))
-					h.ServeHTTP(w, r)
+					http.Error(w, ErrMissingAuthHeader, http.StatusUnauthorized)
 					return
 				}
 
 				if !strings.HasPrefix(strings.ToLower(authHeader), strings.ToLower(oidc.PrefixBearer)) {
-					_, _ = f.WriteString(fmt.Sprintf("ERROR: malformed authorization header: %s\n", r.URL))
-					h.ServeHTTP(w, r)
+					http.Error(w, ErrMalformedAuthHeader, http.StatusUnauthorized)
 					return
 				}
 
@@ -59,12 +56,11 @@ func authenticationMiddleware(o op.OpenIDProvider) func(h http.Handler) http.Han
 
 				claims, err := op.VerifyAccessToken(r.Context(), token, o.AccessTokenVerifier())
 				if err != nil {
-					_, _ = f.WriteString(fmt.Sprintf("ERROR: could not verify access token: %s: %s\n", r.URL, err))
-					h.ServeHTTP(w, r)
+					http.Error(w, ErrVerifyAuthToken, http.StatusUnauthorized)
 					return
 				}
 
-				_, _ = f.WriteString(fmt.Sprintf("CLAIMS: %s: %+v\n", r.URL, claims))
+				fmt.Printf("CLAIMS: %+v\n", claims)
 				h.ServeHTTP(w, r)
 			})
 	}
