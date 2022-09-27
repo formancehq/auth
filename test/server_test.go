@@ -42,13 +42,15 @@ func TestAuthServer(t *testing.T) {
 	delegatedIssuer := "http://localhost:5556/dex"
 	delegatedClientID := "gateway"
 	delegatedClientSecret := "ZXhhbXBsZS1hcHAtc2VjcmV0"
-	staticClientsOptions := cmd.ClientOptions{Clients: []auth.ClientOptions{{
-		Id:                     "test",
-		Public:                 true,
-		RedirectURIs:           []string{"http://localhost:3000/auth-callback"},
-		Name:                   "test",
-		PostLogoutRedirectUris: []string{"http://localhost:3000/"},
-		Trusted:                true,
+	cfg := cmd.Configuration{Clients: []auth.StaticClient{{
+		ClientOptions: auth.ClientOptions{
+			Id:                     "test",
+			Public:                 true,
+			RedirectURIs:           []string{"http://localhost:3000/auth-callback"},
+			Name:                   "test",
+			PostLogoutRedirectUris: []string{"http://localhost:3000/"},
+			Trusted:                true,
+		},
 	}},
 	}
 
@@ -63,7 +65,7 @@ func TestAuthServer(t *testing.T) {
 
 	serverApp := fxtest.New(t,
 		cmd.AuthServerModule(context.Background(), u, bindAddr, postgresUri,
-			key, staticClientsOptions,
+			key, cfg,
 			delegatedIssuer, delegatedClientID, delegatedClientSecret))
 
 	t.Run(fmt.Sprintf("start (%s)", bindAddr), func(t *testing.T) {
@@ -117,7 +119,7 @@ func TestAuthServer(t *testing.T) {
 		})
 	}
 
-	db, err := sqlstorage.LoadGorm(sqlstorage.OpenPostgresDatabase(postgresUri))
+	db, err := sqlstorage.LoadGorm(sqlstorage.OpenPostgresDatabase(postgresUri), true)
 	require.NoError(t, err)
 	storage := sqlstorage.New(db)
 
@@ -125,10 +127,8 @@ func TestAuthServer(t *testing.T) {
 		fmt.Sprintf("%s/authorize/callback", serverURL), []string{"openid", "email"})
 	require.NoError(t, err)
 
-	var staticClients []auth.Client
-	for _, c := range staticClientsOptions.Clients {
-		staticClients = append(staticClients, *auth.NewClient(c))
-	}
+	var staticClients []auth.StaticClient
+	staticClients = append(staticClients, cfg.Clients...)
 	storageFacade := authoidc.NewStorageFacade(storage, serverRelyingParty, key, staticClients...)
 
 	keySet, err := authoidc.ReadKeySet(context.Background(), delegatedauth.Config{
@@ -142,7 +142,7 @@ func TestAuthServer(t *testing.T) {
 	require.NoError(t, err)
 
 	ar := &oidc.AuthRequest{
-		ClientID: staticClientsOptions.Clients[0].Id,
+		ClientID: cfg.Clients[0].Id,
 	}
 	authReq, err := provider.Storage().CreateAuthRequest(context.Background(), ar, "")
 	require.NoError(t, err)

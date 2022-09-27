@@ -65,8 +65,8 @@ EL/wy5C80pa3jahniqVgO5L6zz0ZLtRIRE7aCtCIu826gctJ1+ShIso=
 `
 )
 
-type ClientOptions struct {
-	Clients []auth.ClientOptions `json:"clients" yaml:"clients"`
+type Configuration struct {
+	Clients []auth.StaticClient `json:"clients" yaml:"clients"`
 }
 
 var serveCmd = &cobra.Command{
@@ -121,7 +121,7 @@ var serveCmd = &cobra.Command{
 			}
 		}
 
-		o := ClientOptions{}
+		o := Configuration{}
 		if err := viper.Unmarshal(&o); err != nil {
 			return errors.Wrap(err, "unmarshal viper config")
 		}
@@ -143,7 +143,7 @@ var serveCmd = &cobra.Command{
 }
 
 func AuthServerModule(ctx context.Context, baseUrl *url.URL, bindAddr, postgresUri string,
-	key *rsa.PrivateKey, o ClientOptions,
+	key *rsa.PrivateKey, cfg Configuration,
 	delegatedIssuer, delegatedClientID, delegatedClientSecret string) fx.Option {
 	options := []fx.Option{
 		fx.Supply(fx.Annotate(ctx, fx.As(new(context.Context)))),
@@ -154,12 +154,12 @@ func AuthServerModule(ctx context.Context, baseUrl *url.URL, bindAddr, postgresU
 			RedirectURL:  fmt.Sprintf("%s/authorize/callback", baseUrl.String()),
 		}),
 		api.Module(bindAddr, baseUrl),
-		oidc.Module(key, baseUrl),
+		oidc.Module(key, baseUrl, cfg.Clients...),
 		accesscontrol.Module(),
 		fx.Invoke(func(router *mux.Router, healthController *sharedhealth.HealthController) {
 			router.Path("/_healthcheck").HandlerFunc(healthController.Check)
 		}),
-		sqlstorage.Module(postgresUri, key, o.Clients),
+		sqlstorage.Module(postgresUri, viper.GetBool(debugFlag), key, cfg.Clients),
 		delegatedauth.Module(),
 		fx.Invoke(func() {
 			sharedlogging.Infof("App started.")
