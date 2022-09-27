@@ -147,6 +147,12 @@ func AuthServerModule(ctx context.Context, baseUrl *url.URL, bindAddr, postgresU
 	delegatedIssuer, delegatedClientID, delegatedClientSecret string) fx.Option {
 	options := []fx.Option{
 		fx.Supply(fx.Annotate(ctx, fx.As(new(context.Context)))),
+		fx.Supply(delegatedauth.Config{
+			Issuer:       delegatedIssuer,
+			ClientID:     delegatedClientID,
+			ClientSecret: delegatedClientSecret,
+			RedirectURL:  fmt.Sprintf("%s/authorize/callback", baseUrl.String()),
+		}),
 		api.Module(bindAddr, baseUrl),
 		oidc.Module(key, baseUrl),
 		accesscontrol.Module(),
@@ -154,12 +160,7 @@ func AuthServerModule(ctx context.Context, baseUrl *url.URL, bindAddr, postgresU
 			router.Path("/_healthcheck").HandlerFunc(healthController.Check)
 		}),
 		sqlstorage.Module(postgresUri, key, o.Clients),
-		delegatedauth.Module(delegatedauth.Config{
-			Issuer:       delegatedIssuer,
-			ClientID:     delegatedClientID,
-			ClientSecret: delegatedClientSecret,
-			RedirectURL:  fmt.Sprintf("%s/authorize/callback", baseUrl),
-		}),
+		delegatedauth.Module(),
 		fx.Invoke(func() {
 			sharedlogging.Infof("App started.")
 		}),

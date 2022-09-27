@@ -15,6 +15,7 @@ import (
 	"github.com/formancehq/auth/cmd"
 	auth "github.com/formancehq/auth/pkg"
 	"github.com/formancehq/auth/pkg/api/accesscontrol"
+	"github.com/formancehq/auth/pkg/delegatedauth"
 	authoidc "github.com/formancehq/auth/pkg/oidc"
 	"github.com/formancehq/auth/pkg/storage/sqlstorage"
 	"github.com/stretchr/testify/require"
@@ -129,7 +130,15 @@ func TestAuthServer(t *testing.T) {
 		staticClients = append(staticClients, *auth.NewClient(c))
 	}
 	storageFacade := authoidc.NewStorageFacade(storage, serverRelyingParty, key, staticClients...)
-	provider, err := authoidc.NewOpenIDProvider(context.TODO(), storageFacade, serverURL)
+
+	keySet, err := authoidc.ReadKeySet(context.Background(), delegatedauth.Config{
+		Issuer:       delegatedIssuer,
+		ClientID:     delegatedClientID,
+		ClientSecret: delegatedClientSecret,
+	})
+	require.NoError(t, err)
+
+	provider, err := authoidc.NewOpenIDProvider(context.TODO(), storageFacade, serverURL, delegatedIssuer, *keySet)
 	require.NoError(t, err)
 
 	ar := &oidc.AuthRequest{
