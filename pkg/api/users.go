@@ -8,13 +8,9 @@ import (
 	"gorm.io/gorm"
 )
 
-const (
-	PathUsers = "/users"
-)
-
 func addUserRoutes(db *gorm.DB, router *mux.Router) {
-	router.Path(PathUsers).Methods(http.MethodGet).HandlerFunc(listUsers(db))
-	router.Path(PathUsers + "/{userId}").Methods(http.MethodGet).HandlerFunc(readUser(db))
+	router.Path("/users").Methods(http.MethodGet).HandlerFunc(listUsers(db))
+	router.Path("/users/{userId}").Methods(http.MethodGet).HandlerFunc(readUser(db))
 }
 
 func listUsers(db *gorm.DB) http.HandlerFunc {

@@ -142,7 +142,8 @@ var serveCmd = &cobra.Command{
 	},
 }
 
-func AuthServerModule(ctx context.Context, baseUrl *url.URL, bindAddr, postgresUri string, key *rsa.PrivateKey, o ClientOptions,
+func AuthServerModule(ctx context.Context, baseUrl *url.URL, bindAddr, postgresUri string,
+	key *rsa.PrivateKey, o ClientOptions,
 	delegatedIssuer, delegatedClientID, delegatedClientSecret string) fx.Option {
 	options := []fx.Option{
 		fx.Supply(fx.Annotate(ctx, fx.As(new(context.Context)))),

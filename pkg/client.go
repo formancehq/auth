@@ -126,11 +126,11 @@ func (c *Client) HasScope(id string) bool {
 type ClientOptions struct {
 	ID                     string   `json:"id" yaml:"id"`
 	Public                 bool     `json:"public" yaml:"public"`
-	RedirectUris           []string `json:"redirectUris" yaml:"redirectUris"`
+	RedirectUris           []string `json:"redirectUris,omitempty" yaml:"redirectUris"`
 	Description            string   `json:"description" yaml:"description"`
 	Name                   string   `json:"name" yaml:"name"`
-	PostLogoutRedirectUris []string `json:"postLogoutRedirectUris" yaml:"postLogoutRedirectUris"`
-	Metadata               Metadata `json:"metadata" yaml:"metadata"`
+	PostLogoutRedirectUris []string `json:"postLogoutRedirectUris,omitempty" yaml:"postLogoutRedirectUris"`
+	Metadata               Metadata `json:"metadata,omitempty" yaml:"metadata"`
 	Trusted                bool     `json:"trusted" yaml:"trusted"`
 }
 
