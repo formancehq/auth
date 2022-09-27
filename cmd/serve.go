@@ -6,6 +6,7 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
+	"net/url"
 
 	auth "github.com/formancehq/auth/pkg"
 	"github.com/formancehq/auth/pkg/api"
@@ -74,9 +75,13 @@ var serveCmd = &cobra.Command{
 		return bindFlagsToViper(cmd)
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		baseUrl := viper.GetString(baseUrlFlag)
-		if baseUrl == "" {
+		if viper.GetString(baseUrlFlag) == "" {
 			return errors.New("base url must be defined")
+		}
+
+		baseUrl, err := url.Parse(viper.GetString(baseUrlFlag))
+		if err != nil {
+			return errors.Wrap(err, "parsing base url")
 		}
 
 		delegatedClientID := viper.GetString(delegatedClientIDFlag)
@@ -126,22 +131,23 @@ var serveCmd = &cobra.Command{
 				viper.GetString(httpBindAddressFlag),
 				viper.GetString(postgresUriFlag), key, o,
 				delegatedIssuer, delegatedClientID, delegatedClientSecret))
-		err = app.Start(cmd.Context())
-		if err != nil {
+
+		if err := app.Start(cmd.Context()); err != nil {
 			return err
 		}
+
 		<-app.Done()
 
 		return app.Err()
 	},
 }
 
-func AuthServerModule(ctx context.Context, baseUrl, bindAddr, postgresUri string, key *rsa.PrivateKey, o ClientOptions,
+func AuthServerModule(ctx context.Context, baseUrl *url.URL, bindAddr, postgresUri string, key *rsa.PrivateKey, o ClientOptions,
 	delegatedIssuer, delegatedClientID, delegatedClientSecret string) fx.Option {
 	options := []fx.Option{
 		fx.Supply(fx.Annotate(ctx, fx.As(new(context.Context)))),
-		oidc.Module(bindAddr, baseUrl, key),
-		api.Module(),
+		api.Module(bindAddr, baseUrl),
+		oidc.Module(key, baseUrl),
 		accesscontrol.Module(),
 		fx.Invoke(func(router *mux.Router, healthController *sharedhealth.HealthController) {
 			router.Path("/_healthcheck").HandlerFunc(healthController.Check)

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -38,6 +39,7 @@ func request(t *testing.T, method, url string, body []any, expectedCode int) io.
 		req, err = http.NewRequestWithContext(context.Background(), method, url, nil)
 	}
 	require.NoError(t, err)
+	fmt.Printf("REQ:%+v\n", req)
 	resp, err := httpClient.Do(req)
 	require.NoError(t, err)
 	require.Equal(t, expectedCode, resp.StatusCode)

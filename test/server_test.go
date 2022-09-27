@@ -6,6 +6,7 @@ import (
 	"encoding/pem"
 	"io"
 	"net/http"
+	"net/url"
 	"testing"
 
 	"github.com/formancehq/auth/cmd"
@@ -23,8 +24,11 @@ func TestAuthServer(t *testing.T) {
 	key, err := x509.ParsePKCS1PrivateKey(block.Bytes)
 	require.NoError(t, err)
 
+	u, err := url.Parse(serverBaseURL)
+	require.NoError(t, err)
+
 	serverApp := fxtest.New(t,
-		cmd.AuthServerModule(context.Background(), serverBaseURL, ":8888",
+		cmd.AuthServerModule(context.Background(), u, ":8888",
 			"host=localhost user=auth password=auth dbname=auth port=5432 sslmode=disable",
 			key, cmd.ClientOptions{},
 			"http://localhost:5556/dex",
