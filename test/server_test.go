@@ -18,6 +18,14 @@ import (
 )
 
 func TestAuthServer(t *testing.T) {
+	httpClient := http.DefaultClient
+	serverBaseURL := "http://localhost:8888"
+	bindAddr := ":8888"
+	postgresUri := "host=localhost user=auth password=auth dbname=auth port=5432 sslmode=disable"
+	delegatedIssuer := "http://localhost:5556/dex"
+	delegatedClientID := "gateway"
+	delegatedClientSecret := "ZXhhbXBsZS1hcHAtc2VjcmV0"
+
 	block, _ := pem.Decode([]byte(cmd.DefaultSigningKey))
 	require.NotNil(t, block)
 
@@ -28,19 +36,20 @@ func TestAuthServer(t *testing.T) {
 	require.NoError(t, err)
 
 	serverApp := fxtest.New(t,
-		cmd.AuthServerModule(context.Background(), u, ":8888",
-			"host=localhost user=auth password=auth dbname=auth port=5432 sslmode=disable",
+		cmd.AuthServerModule(context.Background(), u, bindAddr, postgresUri,
 			key, cmd.ClientOptions{},
-			"http://localhost:5556/dex",
-			"gateway",
-			"ZXhhbXBsZS1hcHAtc2VjcmV0"))
+			delegatedIssuer, delegatedClientID, delegatedClientSecret))
 
 	t.Run("start", func(t *testing.T) {
 		serverApp.RequireStart()
 	})
 
 	t.Run("health check", func(t *testing.T) {
-		requestServer(t, http.MethodGet, "/_healthcheck", http.StatusOK)
+		req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, serverBaseURL+"/_healthcheck", nil)
+		require.NoError(t, err)
+		resp, err := httpClient.Do(req)
+		require.NoError(t, err)
+		require.Equal(t, http.StatusOK, resp.StatusCode)
 	})
 
 	t.Run("request without authorization header", func(t *testing.T) {

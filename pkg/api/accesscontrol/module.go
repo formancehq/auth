@@ -47,12 +47,14 @@ func authenticationMiddleware(o op.OpenIDProvider) func(h http.Handler) http.Han
 					return
 				}
 
-				if !strings.HasPrefix(strings.ToLower(authHeader), strings.ToLower(oidc.PrefixBearer)) {
+				authHeader = strings.ToLower(authHeader)
+
+				if !strings.HasPrefix(authHeader, strings.ToLower(oidc.PrefixBearer)) {
 					http.Error(w, ErrMalformedAuthHeader, http.StatusUnauthorized)
 					return
 				}
 
-				token := strings.TrimPrefix(authHeader, oidc.PrefixBearer)
+				token := strings.TrimPrefix(authHeader, strings.ToLower(oidc.PrefixBearer))
 
 				claims, err := op.VerifyAccessToken(r.Context(), token, o.AccessTokenVerifier())
 				if err != nil {
