@@ -176,8 +176,8 @@ func TestAuthServer(t *testing.T) {
 		by, err := httputil.DumpResponse(resp, true)
 		require.NoError(t, err)
 		fmt.Printf("RESP:%s\n", string(by))
-		cur := decodeCursorResponse[api.ClientView](t, resp.Body)
-		require.True(t, len(cur.Data) == 1)
+		data := decodeResponse[[]api.ClientView](t, resp.Body)
+		require.True(t, len(*data) == 1)
 	})
 
 	t.Run("stop", func(t *testing.T) {
@@ -191,9 +191,9 @@ func buffer(t *testing.T, v any) *bytes.Buffer {
 	return bytes.NewBuffer(data)
 }
 
-func decodeCursorResponse[T any](t *testing.T, reader io.Reader) *sharedapi.Cursor[T] {
+func decodeResponse[T any](t *testing.T, reader io.Reader) *T {
 	res := sharedapi.BaseResponse[T]{}
 	err := json.NewDecoder(reader).Decode(&res)
 	require.NoError(t, err)
-	return res.Cursor
+	return res.Data
 }
