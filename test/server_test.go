@@ -43,9 +43,9 @@ func TestAuthServer(t *testing.T) {
 	delegatedClientID := "gateway"
 	delegatedClientSecret := "ZXhhbXBsZS1hcHAtc2VjcmV0"
 	staticClientsOptions := cmd.ClientOptions{Clients: []auth.ClientOptions{{
-		ID:                     "test",
+		Id:                     "test",
 		Public:                 true,
-		RedirectUris:           []string{"http://localhost:3000/auth-callback"},
+		RedirectURIs:           []string{"http://localhost:3000/auth-callback"},
 		Name:                   "test",
 		PostLogoutRedirectUris: []string{"http://localhost:3000/"},
 		Trusted:                true,
@@ -142,7 +142,7 @@ func TestAuthServer(t *testing.T) {
 	require.NoError(t, err)
 
 	ar := &oidc.AuthRequest{
-		ClientID: staticClientsOptions.Clients[0].ID,
+		ClientID: staticClientsOptions.Clients[0].Id,
 	}
 	authReq, err := provider.Storage().CreateAuthRequest(context.Background(), ar, "")
 	require.NoError(t, err)
