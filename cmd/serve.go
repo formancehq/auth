@@ -25,7 +25,6 @@ import (
 )
 
 const (
-	httpBindAddressFlag       = "http-bind-address"
 	postgresUriFlag           = "postgres-uri"
 	delegatedClientIDFlag     = "delegated-client-id"
 	delegatedClientSecretFlag = "delegated-client-secret"
@@ -34,7 +33,7 @@ const (
 	signingKeyFlag            = "signing-key"
 	configFlag                = "config"
 
-	DefaultSigningKey = `
+	defaultSigningKey = `
 -----BEGIN RSA PRIVATE KEY-----
 MIIEpQIBAAKCAQEAth3atoCXldJgHH9EWnZQMvw5O+vVNKMcvrllEGQsLxvIA5xy
 YPnFt2xU7k1dcN5ViBqPiigVHZNeyyHcdVclg26zqjEwYUqH+OPiRFeBn0SwOG+d
@@ -121,21 +120,45 @@ var serveCmd = &cobra.Command{
 			}
 		}
 
-		o := Configuration{}
+		type configuration struct {
+			Clients []auth.StaticClient `json:"clients" yaml:"clients"`
+		}
+		o := configuration{}
 		if err := viper.Unmarshal(&o); err != nil {
 			return errors.Wrap(err, "unmarshal viper config")
 		}
 
-		app := fx.New(
-			AuthServerModule(cmd.Context(), baseUrl,
-				viper.GetString(httpBindAddressFlag),
-				viper.GetString(postgresUriFlag), key, o,
-				delegatedIssuer, delegatedClientID, delegatedClientSecret))
-
-		if err := app.Start(cmd.Context()); err != nil {
-			return err
+		options := []fx.Option{
+			fx.Supply(fx.Annotate(cmd.Context(), fx.As(new(context.Context)))),
+			fx.Supply(delegatedauth.Config{
+				Issuer:       delegatedIssuer,
+				ClientID:     delegatedClientID,
+				ClientSecret: delegatedClientSecret,
+				RedirectURL:  fmt.Sprintf("%s/authorize/callback", baseUrl.String()),
+			}),
+			api.Module(":8080", baseUrl),
+			oidc.Module(key, baseUrl, o.Clients...),
+			authorization.Module(),
+			fx.Invoke(func(router *mux.Router, healthController *sharedhealth.HealthController) {
+				router.Path("/_healthcheck").HandlerFunc(healthController.Check)
+			}),
+			sqlstorage.Module(viper.GetString(postgresUriFlag), viper.GetBool(debugFlag), key, o.Clients),
+			delegatedauth.Module(),
+			fx.Invoke(func() {
+				sharedlogging.Infof("App started.")
+			}),
+			fx.NopLogger,
 		}
 
+		if tm := sharedotlptraces.CLITracesModule(viper.GetViper()); tm != nil {
+			options = append(options, tm)
+		}
+
+		app := fx.New(options...)
+		err = app.Start(cmd.Context())
+		if err != nil {
+			return err
+		}
 		<-app.Done()
 
 		return app.Err()
@@ -176,13 +199,12 @@ func AuthServerModule(ctx context.Context, baseUrl *url.URL, bindAddr, postgresU
 
 func init() {
 	rootCmd.AddCommand(serveCmd)
-	serveCmd.Flags().String(httpBindAddressFlag, ":8080", "Server HTTP bind address")
 	serveCmd.Flags().String(postgresUriFlag, "", "Postgres uri")
 	serveCmd.Flags().String(delegatedIssuerFlag, "", "Delegated OIDC issuer")
 	serveCmd.Flags().String(delegatedClientIDFlag, "", "Delegated OIDC client id")
 	serveCmd.Flags().String(delegatedClientSecretFlag, "", "Delegated OIDC client secret")
 	serveCmd.Flags().String(baseUrlFlag, "http://localhost:8080", "Base service url")
-	serveCmd.Flags().String(signingKeyFlag, DefaultSigningKey, "Signing key")
+	serveCmd.Flags().String(signingKeyFlag, defaultSigningKey, "Signing key")
 
 	serveCmd.Flags().String(configFlag, "config", "Config file name without extension")
 
