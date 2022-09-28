@@ -1,26 +1,22 @@
 package test_test
 
 import (
-	"bytes"
 	"context"
 	"crypto/x509"
-	"encoding/json"
 	"encoding/pem"
 	"fmt"
 	"io"
 	"net"
 	"net/http"
-	"net/http/httputil"
 	"net/url"
+	"os"
 	"testing"
 
 	"github.com/formancehq/auth/cmd"
 	auth "github.com/formancehq/auth/pkg"
-	"github.com/formancehq/auth/pkg/api"
 	"github.com/formancehq/auth/pkg/api/accesscontrol"
 	authoidc "github.com/formancehq/auth/pkg/oidc"
 	"github.com/formancehq/auth/pkg/storage/sqlstorage"
-	"github.com/numary/go-libs/sharedapi"
 	"github.com/stretchr/testify/require"
 	"github.com/zitadel/oidc/pkg/client/rp"
 	"github.com/zitadel/oidc/pkg/oidc"
@@ -29,6 +25,9 @@ import (
 )
 
 func TestAuthServer(t *testing.T) {
+	if short := os.Getenv("SHORT"); short != "false" {
+		t.Skip()
+	}
 	httpClient := http.DefaultClient
 
 	// Prepare a tcp connection, listening on :0 to select a random port
@@ -156,44 +155,7 @@ func TestAuthServer(t *testing.T) {
 		})
 	}
 
-	t.Run("POST /clients", func(t *testing.T) {
-		c := auth.ClientOptions{}
-		req, err := http.NewRequestWithContext(context.Background(), http.MethodPost, serverURL+"/clients", buffer(t, c))
-		req.Header.Set("Authorization", oidc.PrefixBearer+tokenResponse.IDToken)
-		require.NoError(t, err)
-		resp, err := httpClient.Do(req)
-		require.NoError(t, err)
-		require.Equal(t, http.StatusCreated, resp.StatusCode)
-	})
-
-	t.Run("GET /clients", func(t *testing.T) {
-		req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, serverURL+"/clients", nil)
-		req.Header.Set("Authorization", oidc.PrefixBearer+tokenResponse.IDToken)
-		require.NoError(t, err)
-		resp, err := httpClient.Do(req)
-		require.NoError(t, err)
-		require.Equal(t, http.StatusOK, resp.StatusCode)
-		by, err := httputil.DumpResponse(resp, true)
-		require.NoError(t, err)
-		fmt.Printf("RESP:%s\n", string(by))
-		data := decodeResponse[[]api.ClientView](t, resp.Body)
-		require.True(t, len(*data) == 1)
-	})
-
 	t.Run("stop", func(t *testing.T) {
 		serverApp.RequireStop()
 	})
-}
-
-func buffer(t *testing.T, v any) *bytes.Buffer {
-	data, err := json.Marshal(v)
-	require.NoError(t, err)
-	return bytes.NewBuffer(data)
-}
-
-func decodeResponse[T any](t *testing.T, reader io.Reader) *T {
-	res := sharedapi.BaseResponse[T]{}
-	err := json.NewDecoder(reader).Decode(&res)
-	require.NoError(t, err)
-	return res.Data
 }

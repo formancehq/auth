@@ -11,6 +11,7 @@ vars:
 
 env:
   CAOS_OIDC_DEV: true
+  SHORT: false
 
 tasks:
   default:
