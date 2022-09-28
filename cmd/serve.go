@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"context"
-	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
@@ -63,10 +62,6 @@ EL/wy5C80pa3jahniqVgO5L6zz0ZLtRIRE7aCtCIu826gctJ1+ShIso=
 -----END RSA PRIVATE KEY-----
 `
 )
-
-type Configuration struct {
-	Clients []auth.StaticClient `json:"clients" yaml:"clients"`
-}
 
 var serveCmd = &cobra.Command{
 	Use: "serve",
@@ -163,38 +158,6 @@ var serveCmd = &cobra.Command{
 
 		return app.Err()
 	},
-}
-
-func AuthServerModule(ctx context.Context, baseUrl *url.URL, bindAddr, postgresUri string,
-	key *rsa.PrivateKey, cfg Configuration,
-	delegatedIssuer, delegatedClientID, delegatedClientSecret string) fx.Option {
-	options := []fx.Option{
-		fx.Supply(fx.Annotate(ctx, fx.As(new(context.Context)))),
-		fx.Supply(delegatedauth.Config{
-			Issuer:       delegatedIssuer,
-			ClientID:     delegatedClientID,
-			ClientSecret: delegatedClientSecret,
-			RedirectURL:  fmt.Sprintf("%s/authorize/callback", baseUrl.String()),
-		}),
-		api.Module(bindAddr, baseUrl),
-		oidc.Module(key, baseUrl, cfg.Clients...),
-		authorization.Module(),
-		fx.Invoke(func(router *mux.Router, healthController *sharedhealth.HealthController) {
-			router.Path("/_healthcheck").HandlerFunc(healthController.Check)
-		}),
-		sqlstorage.Module(postgresUri, viper.GetBool(debugFlag), key, cfg.Clients),
-		delegatedauth.Module(),
-		fx.Invoke(func() {
-			sharedlogging.Infof("App started.")
-		}),
-		fx.NopLogger,
-	}
-
-	if tm := sharedotlptraces.CLITracesModule(viper.GetViper()); tm != nil {
-		options = append(options, tm)
-	}
-
-	return fx.Options(options...)
 }
 
 func init() {
