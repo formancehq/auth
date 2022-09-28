@@ -10,7 +10,7 @@ import (
 
 	auth "github.com/formancehq/auth/pkg"
 	"github.com/formancehq/auth/pkg/api"
-	"github.com/formancehq/auth/pkg/api/accesscontrol"
+	"github.com/formancehq/auth/pkg/api/authorization"
 	"github.com/formancehq/auth/pkg/delegatedauth"
 	"github.com/formancehq/auth/pkg/oidc"
 	"github.com/formancehq/auth/pkg/storage/sqlstorage"
@@ -155,7 +155,7 @@ func AuthServerModule(ctx context.Context, baseUrl *url.URL, bindAddr, postgresU
 		}),
 		api.Module(bindAddr, baseUrl),
 		oidc.Module(key, baseUrl, cfg.Clients...),
-		accesscontrol.Module(),
+		authorization.Module(),
 		fx.Invoke(func(router *mux.Router, healthController *sharedhealth.HealthController) {
 			router.Path("/_healthcheck").HandlerFunc(healthController.Check)
 		}),

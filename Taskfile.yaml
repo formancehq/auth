@@ -11,7 +11,6 @@ vars:
 
 env:
   CAOS_OIDC_DEV: true
-  SHORT: false
 
 tasks:
   default:
@@ -25,7 +24,6 @@ tasks:
 
   tests:local:
     cmds:
-      - task: docker
       - >
         go test -v {{.FAILFAST}} -race -coverpkg {{.PKG}} -coverprofile coverage.out
         -run {{.RUN}} -timeout {{.TIMEOUT}} {{.PKG}} |
@@ -36,7 +34,6 @@ tasks:
 
   tests:
     cmds:
-      - task: docker
       - go test -race -coverpkg {{.PKG}} -coverprofile coverage.out {{.PKG}}
 
   coverage:
@@ -81,13 +78,3 @@ tasks:
   install-deps-demo-client:
     cmds:
       - cd demo && yarn install
-
-  docker:
-    cmds:
-      - docker compose up -d postgres dex
-
-  clean:
-    cmds:
-      - docker compose down
-      - docker rm -f $(docker ps -a -q) 2> /dev/null || exit 0
-      - docker volume rm $(docker volume ls -q) 2> /dev/null || exit 0
