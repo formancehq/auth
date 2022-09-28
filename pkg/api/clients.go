@@ -26,15 +26,15 @@ type clientSecretView struct {
 	Hash string `json:"-"`
 }
 
-type ClientView struct {
+type clientView struct {
 	auth.ClientOptions
 	ID      string                       `json:"id"`
 	Scopes  []string                     `json:"scopes"`
 	Secrets auth.Array[clientSecretView] `json:"secrets" gorm:"type:text"`
 }
 
-func mapBusinessClient(c auth.Client) ClientView {
-	return ClientView{
+func mapBusinessClient(c auth.Client) clientView {
+	return clientView{
 		ClientOptions: auth.ClientOptions{
 			Public:                 c.Public,
 			RedirectURIs:           c.RedirectURIs,
