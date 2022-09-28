@@ -5,7 +5,6 @@ import (
 	"context"
 	"crypto/rand"
 	"crypto/rsa"
-	"flag"
 	"fmt"
 	"io"
 	"net"
@@ -32,21 +31,11 @@ import (
 	"gorm.io/driver/sqlite"
 )
 
-var verbose bool
-
 func init() {
 	os.Setenv(op.OidcDevMode, "true")
 }
 
 func withServer(t *testing.T, fn func(m *mockoidc.MockOIDC, storage *sqlstorage.Storage, provider op.OpenIDProvider)) {
-	verbose = false
-	f := flag.Lookup("test.v")
-	if f != nil {
-		if f.Value.String() == "true" {
-			verbose = true
-		}
-	}
-
 	// Create a mock OIDC server which will always return a default user
 	mockOIDC, err := mockoidc.Run()
 	require.NoError(t, err)
@@ -134,7 +123,7 @@ func Test3LeggedFlow(t *testing.T) {
 
 		// Trigger an authentication request
 		authUrl := rp.AuthURL("", clientRelyingParty)
-		if verbose {
+		if testing.Verbose() {
 			fmt.Printf("URL:%s\n", authUrl)
 		}
 		rsp, err := (&http.Client{
@@ -181,7 +170,7 @@ func (r RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	if err != nil {
 		return nil, err
 	}
-	if verbose {
+	if testing.Verbose() {
 		fmt.Printf("REQ:%s\n", string(by))
 	}
 	resp, err := r.RoundTripper.RoundTrip(req)
@@ -192,7 +181,7 @@ func (r RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	if err != nil {
 		return nil, err
 	}
-	if verbose {
+	if testing.Verbose() {
 		fmt.Printf("RESP:%s\n", string(by))
 	}
 	return resp, err
