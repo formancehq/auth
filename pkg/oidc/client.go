@@ -3,10 +3,10 @@ package oidc
 import (
 	"time"
 
-	"github.com/formancehq/auth/pkg/delegatedauth"
 	"github.com/zitadel/oidc/pkg/client/rp"
 	"github.com/zitadel/oidc/pkg/oidc"
 	"github.com/zitadel/oidc/pkg/op"
+	"go.formance.com/auth/pkg/delegatedauth"
 )
 
 type Client interface {

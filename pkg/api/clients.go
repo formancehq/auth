@@ -3,9 +3,9 @@ package api
 import (
 	"net/http"
 
-	auth "github.com/formancehq/auth/pkg"
 	"github.com/gorilla/mux"
 	_ "github.com/numary/go-libs/sharedapi"
+	auth "go.formance.com/auth/pkg"
 	"gorm.io/gorm"
 )
 

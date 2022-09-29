@@ -17,10 +17,6 @@ import (
 	"time"
 
 	"github.com/davecgh/go-spew/spew"
-	auth "github.com/formancehq/auth/pkg"
-	"github.com/formancehq/auth/pkg/delegatedauth"
-	"github.com/formancehq/auth/pkg/oidc"
-	"github.com/formancehq/auth/pkg/storage/sqlstorage"
 	"github.com/golang-jwt/jwt"
 	"github.com/gorilla/mux"
 	"github.com/oauth2-proxy/mockoidc"
@@ -28,6 +24,10 @@ import (
 	"github.com/zitadel/oidc/pkg/client/rp"
 	"github.com/zitadel/oidc/pkg/client/rs"
 	"github.com/zitadel/oidc/pkg/op"
+	auth "go.formance.com/auth/pkg"
+	"go.formance.com/auth/pkg/delegatedauth"
+	"go.formance.com/auth/pkg/oidc"
+	"go.formance.com/auth/pkg/storage/sqlstorage"
 	"gorm.io/driver/sqlite"
 )
 

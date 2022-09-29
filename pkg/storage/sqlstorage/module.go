@@ -3,10 +3,10 @@ package sqlstorage
 import (
 	"crypto/rsa"
 
-	auth "github.com/formancehq/auth/pkg"
-	"github.com/formancehq/auth/pkg/oidc"
 	sharedhealth "github.com/numary/go-libs/sharedhealth/pkg"
 	"github.com/zitadel/oidc/pkg/op"
+	auth "go.formance.com/auth/pkg"
+	"go.formance.com/auth/pkg/oidc"
 	"go.uber.org/fx"
 )
 

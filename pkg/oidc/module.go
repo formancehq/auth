@@ -5,11 +5,11 @@ import (
 	"crypto/rsa"
 	"net/url"
 
-	auth "github.com/formancehq/auth/pkg"
-	"github.com/formancehq/auth/pkg/delegatedauth"
 	"github.com/gorilla/mux"
 	"github.com/zitadel/oidc/pkg/client/rp"
 	"github.com/zitadel/oidc/pkg/op"
+	auth "go.formance.com/auth/pkg"
+	"go.formance.com/auth/pkg/delegatedauth"
 	"go.uber.org/fx"
 )
 

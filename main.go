@@ -1,7 +1,7 @@
 //go:generate task generate-client
 package main
 
-import "github.com/formancehq/auth/cmd"
+import "go.formance.com/auth/cmd"
 
 func main() {
 	cmd.Execute()

@@ -7,8 +7,8 @@ import (
 	"os"
 	"time"
 
-	auth "github.com/formancehq/auth/pkg"
 	"github.com/numary/go-libs/sharedlogging"
+	auth "go.formance.com/auth/pkg"
 	"go.uber.org/fx"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"

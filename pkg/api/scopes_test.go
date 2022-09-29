@@ -6,10 +6,10 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	auth "github.com/formancehq/auth/pkg"
-	"github.com/formancehq/auth/pkg/storage/sqlstorage"
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/require"
+	auth "go.formance.com/auth/pkg"
+	"go.formance.com/auth/pkg/storage/sqlstorage"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )

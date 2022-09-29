@@ -4,11 +4,11 @@ import (
 	"context"
 	"net/http"
 
-	auth "github.com/formancehq/auth/pkg"
-	"github.com/formancehq/auth/pkg/delegatedauth"
 	"github.com/google/uuid"
 	"github.com/zitadel/oidc/pkg/client/rp"
 	"github.com/zitadel/oidc/pkg/op"
+	auth "go.formance.com/auth/pkg"
+	"go.formance.com/auth/pkg/delegatedauth"
 )
 
 func authorizeCallbackHandler(

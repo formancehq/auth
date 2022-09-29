@@ -7,12 +7,12 @@ import (
 	"fmt"
 	"time"
 
-	auth "github.com/formancehq/auth/pkg"
-	"github.com/formancehq/auth/pkg/storage"
 	"github.com/google/uuid"
 	"github.com/zitadel/oidc/pkg/client/rp"
 	"github.com/zitadel/oidc/pkg/oidc"
 	"github.com/zitadel/oidc/pkg/op"
+	auth "go.formance.com/auth/pkg"
+	"go.formance.com/auth/pkg/storage"
 	"golang.org/x/text/language"
 	"gopkg.in/square/go-jose.v2"
 )

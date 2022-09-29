@@ -7,12 +7,6 @@ import (
 	"fmt"
 	"net/url"
 
-	auth "github.com/formancehq/auth/pkg"
-	"github.com/formancehq/auth/pkg/api"
-	"github.com/formancehq/auth/pkg/api/authorization"
-	"github.com/formancehq/auth/pkg/delegatedauth"
-	"github.com/formancehq/auth/pkg/oidc"
-	"github.com/formancehq/auth/pkg/storage/sqlstorage"
 	"github.com/gorilla/mux"
 	sharedhealth "github.com/numary/go-libs/sharedhealth/pkg"
 	"github.com/numary/go-libs/sharedlogging"
@@ -20,6 +14,12 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	auth "go.formance.com/auth/pkg"
+	"go.formance.com/auth/pkg/api"
+	"go.formance.com/auth/pkg/api/authorization"
+	"go.formance.com/auth/pkg/delegatedauth"
+	"go.formance.com/auth/pkg/oidc"
+	"go.formance.com/auth/pkg/storage/sqlstorage"
 	"go.uber.org/fx"
 )
 

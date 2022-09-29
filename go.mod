@@ -1,4 +1,4 @@
-module github.com/formancehq/auth
+module go.formance.com/auth
 
 go 1.18
 

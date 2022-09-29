@@ -1,4 +1,4 @@
-module github.com/formancehq/auth/authclient
+module go.formance.com/auth/authclient
 
 go 1.13
 

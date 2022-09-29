@@ -22,7 +22,7 @@ go get golang.org/x/net/context
 Put the package under your project folder and add the following in import:
 
 ```golang
-import authclient "github.com/formancehq/auth/authclient"
+import authclient "go.formance.com/auth/authclient"
 ```
 
 To use a proxy, set the environment variable `HTTP_PROXY`:
@@ -143,6 +143,3 @@ Each of these functions takes a value of the given basic type and returns a poin
 * `PtrTime`
 
 ## Author
-
-
-

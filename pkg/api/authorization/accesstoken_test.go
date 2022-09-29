@@ -10,15 +10,15 @@ import (
 	"os"
 	"testing"
 
-	auth "github.com/formancehq/auth/pkg"
-	"github.com/formancehq/auth/pkg/delegatedauth"
-	authoidc "github.com/formancehq/auth/pkg/oidc"
-	"github.com/formancehq/auth/pkg/storage/sqlstorage"
 	"github.com/oauth2-proxy/mockoidc"
 	"github.com/stretchr/testify/require"
 	"github.com/zitadel/oidc/pkg/client/rp"
 	"github.com/zitadel/oidc/pkg/oidc"
 	"github.com/zitadel/oidc/pkg/op"
+	auth "go.formance.com/auth/pkg"
+	"go.formance.com/auth/pkg/delegatedauth"
+	authoidc "go.formance.com/auth/pkg/oidc"
+	"go.formance.com/auth/pkg/storage/sqlstorage"
 	"gorm.io/driver/sqlite"
 )
 

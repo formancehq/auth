@@ -3,8 +3,8 @@ package api
 import (
 	"net/http"
 
-	auth "github.com/formancehq/auth/pkg"
 	"github.com/gorilla/mux"
+	auth "go.formance.com/auth/pkg"
 	"gorm.io/gorm"
 )
 
