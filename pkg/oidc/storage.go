@@ -14,7 +14,6 @@ import (
 	"github.com/zitadel/oidc/pkg/oidc"
 	"github.com/zitadel/oidc/pkg/op"
 	"golang.org/x/text/language"
-	"gopkg.in/square/go-jose.v2"
 )
 
 type Storage interface {
@@ -433,7 +432,7 @@ func (s *storageFacade) saveAccessToken(ctx context.Context, refreshToken *auth.
 		ApplicationID: applicationId,
 		UserID:        subject,
 		Audience:      audience,
-		Expiration:    time.Now().Add(5 * time.Minute),
+		Expiration:    time.Now().Add(1 * time.Minute),
 		Scopes:        scopes,
 		RefreshTokenID: func() string {
 			if refreshToken == nil {
