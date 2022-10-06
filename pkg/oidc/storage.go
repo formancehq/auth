@@ -14,6 +14,7 @@ import (
 	"github.com/zitadel/oidc/pkg/oidc"
 	"github.com/zitadel/oidc/pkg/op"
 	"golang.org/x/text/language"
+	"gopkg.in/square/go-jose.v2"
 )
 
 type Storage interface {
