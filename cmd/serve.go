@@ -152,7 +152,7 @@ var serveCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(serveCmd)
+	NewRootCommand().AddCommand(serveCmd)
 	serveCmd.Flags().String(postgresUriFlag, "", "Postgres uri")
 	serveCmd.Flags().String(delegatedIssuerFlag, "", "Delegated OIDC issuer")
 	serveCmd.Flags().String(delegatedClientIDFlag, "", "Delegated OIDC client id")

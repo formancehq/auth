@@ -21,23 +21,34 @@ const (
 	debugFlag = "debug"
 )
 
-var rootCmd = &cobra.Command{
-	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+func NewRootCommand() *cobra.Command {
+	root := &cobra.Command{
+		Use: "auth",
+		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 
-		if err := bindFlagsToViper(cmd); err != nil {
-			return err
-		}
+			if err := bindFlagsToViper(cmd); err != nil {
+				return err
+			}
 
-		logrusLogger := logrus.New()
-		if viper.GetBool(debugFlag) {
-			logrusLogger.SetLevel(logrus.DebugLevel)
-			logrusLogger.Infof("Debug mode enabled.")
-		}
-		logger := sharedlogginglogrus.New(logrusLogger)
-		sharedlogging.SetFactory(sharedlogging.StaticLoggerFactory(logger))
+			logrusLogger := logrus.New()
+			if viper.GetBool(debugFlag) {
+				logrusLogger.SetLevel(logrus.DebugLevel)
+				logrusLogger.Infof("Debug mode enabled.")
+			}
+			logger := sharedlogginglogrus.New(logrusLogger)
+			sharedlogging.SetFactory(sharedlogging.StaticLoggerFactory(logger))
 
-		return nil
-	},
+			return nil
+		},
+	}
+
+	root.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	root.PersistentFlags().BoolP(debugFlag, "d", false, "Debug mode")
+
+	root.AddCommand(serveCmd)
+	root.AddCommand(versionCmd)
+
+	return root
 }
 
 func exitWithCode(code int, v ...any) {
@@ -46,12 +57,7 @@ func exitWithCode(code int, v ...any) {
 }
 
 func Execute() {
-	if err := rootCmd.Execute(); err != nil {
+	if err := NewRootCommand().Execute(); err != nil {
 		exitWithCode(1, err)
 	}
-}
-
-func init() {
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-	rootCmd.PersistentFlags().BoolP(debugFlag, "d", false, "Debug mode")
 }
