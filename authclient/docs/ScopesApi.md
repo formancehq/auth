@@ -54,8 +54,8 @@ func main() {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
 **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-**scopeId** | [**interface{}**](.md) | Scope ID | 
-**transientScopeId** | [**interface{}**](.md) | Transient scope ID | 
+**scopeId** | [**interface{}**](.md) | Scope ID |
+**transientScopeId** | [**interface{}**](.md) | Transient scope ID |
 
 ### Other Parameters
 
@@ -131,7 +131,7 @@ Other parameters are passed through a pointer to a apiCreateScopeRequest struct 
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **body** | **ScopeOptions** |  | 
+ **body** | **ScopeOptions** |  |
 
 ### Return type
 
@@ -190,7 +190,7 @@ func main() {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
 **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-**scopeId** | [**interface{}**](.md) | Scope ID | 
+**scopeId** | [**interface{}**](.md) | Scope ID |
 
 ### Other Parameters
 
@@ -259,8 +259,8 @@ func main() {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
 **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-**scopeId** | [**interface{}**](.md) | Scope ID | 
-**transientScopeId** | [**interface{}**](.md) | Transient scope ID | 
+**scopeId** | [**interface{}**](.md) | Scope ID |
+**transientScopeId** | [**interface{}**](.md) | Transient scope ID |
 
 ### Other Parameters
 
@@ -392,7 +392,7 @@ func main() {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
 **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-**scopeId** | [**interface{}**](.md) | Scope ID | 
+**scopeId** | [**interface{}**](.md) | Scope ID |
 
 ### Other Parameters
 
@@ -463,7 +463,7 @@ func main() {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
 **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-**scopeId** | [**interface{}**](.md) | Scope ID | 
+**scopeId** | [**interface{}**](.md) | Scope ID |
 
 ### Other Parameters
 
@@ -473,7 +473,7 @@ Other parameters are passed through a pointer to a apiUpdateScopeRequest struct 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
 
- **body** | **ScopeOptions** |  | 
+ **body** | **ScopeOptions** |  |
 
 ### Return type
 
@@ -491,4 +491,3 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
 [[Back to Model list]](../README.md#documentation-for-models)
 [[Back to README]](../README.md)
-

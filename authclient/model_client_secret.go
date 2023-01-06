@@ -19,10 +19,10 @@ var _ MappedNullable = &ClientSecret{}
 
 // ClientSecret struct for ClientSecret
 type ClientSecret struct {
-	LastDigits interface{} `json:"lastDigits"`
-	Name interface{} `json:"name"`
-	Id interface{} `json:"id"`
-	Metadata map[string]interface{} `json:"metadata,omitempty"`
+	LastDigits interface{}            `json:"lastDigits"`
+	Name       interface{}            `json:"name"`
+	Id         interface{}            `json:"id"`
+	Metadata   map[string]interface{} `json:"metadata,omitempty"`
 }
 
 // NewClientSecret instantiates a new ClientSecret object
@@ -157,7 +157,7 @@ func (o *ClientSecret) SetMetadata(v map[string]interface{}) {
 }
 
 func (o ClientSecret) MarshalJSON() ([]byte, error) {
-	toSerialize,err := o.ToMap()
+	toSerialize, err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
 	}
@@ -216,5 +216,3 @@ func (v *NullableClientSecret) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

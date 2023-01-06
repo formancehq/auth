@@ -19,7 +19,7 @@ var _ MappedNullable = &ScopeOptions{}
 
 // ScopeOptions struct for ScopeOptions
 type ScopeOptions struct {
-	Label interface{} `json:"label"`
+	Label    interface{}            `json:"label"`
 	Metadata map[string]interface{} `json:"metadata,omitempty"`
 }
 
@@ -101,7 +101,7 @@ func (o *ScopeOptions) SetMetadata(v map[string]interface{}) {
 }
 
 func (o ScopeOptions) MarshalJSON() ([]byte, error) {
-	toSerialize,err := o.ToMap()
+	toSerialize, err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
 	}
@@ -154,5 +154,3 @@ func (v *NullableScopeOptions) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

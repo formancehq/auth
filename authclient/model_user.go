@@ -19,9 +19,9 @@ var _ MappedNullable = &User{}
 
 // User struct for User
 type User struct {
-	Id interface{} `json:"id,omitempty"`
+	Id      interface{} `json:"id,omitempty"`
 	Subject interface{} `json:"subject,omitempty"`
-	Email interface{} `json:"email,omitempty"`
+	Email   interface{} `json:"email,omitempty"`
 }
 
 // NewUser instantiates a new User object
@@ -141,7 +141,7 @@ func (o *User) SetEmail(v interface{}) {
 }
 
 func (o User) MarshalJSON() ([]byte, error) {
-	toSerialize,err := o.ToMap()
+	toSerialize, err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
 	}
@@ -197,5 +197,3 @@ func (v *NullableUser) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-
