@@ -19,13 +19,13 @@ var _ MappedNullable = &ClientOptions{}
 
 // ClientOptions struct for ClientOptions
 type ClientOptions struct {
-	Public interface{} `json:"public,omitempty"`
-	RedirectUris interface{} `json:"redirectUris,omitempty"`
-	Description interface{} `json:"description,omitempty"`
-	Name interface{} `json:"name"`
-	Trusted interface{} `json:"trusted,omitempty"`
-	PostLogoutRedirectUris interface{} `json:"postLogoutRedirectUris,omitempty"`
-	Metadata map[string]interface{} `json:"metadata,omitempty"`
+	Public                 interface{}            `json:"public,omitempty"`
+	RedirectUris           interface{}            `json:"redirectUris,omitempty"`
+	Description            interface{}            `json:"description,omitempty"`
+	Name                   interface{}            `json:"name"`
+	Trusted                interface{}            `json:"trusted,omitempty"`
+	PostLogoutRedirectUris interface{}            `json:"postLogoutRedirectUris,omitempty"`
+	Metadata               map[string]interface{} `json:"metadata,omitempty"`
 }
 
 // NewClientOptions instantiates a new ClientOptions object
@@ -271,7 +271,7 @@ func (o *ClientOptions) SetMetadata(v map[string]interface{}) {
 }
 
 func (o ClientOptions) MarshalJSON() ([]byte, error) {
-	toSerialize,err := o.ToMap()
+	toSerialize, err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
 	}
@@ -339,5 +339,3 @@ func (v *NullableClientOptions) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-
