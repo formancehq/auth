@@ -57,7 +57,7 @@ deploy:
     RUN kubectl patch Versions.formance.com default -p "{\"spec\":{\"auth\": \"${tag}\"}}" --type=merge
 
 deploy-staging:
-    BUILD --pass-args core+deployer-module --MODULE=auth
+    BUILD --pass-args core+deploy-staging
 
 pre-commit:
     WAIT
