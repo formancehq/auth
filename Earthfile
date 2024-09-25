@@ -1,14 +1,13 @@
 VERSION 0.8
 
-IMPORT github.com/formancehq/earthly:tags/v0.15.0 AS core
-IMPORT ../.. AS stack
-IMPORT .. AS ee
+IMPORT github.com/formancehq/earthly:tags/v0.16.0 AS core
+
+
 
 FROM core+base-image
 
 sources:
-    WORKDIR src
-    WORKDIR /src/ee/auth
+    WORKDIR /src
     COPY go.* .
     COPY --dir cmd pkg .
     COPY main.go .
@@ -17,7 +16,7 @@ sources:
 compile:
     FROM core+builder-image
     COPY (+sources/*) /src
-    WORKDIR /src/ee/auth
+    WORKDIR /src
     ARG VERSION=latest
     DO --pass-args core+GO_COMPILE --VERSION=$VERSION
 
@@ -33,7 +32,7 @@ build-image:
 tests:
     FROM core+builder-image
     COPY (+sources/*) /src
-    WORKDIR /src/ee/auth
+    WORKDIR /src
     WITH DOCKER --pull=postgres:15-alpine
         DO --pass-args core+GO_TESTS
     END
@@ -42,8 +41,8 @@ lint:
     FROM core+builder-image
     COPY (+sources/*) /src
     COPY --pass-args +tidy/go.* .
-    WORKDIR /src/ee/auth
-    DO --pass-args stack+GO_LINT
+    WORKDIR /src
+    DO --pass-args core+GO_LINT
     SAVE ARTIFACT cmd AS LOCAL cmd
     SAVE ARTIFACT pkg AS LOCAL pkg
     SAVE ARTIFACT main.go AS LOCAL main.go
@@ -58,7 +57,7 @@ deploy:
     RUN kubectl patch Versions.formance.com default -p "{\"spec\":{\"auth\": \"${tag}\"}}" --type=merge
 
 deploy-staging:
-    BUILD --pass-args stack+deployer-module --MODULE=auth
+    BUILD --pass-args core+deployer-module --MODULE=auth
 
 pre-commit:
     WAIT
@@ -73,8 +72,11 @@ openapi:
 tidy:
     FROM core+builder-image
     COPY --pass-args (+sources/src) /src
-    WORKDIR /src/ee/auth
-    DO --pass-args stack+GO_TIDY
+    WORKDIR /src
+    DO --pass-args core+GO_TIDY
 
 release:
-    BUILD --pass-args stack+goreleaser --path=ee/auth
+    FROM core+builder-image
+    ARG mode=local
+    COPY --dir . /src
+    DO core+GORELEASER --mode=$mode
