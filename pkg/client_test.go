@@ -12,7 +12,7 @@ func TestStaticClientFromEnvironment(t *testing.T) {
 	type testCase struct {
 		staticClients        []auth.StaticClient
 		environmentVariables map[string]string
-		expectedErr          bool
+		expectedErr          error
 	}
 
 	testCases := []testCase{
@@ -25,7 +25,7 @@ func TestStaticClientFromEnvironment(t *testing.T) {
 			environmentVariables: map[string]string{
 				"SECRET": "secret",
 			},
-			expectedErr: false,
+			expectedErr: nil,
 		},
 		{
 			staticClients: []auth.StaticClient{
@@ -34,7 +34,7 @@ func TestStaticClientFromEnvironment(t *testing.T) {
 				},
 			},
 			environmentVariables: map[string]string{},
-			expectedErr:          true,
+			expectedErr:          auth.ErrEnvironmentVariableNotFound,
 		},
 	}
 
@@ -46,25 +46,15 @@ func TestStaticClientFromEnvironment(t *testing.T) {
 
 			for _, staticClient := range tc.staticClients {
 				loadedClient, err := staticClient.FromEnvironment()
-
-				switch {
-				case tc.expectedErr && err == nil:
-					t.Errorf("Expected error, got nil")
-					fallthrough
-				case !tc.expectedErr && err != nil:
-					t.Errorf("Expected nil, got error: %v", err)
-					fallthrough
-				default:
-					if tc.expectedErr {
-						return
-					}
-
-					for _, secret := range loadedClient.Secrets {
-						require.NotContains(t, secret, "$")
-						require.NotEmpty(t, secret)
-					}
+				if tc.expectedErr != nil {
+					require.Error(t, err)
+					require.ErrorIs(t, err, tc.expectedErr)
+					return
 				}
-
+				for _, secret := range loadedClient.Secrets {
+					require.NotContains(t, secret, "$")
+					require.NotEmpty(t, secret)
+				}
 			}
 		})
 	}
