@@ -4,6 +4,8 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"errors"
+	"os"
+	"strings"
 
 	"github.com/uptrace/bun"
 
@@ -109,9 +111,31 @@ func (c *Client) GetScopes() []string {
 	return c.Scopes
 }
 
+var (
+	ErrEnvironmentVariableNotFound = errors.New("environment variable not found")
+)
+
 type StaticClient struct {
 	ClientOptions `mapstructure:",squash" yaml:",inline"`
 	Secrets       []string `json:"secrets" yaml:"secrets"`
+}
+
+func (c StaticClient) FromEnvironment() (StaticClient, error) {
+	for i, secret := range c.Secrets {
+		environmentVariable, found := strings.CutPrefix(secret, "$")
+		if !found {
+			continue
+		}
+
+		value := os.Getenv(environmentVariable)
+		if value == "" {
+			return c, ErrEnvironmentVariableNotFound
+		}
+
+		c.Secrets[i] = value
+	}
+
+	return c, nil
 }
 
 func (s StaticClient) ValidateSecret(secret string) error {

@@ -12,7 +12,9 @@ import (
 
 	"github.com/formancehq/go-libs/aws/iam"
 	"github.com/formancehq/go-libs/bun/bunconnect"
+	"github.com/formancehq/go-libs/collectionutils"
 	"github.com/formancehq/go-libs/licence"
+	"github.com/formancehq/go-libs/logging"
 
 	"github.com/formancehq/go-libs/otlp"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
@@ -127,6 +129,14 @@ func newServeCommand() *cobra.Command {
 					return err
 				}
 			}
+
+			o.Clients = collectionutils.Map(o.Clients, func(client auth.StaticClient) auth.StaticClient {
+				c, err := client.FromEnvironment()
+				if err != nil {
+					logging.FromContext(cmd.Context()).Errorf("error while loading secrets from environment: %v", err)
+				}
+				return c
+			})
 
 			zLogging.SetOutput(cmd.OutOrStdout())
 
