@@ -239,6 +239,7 @@ components:
   schemas:
     Metadata:
       type: object
+      nullable: true
       additionalProperties: {}
     ClientOptions:
       type: object
