@@ -2,8 +2,13 @@ openapi: 3.0.3
 info:
   title: Auth API
   contact: {}
-  version: AUTH_VERSION
+  version: 0.1.0
+servers:
+  - url: http://localhost:8080/
 paths:
+  x-speakeasy-errors:
+    statusCodes:
+      - default
   /.well-known/openid-configuration:
     get:
       summary: Retrieve OpenID connect well-knowns.
@@ -236,6 +241,14 @@ paths:
         - Authorization:
             - auth:read
 components:
+  securitySchemes:
+    Authorization:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '/oauth/token'
+          refreshUrl: '/oauth/token'
+          scopes: { }
   schemas:
     Metadata:
       type: object

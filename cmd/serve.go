@@ -10,13 +10,13 @@ import (
 
 	"gopkg.in/yaml.v3"
 
-	"github.com/formancehq/go-libs/aws/iam"
-	"github.com/formancehq/go-libs/bun/bunconnect"
-	"github.com/formancehq/go-libs/collectionutils"
-	"github.com/formancehq/go-libs/licence"
-	"github.com/formancehq/go-libs/logging"
+	"github.com/formancehq/go-libs/v2/aws/iam"
+	"github.com/formancehq/go-libs/v2/bun/bunconnect"
+	"github.com/formancehq/go-libs/v2/collectionutils"
+	"github.com/formancehq/go-libs/v2/licence"
+	"github.com/formancehq/go-libs/v2/logging"
 
-	"github.com/formancehq/go-libs/otlp"
+	"github.com/formancehq/go-libs/v2/otlp"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 
 	auth "github.com/formancehq/auth/pkg"
@@ -24,9 +24,9 @@ import (
 	"github.com/formancehq/auth/pkg/delegatedauth"
 	"github.com/formancehq/auth/pkg/oidc"
 	"github.com/formancehq/auth/pkg/storage/sqlstorage"
-	sharedapi "github.com/formancehq/go-libs/api"
-	"github.com/formancehq/go-libs/otlp/otlptraces"
-	"github.com/formancehq/go-libs/service"
+	sharedapi "github.com/formancehq/go-libs/v2/api"
+	"github.com/formancehq/go-libs/v2/otlp/otlptraces"
+	"github.com/formancehq/go-libs/v2/service"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	zLogging "github.com/zitadel/logging"
@@ -34,15 +34,15 @@ import (
 )
 
 const (
-	serviceName = "auth"
+	ServiceName = "auth"
 
-	delegatedClientIDFlag     = "delegated-client-id"
-	delegatedClientSecretFlag = "delegated-client-secret"
-	delegatedIssuerFlag       = "delegated-issuer"
-	baseUrlFlag               = "base-url"
-	listenFlag                = "listen"
-	signingKeyFlag            = "signing-key"
-	configFlag                = "config"
+	DelegatedClientIDFlag     = "delegated-client-id"
+	DelegatedClientSecretFlag = "delegated-client-secret"
+	DelegatedIssuerFlag       = "delegated-issuer"
+	BaseUrlFlag               = "base-url"
+	ListenFlag                = "listen"
+	SigningKeyFlag            = "signing-key"
+	ConfigFlag                = "config"
 
 	defaultSigningKey = `
 -----BEGIN RSA PRIVATE KEY-----
@@ -94,12 +94,12 @@ func newServeCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use: "serve",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			baseUrl, _ := cmd.Flags().GetString(baseUrlFlag)
+			baseUrl, _ := cmd.Flags().GetString(BaseUrlFlag)
 			if baseUrl == "" {
 				return errors.New("base url must be defined")
 			}
 
-			signingKey, _ := cmd.Flags().GetString(signingKeyFlag)
+			signingKey, _ := cmd.Flags().GetString(SigningKeyFlag)
 			if signingKey == "" {
 				return errors.New("signing key must be defined")
 			}
@@ -119,7 +119,7 @@ func newServeCommand() *cobra.Command {
 			}
 			o := configuration{}
 
-			config, _ := cmd.Flags().GetString(configFlag)
+			config, _ := cmd.Flags().GetString(ConfigFlag)
 			if config != "" {
 				configFile, err := os.Open(config)
 				if err != nil {
@@ -145,7 +145,7 @@ func newServeCommand() *cobra.Command {
 				return err
 			}
 
-			listen, _ := cmd.Flags().GetString(listenFlag)
+			listen, _ := cmd.Flags().GetString(ListenFlag)
 			options := []fx.Option{
 				otlpHttpClientModule(service.IsDebug(cmd)),
 				fx.Supply(fx.Annotate(cmd.Context(), fx.As(new(context.Context)))),
@@ -157,14 +157,14 @@ func newServeCommand() *cobra.Command {
 				}, service.IsDebug(cmd)),
 			}
 
-			delegatedIssuer, _ := cmd.Flags().GetString(delegatedIssuerFlag)
+			delegatedIssuer, _ := cmd.Flags().GetString(DelegatedIssuerFlag)
 			if delegatedIssuer != "" {
-				delegatedClientID, _ := cmd.Flags().GetString(delegatedClientIDFlag)
+				delegatedClientID, _ := cmd.Flags().GetString(DelegatedClientIDFlag)
 				if delegatedClientID == "" {
 					return errors.New("delegated client id must be defined")
 				}
 
-				delegatedClientSecret, _ := cmd.Flags().GetString(delegatedClientSecretFlag)
+				delegatedClientSecret, _ := cmd.Flags().GetString(DelegatedClientSecretFlag)
 				if delegatedClientSecret == "" {
 					return errors.New("delegated client secret must be defined")
 				}
@@ -177,23 +177,25 @@ func newServeCommand() *cobra.Command {
 						RedirectURL:  fmt.Sprintf("%s/authorize/callback", baseUrl),
 					}),
 					delegatedauth.Module(),
-					licence.FXModuleFromFlags(cmd, serviceName),
 				)
 			}
 
-			options = append(options, otlptraces.FXModuleFromFlags(cmd))
+			options = append(options,
+				otlptraces.FXModuleFromFlags(cmd),
+				licence.FXModuleFromFlags(cmd, ServiceName),
+			)
 
 			return service.New(cmd.OutOrStdout(), options...).Run(cmd)
 		},
 	}
 
-	cmd.Flags().String(delegatedIssuerFlag, "", "Delegated OIDC issuer")
-	cmd.Flags().String(delegatedClientIDFlag, "", "Delegated OIDC client id")
-	cmd.Flags().String(delegatedClientSecretFlag, "", "Delegated OIDC client secret")
-	cmd.Flags().String(baseUrlFlag, "http://localhost:8080", "Base service url")
-	cmd.Flags().String(signingKeyFlag, defaultSigningKey, "Signing key")
-	cmd.Flags().String(listenFlag, ":8080", "Listening address")
-	cmd.Flags().String(configFlag, "", "Config file name without extension")
+	cmd.Flags().String(DelegatedIssuerFlag, "", "Delegated OIDC issuer")
+	cmd.Flags().String(DelegatedClientIDFlag, "", "Delegated OIDC client id")
+	cmd.Flags().String(DelegatedClientSecretFlag, "", "Delegated OIDC client secret")
+	cmd.Flags().String(BaseUrlFlag, "http://localhost:8080", "Base service url")
+	cmd.Flags().String(SigningKeyFlag, defaultSigningKey, "Signing key")
+	cmd.Flags().String(ListenFlag, ":8080", "Listening address")
+	cmd.Flags().String(ConfigFlag, "", "Config file name without extension")
 
 	service.AddFlags(cmd.Flags())
 	licence.AddFlags(cmd.Flags())

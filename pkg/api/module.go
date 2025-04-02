@@ -5,13 +5,13 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	"github.com/formancehq/go-libs/service"
+	"github.com/formancehq/go-libs/v2/service"
 
 	"github.com/formancehq/auth/pkg/api/authorization"
 
-	"github.com/formancehq/go-libs/api"
-	"github.com/formancehq/go-libs/health"
-	"github.com/formancehq/go-libs/httpserver"
+	"github.com/formancehq/go-libs/v2/api"
+	"github.com/formancehq/go-libs/v2/health"
+	"github.com/formancehq/go-libs/v2/httpserver"
 	"github.com/zitadel/oidc/v2/pkg/op"
 	"go.uber.org/fx"
 )
