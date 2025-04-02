@@ -8,11 +8,11 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	"github.com/formancehq/go-libs/bun/bundebug"
+	"github.com/formancehq/go-libs/v2/bun/bundebug"
 
-	"github.com/formancehq/go-libs/logging"
+	"github.com/formancehq/go-libs/v2/logging"
 
-	"github.com/formancehq/go-libs/bun/bunconnect"
+	"github.com/formancehq/go-libs/v2/bun/bunconnect"
 	"github.com/uptrace/bun"
 
 	auth "github.com/formancehq/auth/pkg"
