@@ -74,7 +74,7 @@ func withServer(t *testing.T, fn func(m *mockoidc.MockOIDC, storage *sqlstorage.
 
 	// As our oidc provider, is also a relying party (it delegates authentication), we need to construct a relying party
 	// with information from the mock
-	cl := http.DefaultClient
+	cl := &http.Client{}
 	cl.Transport = RoundTripper{http.DefaultTransport}
 	serverRelyingParty, err := rp.NewRelyingPartyOIDC(mockOIDC.Issuer(), mockOIDC.ClientID, mockOIDC.ClientSecret,
 		fmt.Sprintf("%s/authorize/callback", serverUrl), []string{"openid", "email"}, rp.WithHTTPClient(cl))
