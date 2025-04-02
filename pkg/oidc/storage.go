@@ -311,6 +311,7 @@ func (s *storageFacade) RevokeToken(ctx context.Context, tokenStr string, userID
 
 	accessToken, err := s.Storage.FindAccessToken(ctx, tokenStr)
 	if storage.IgnoreNotFoundError(err) != nil {
+		//nolint:govet
 		return oidc.ErrServerError().WithDescription(err.Error())
 	}
 	if err == nil {
@@ -318,6 +319,7 @@ func (s *storageFacade) RevokeToken(ctx context.Context, tokenStr string, userID
 			return oidc.ErrInvalidClient().WithDescription("token was not issued for this client")
 		}
 		if err := s.Storage.DeleteAccessToken(ctx, tokenStr); err != nil {
+			//nolint:govet
 			return oidc.ErrServerError().WithDescription(err.Error())
 		}
 		return nil
@@ -325,6 +327,7 @@ func (s *storageFacade) RevokeToken(ctx context.Context, tokenStr string, userID
 
 	refreshToken, err := s.Storage.FindRefreshToken(ctx, tokenStr)
 	if storage.IgnoreNotFoundError(err) != nil {
+		//nolint:govet
 		return oidc.ErrServerError().WithDescription(err.Error())
 	}
 	if err == nil {
@@ -332,9 +335,11 @@ func (s *storageFacade) RevokeToken(ctx context.Context, tokenStr string, userID
 			return oidc.ErrInvalidClient().WithDescription("token was not issued for this client")
 		}
 		if err := s.Storage.DeleteRefreshToken(ctx, tokenStr); err != nil {
+			//nolint:govet
 			return oidc.ErrServerError().WithDescription(err.Error())
 		}
 		if err := s.Storage.DeleteAccessTokensByRefreshToken(ctx, tokenStr); err != nil {
+			//nolint:govet
 			return oidc.ErrServerError().WithDescription(err.Error())
 		}
 		return nil

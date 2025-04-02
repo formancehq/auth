@@ -4,7 +4,7 @@ import (
 	"context"
 
 	auth "github.com/formancehq/auth/pkg"
-	"github.com/formancehq/go-libs/migrations"
+	"github.com/formancehq/go-libs/v2/migrations"
 	"github.com/uptrace/bun"
 )
 
@@ -33,10 +33,10 @@ var AllServices = Services{
 }
 
 func Migrate(ctx context.Context, db *bun.DB) error {
-	migrator := migrations.NewMigrator()
+	migrator := migrations.NewMigrator(db)
 	migrator.RegisterMigrations(
 		migrations.Migration{
-			UpWithContext: func(ctx context.Context, tx bun.Tx) error {
+			Up: func(ctx context.Context, db bun.IDB) error {
 				script := `
 					DROP TABLE IF EXISTS client_scopes;
 					DROP TABLE IF EXISTS transient_scopes;
@@ -134,17 +134,17 @@ func Migrate(ctx context.Context, db *bun.DB) error {
 					ALTER TABLE ONLY users
 					ADD CONSTRAINT users_subject_key UNIQUE (subject);
 				`
-				_, err := tx.Exec(script)
+				_, err := db.ExecContext(ctx, script)
 				return err
 			},
 		},
 		migrations.Migration{
-			UpWithContext: func(ctx context.Context, tx bun.Tx) error {
+			Up: func(ctx context.Context, db bun.IDB) error {
 				scopes := auth.Array[string]{"openid"}
 				for _, service := range AllServices {
 					scopes = append(scopes, service+":read", service+":write")
 				}
-				_, err := tx.Exec(
+				_, err := db.ExecContext(ctx,
 					`
 						ALTER TABLE clients
 						ADD COLUMN IF NOT EXISTS scopes TEXT;
@@ -156,5 +156,5 @@ func Migrate(ctx context.Context, db *bun.DB) error {
 			},
 		},
 	)
-	return migrator.Up(ctx, db)
+	return migrator.Up(ctx)
 }
