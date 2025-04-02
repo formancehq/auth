@@ -3,27 +3,17 @@
 ## Generate client code
 
 ```
-task generate-client
+just generate-client
 ```
 
 ## Tests
 
 ```
-task tests
+just tests
 ```
 
 ## Lint
 
 ```
-task lint
+just lint
 ```
-
-## Run the demo
-
-Execute command :
-```bash
-docker compose up
-```
-will run all required components.
-
-Now, you can open http://localhost:3000
