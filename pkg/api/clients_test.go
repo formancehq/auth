@@ -204,6 +204,7 @@ func TestUpdateClient(t *testing.T) {
 					Model(&clientFromDatabase).
 					Where("id = ?", updatedClient.ID).
 					Scan(context.Background())
+				require.NoError(t, err)
 				require.Equal(t, auth.Client{
 					ClientOptions: tc.options,
 					Secrets:       []auth.ClientSecret{},
