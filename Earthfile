@@ -1,8 +1,11 @@
 VERSION 0.8
 
-IMPORT github.com/formancehq/earthly:tags/v0.16.2 AS core
+IMPORT github.com/formancehq/earthly:tags/v0.19.1 AS core
 
 FROM core+base-image
+
+CACHE --sharing=shared --id go-auth-cache /go/pkg/mod
+CACHE --sharing=shared --id go-auth-cache /root/.cache/go-build
 
 sources:
     WORKDIR /src
@@ -14,6 +17,9 @@ sources:
 compile:
     FROM core+builder-image
     COPY (+sources/*) /src
+
+    CACHE --id go-auth-cache /go/pkg/mod
+    CACHE --id go-auth-cache /root/.cache/go-build
     WORKDIR /src
     ARG VERSION=latest
     DO --pass-args core+GO_COMPILE --VERSION=$VERSION
