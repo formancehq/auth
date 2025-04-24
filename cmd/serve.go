@@ -92,101 +92,8 @@ func otlpHttpClientModule(debug bool) fx.Option {
 
 func newServeCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use: "serve",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			baseUrl, _ := cmd.Flags().GetString(BaseUrlFlag)
-			if baseUrl == "" {
-				return errors.New("base url must be defined")
-			}
-
-			signingKey, _ := cmd.Flags().GetString(SigningKeyFlag)
-			if signingKey == "" {
-				return errors.New("signing key must be defined")
-			}
-
-			block, _ := pem.Decode([]byte(signingKey))
-			if block == nil {
-				return errors.New("invalid signing key, cannot parse as PEM")
-			}
-
-			key, err := x509.ParsePKCS1PrivateKey(block.Bytes)
-			if err != nil {
-				return err
-			}
-
-			type configuration struct {
-				Clients []auth.StaticClient `json:"clients" yaml:"clients"`
-			}
-			o := configuration{}
-
-			config, _ := cmd.Flags().GetString(ConfigFlag)
-			if config != "" {
-				configFile, err := os.Open(config)
-				if err != nil {
-					return err
-				}
-				if err := yaml.NewDecoder(configFile).Decode(&o); err != nil {
-					return err
-				}
-			}
-
-			o.Clients = collectionutils.Map(o.Clients, func(client auth.StaticClient) auth.StaticClient {
-				c, err := client.FromEnvironment()
-				if err != nil {
-					logging.FromContext(cmd.Context()).Errorf("error while loading secrets from environment: %v", err)
-				}
-				return c
-			})
-
-			zLogging.SetOutput(cmd.OutOrStdout())
-
-			connectionOptions, err := bunconnect.ConnectionOptionsFromFlags(cmd)
-			if err != nil {
-				return err
-			}
-
-			listen, _ := cmd.Flags().GetString(ListenFlag)
-			options := []fx.Option{
-				otlpHttpClientModule(service.IsDebug(cmd)),
-				fx.Supply(fx.Annotate(cmd.Context(), fx.As(new(context.Context)))),
-				sqlstorage.Module(*connectionOptions, key, service.IsDebug(cmd), o.Clients...),
-				oidc.Module(key, baseUrl, o.Clients...),
-				api.Module(listen, baseUrl, sharedapi.ServiceInfo{
-					Version: Version,
-					Debug:   service.IsDebug(cmd),
-				}, service.IsDebug(cmd)),
-			}
-
-			delegatedIssuer, _ := cmd.Flags().GetString(DelegatedIssuerFlag)
-			if delegatedIssuer != "" {
-				delegatedClientID, _ := cmd.Flags().GetString(DelegatedClientIDFlag)
-				if delegatedClientID == "" {
-					return errors.New("delegated client id must be defined")
-				}
-
-				delegatedClientSecret, _ := cmd.Flags().GetString(DelegatedClientSecretFlag)
-				if delegatedClientSecret == "" {
-					return errors.New("delegated client secret must be defined")
-				}
-
-				options = append(options,
-					fx.Supply(delegatedauth.Config{
-						Issuer:       delegatedIssuer,
-						ClientID:     delegatedClientID,
-						ClientSecret: delegatedClientSecret,
-						RedirectURL:  fmt.Sprintf("%s/authorize/callback", baseUrl),
-					}),
-					delegatedauth.Module(),
-				)
-			}
-
-			options = append(options,
-				otlptraces.FXModuleFromFlags(cmd),
-				licence.FXModuleFromFlags(cmd, ServiceName),
-			)
-
-			return service.New(cmd.OutOrStdout(), options...).Run(cmd)
-		},
+		Use:  "serve",
+		RunE: runServe,
 	}
 
 	cmd.Flags().String(DelegatedIssuerFlag, "", "Delegated OIDC issuer")
@@ -199,9 +106,106 @@ func newServeCommand() *cobra.Command {
 
 	service.AddFlags(cmd.Flags())
 	licence.AddFlags(cmd.Flags())
+	otlp.AddFlags(cmd.Flags())
 	otlptraces.AddFlags(cmd.Flags())
 	bunconnect.AddFlags(cmd.Flags())
 	iam.AddFlags(cmd.Flags())
 
 	return cmd
+}
+
+func runServe(cmd *cobra.Command, args []string) error {
+	baseUrl, _ := cmd.Flags().GetString(BaseUrlFlag)
+	if baseUrl == "" {
+		return errors.New("base url must be defined")
+	}
+
+	signingKey, _ := cmd.Flags().GetString(SigningKeyFlag)
+	if signingKey == "" {
+		return errors.New("signing key must be defined")
+	}
+
+	block, _ := pem.Decode([]byte(signingKey))
+	if block == nil {
+		return errors.New("invalid signing key, cannot parse as PEM")
+	}
+
+	key, err := x509.ParsePKCS1PrivateKey(block.Bytes)
+	if err != nil {
+		return err
+	}
+
+	type configuration struct {
+		Clients []auth.StaticClient `json:"clients" yaml:"clients"`
+	}
+	o := configuration{}
+
+	config, _ := cmd.Flags().GetString(ConfigFlag)
+	if config != "" {
+		configFile, err := os.Open(config)
+		if err != nil {
+			return err
+		}
+		if err := yaml.NewDecoder(configFile).Decode(&o); err != nil {
+			return err
+		}
+	}
+
+	o.Clients = collectionutils.Map(o.Clients, func(client auth.StaticClient) auth.StaticClient {
+		c, err := client.FromEnvironment()
+		if err != nil {
+			logging.FromContext(cmd.Context()).Errorf("error while loading secrets from environment: %v", err)
+		}
+		return c
+	})
+
+	zLogging.SetOutput(cmd.OutOrStdout())
+
+	connectionOptions, err := bunconnect.ConnectionOptionsFromFlags(cmd)
+	if err != nil {
+		return err
+	}
+
+	listen, _ := cmd.Flags().GetString(ListenFlag)
+	options := []fx.Option{
+		otlpHttpClientModule(service.IsDebug(cmd)),
+		fx.Supply(fx.Annotate(cmd.Context(), fx.As(new(context.Context)))),
+		sqlstorage.Module(*connectionOptions, key, service.IsDebug(cmd), o.Clients...),
+		oidc.Module(key, baseUrl, o.Clients...),
+		api.Module(listen, baseUrl, sharedapi.ServiceInfo{
+			Version: Version,
+			Debug:   service.IsDebug(cmd),
+		}, service.IsDebug(cmd)),
+	}
+
+	delegatedIssuer, _ := cmd.Flags().GetString(DelegatedIssuerFlag)
+	if delegatedIssuer != "" {
+		delegatedClientID, _ := cmd.Flags().GetString(DelegatedClientIDFlag)
+		if delegatedClientID == "" {
+			return errors.New("delegated client id must be defined")
+		}
+
+		delegatedClientSecret, _ := cmd.Flags().GetString(DelegatedClientSecretFlag)
+		if delegatedClientSecret == "" {
+			return errors.New("delegated client secret must be defined")
+		}
+
+		options = append(options,
+			fx.Supply(delegatedauth.Config{
+				Issuer:       delegatedIssuer,
+				ClientID:     delegatedClientID,
+				ClientSecret: delegatedClientSecret,
+				RedirectURL:  fmt.Sprintf("%s/authorize/callback", baseUrl),
+			}),
+			delegatedauth.Module(),
+		)
+	}
+
+	options = append(options,
+		otlp.FXModuleFromFlags(cmd, otlp.WithServiceVersion(Version)),
+		otlptraces.FXModuleFromFlags(cmd),
+		licence.FXModuleFromFlags(cmd, ServiceName),
+	)
+
+	return service.New(cmd.OutOrStdout(), options...).Run(cmd)
 }
