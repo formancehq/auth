@@ -242,8 +242,8 @@ github.com/tklauser/numcpus v0.9.0 h1:lmyCHtANi8aRUgkckBgoDk1nHCux3n2cgkJLXdQGPD
 github.com/tklauser/numcpus v0.9.0/go.mod h1:SN6Nq1O3VychhC1npsWostA+oW+VOQTxZrS604NSRyI=
 github.com/tmthrgd/go-hex v0.0.0-20190904060850-447a3041c3bc h1:9lRDQMhESg+zvGYmW5DyG0UqvY96Bu5QYsTLvCHdrgo=
 github.com/tmthrgd/go-hex v0.0.0-20190904060850-447a3041c3bc/go.mod h1:bciPuU6GHm1iF1pBvUfxfsH0Wmnc2VbpgvbI9ZWuIRs=
-github.com/uptrace/bun v1.2.11 h1:l9dTymsdZZAoSZ1+Qo3utms0RffgkDbIv+1UGk8N1wQ=
-github.com/uptrace/bun v1.2.11/go.mod h1:ww5G8h59UrOnCHmZ8O1I/4Djc7M/Z3E+EWFS2KLB6dQ=
+github.com/uptrace/bun v1.2.12 h1:XRvGko5tIZ5A3T0GkLsbFFnSR2Yd6knuML8eJVGTLM0=
+github.com/uptrace/bun v1.2.12/go.mod h1:ZS4nPaEv2Du3OFqAD/irk3WVP6xTB3/9TWqjJbgKYBU=
 github.com/uptrace/bun/dialect/pgdialect v1.2.11 h1:n0VKWm1fL1dwJK5TRxYYLaRKRe14BOg2+AQgpvqzG/M=
 github.com/uptrace/bun/dialect/pgdialect v1.2.11/go.mod h1:NvV1S/zwtwBnW8yhJ3XEKAQEw76SkeH7yUhfrx3W1Eo=
 github.com/uptrace/bun/extra/bundebug v1.2.9 h1:3SU66p+q76XhfeUUzl9XooVu7hVNueZ/2Q3J8S1uzCU=
@@ -368,8 +368,8 @@ golang.org/x/sys v0.0.0-20220503163025-988cb79eb6c6/go.mod h1:oPkhp1MJrh7nUepCBc
 golang.org/x/sys v0.0.0-20220715151400-c0bba94af5f8/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/sys v0.1.0/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/sys v0.6.0/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
-golang.org/x/sys v0.31.0 h1:ioabZlmFYtWhL+TRYpcnNlLwhyxaM9kWTDEmfnprqik=
-golang.org/x/sys v0.31.0/go.mod h1:BJP2sWEmIv4KK5OTEluFJCKSidICx8ciO85XgH3Ak8k=
+golang.org/x/sys v0.33.0 h1:q3i8TbbEz+JRD9ywIRlyRAQbM0qF7hu24q3teo2hbuw=
+golang.org/x/sys v0.33.0/go.mod h1:BJP2sWEmIv4KK5OTEluFJCKSidICx8ciO85XgH3Ak8k=
 golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1/go.mod h1:bj7SfCRtBDWHUb9snDiAeCFNEtKQo2Wmx5Cou7ajbmo=
 golang.org/x/text v0.3.0/go.mod h1:NqM8EUOU14njkJ3fqMW+pc6Ldnwhi/IjpwHt7yyuwOQ=
 golang.org/x/text v0.3.3/go.mod h1:5Zoc/QRtKVWzQhOtBMvqHzDpF6irO9z98xDceosuGiQ=
