@@ -4,6 +4,7 @@
     "github>formancehq/shared-config//renovate/presets/golang"
   ],
   "ignoreDeps": [
-    "github.com/formancehq/auth/pkg/client"
+    "github.com/formancehq/auth/pkg/client",
+    "github.com/oauth2-proxy/mockoidc"
   ]
 }
