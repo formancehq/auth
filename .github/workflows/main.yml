@@ -51,8 +51,6 @@ jobs:
 
   Tests:
     runs-on: "shipfox-4vcpu-ubuntu-2404"
-    needs:
-      - Dirty
     steps:
       - uses: 'actions/checkout@v4'
         with:
@@ -69,8 +67,6 @@ jobs:
   GoReleaser:
     runs-on: "shipfox-4vcpu-ubuntu-2404"
     if: contains(github.event.pull_request.labels.*.name, 'build-images') || github.ref == 'refs/heads/main' || github.event_name == 'merge_group'
-    needs:
-      - Dirty
     steps:
       - uses: 'actions/checkout@v4'
         with:
@@ -100,6 +96,7 @@ jobs:
     needs:
       - GoReleaser
       - Tests
+      - Dirty
     steps:
       - uses: earthly/actions-setup@v1
         with:
