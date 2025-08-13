@@ -4,13 +4,15 @@ package suite_test
 
 import (
 	"encoding/json"
-	"github.com/formancehq/go-libs/v2/logging"
-	"github.com/formancehq/go-libs/v2/testing/docker"
-	. "github.com/formancehq/go-libs/v2/testing/platform/pgtesting"
-	. "github.com/formancehq/go-libs/v2/testing/utils"
-	"github.com/oauth2-proxy/mockoidc"
 	"os"
 	"testing"
+
+	"github.com/formancehq/go-libs/v3/logging"
+	"github.com/formancehq/go-libs/v3/testing/deferred"
+	"github.com/formancehq/go-libs/v3/testing/docker"
+	. "github.com/formancehq/go-libs/v3/testing/platform/pgtesting"
+
+	"github.com/oauth2-proxy/mockoidc"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -22,11 +24,11 @@ func TestExamples(t *testing.T) {
 }
 
 var (
-	dockerPool = NewDeferred[*docker.Pool]()
+	dockerPool = deferred.New[*docker.Pool]()
 	debug      = os.Getenv("DEBUG") == "true"
 	logger     = logging.NewDefaultLogger(GinkgoWriter, debug, false, false)
 	mockOIDC   *mockoidc.MockOIDC
-	pgServer   = NewDeferred[*PostgresServer]()
+	pgServer   = deferred.New[*PostgresServer]()
 )
 
 type ParallelExecutionContext struct{}

@@ -1,10 +1,10 @@
 package cmd
 
 import (
-	"github.com/formancehq/go-libs/v2/service"
+	"github.com/formancehq/go-libs/v3/service"
 
 	"github.com/formancehq/auth/pkg/storage/sqlstorage"
-	"github.com/formancehq/go-libs/v2/bun/bunmigrate"
+	"github.com/formancehq/go-libs/v3/bun/bunmigrate"
 	"github.com/uptrace/bun"
 
 	"github.com/spf13/cobra"

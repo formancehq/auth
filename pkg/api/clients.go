@@ -8,7 +8,7 @@ import (
 	"github.com/uptrace/bun"
 
 	auth "github.com/formancehq/auth/pkg"
-	_ "github.com/formancehq/go-libs/v2/api"
+	_ "github.com/formancehq/go-libs/v3/api"
 )
 
 func addClientRoutes(db *bun.DB, r chi.Router) {
