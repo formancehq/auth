@@ -12,13 +12,15 @@ import (
 	"github.com/formancehq/go-libs/v3/api"
 	"github.com/formancehq/go-libs/v3/health"
 	"github.com/formancehq/go-libs/v3/httpserver"
+	"github.com/formancehq/go-libs/v3/logging"
 	"github.com/zitadel/oidc/v2/pkg/op"
 	"go.uber.org/fx"
 )
 
-func CreateRootRouter(o op.OpenIDProvider, issuer string, debug bool) chi.Router {
+func CreateRootRouter(o op.OpenIDProvider, logger logging.Logger, issuer string, debug bool) chi.Router {
 	rootRouter := chi.NewRouter()
 	rootRouter.Use(service.OTLPMiddleware("auth", debug))
+	rootRouter.Use(httpserver.LoggerMiddleware(logger))
 	rootRouter.Use(func(handler http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
@@ -44,8 +46,8 @@ func Module(addr, issuer string, serviceInfo api.ServiceInfo, debug bool) fx.Opt
 	return fx.Options(
 		health.Module(),
 		fx.Supply(serviceInfo),
-		fx.Provide(func(o op.OpenIDProvider) chi.Router {
-			return CreateRootRouter(o, issuer, debug)
+		fx.Provide(func(o op.OpenIDProvider, logger logging.Logger) chi.Router {
+			return CreateRootRouter(o, logger, issuer, debug)
 		}),
 		fx.Invoke(
 			addInfoRoute,
