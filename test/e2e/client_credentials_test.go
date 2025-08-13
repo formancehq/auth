@@ -4,19 +4,20 @@ package suite_test
 
 import (
 	"fmt"
+	"net/http"
+
 	auth "github.com/formancehq/auth/pkg"
 	"github.com/formancehq/auth/pkg/client/models/components"
 	"github.com/formancehq/auth/pkg/client/models/operations"
 	"github.com/formancehq/auth/pkg/testserver"
-	"github.com/formancehq/go-libs/v2/collectionutils"
-	"github.com/formancehq/go-libs/v2/logging"
-	"github.com/formancehq/go-libs/v2/testing/platform/pgtesting"
+	"github.com/formancehq/go-libs/v3/collectionutils"
+	"github.com/formancehq/go-libs/v3/logging"
+	"github.com/formancehq/go-libs/v3/testing/platform/pgtesting"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/zitadel/oidc/v2/pkg/oidc"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/clientcredentials"
-	"net/http"
 )
 
 var _ = Context("Auth - Client credentials", func() {
