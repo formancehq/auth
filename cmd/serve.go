@@ -25,6 +25,7 @@ import (
 	"github.com/formancehq/auth/pkg/oidc"
 	"github.com/formancehq/auth/pkg/storage/sqlstorage"
 	sharedapi "github.com/formancehq/go-libs/v3/api"
+	"github.com/formancehq/go-libs/v3/otlp/otlpmetrics"
 	"github.com/formancehq/go-libs/v3/otlp/otlptraces"
 	"github.com/formancehq/go-libs/v3/service"
 	"github.com/pkg/errors"
@@ -108,6 +109,7 @@ func newServeCommand() *cobra.Command {
 	licence.AddFlags(cmd.Flags())
 	otlp.AddFlags(cmd.Flags())
 	otlptraces.AddFlags(cmd.Flags())
+	otlpmetrics.AddFlags(cmd.Flags())
 	bunconnect.AddFlags(cmd.Flags())
 	iam.AddFlags(cmd.Flags())
 
@@ -204,6 +206,7 @@ func runServe(cmd *cobra.Command, args []string) error {
 	options = append(options,
 		otlp.FXModuleFromFlags(cmd, otlp.WithServiceVersion(Version)),
 		otlptraces.FXModuleFromFlags(cmd),
+		otlpmetrics.FXModuleFromFlags(cmd),
 		licence.FXModuleFromFlags(cmd, ServiceName),
 	)
 
