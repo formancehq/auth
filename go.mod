@@ -7,7 +7,7 @@ replace github.com/formancehq/auth/pkg/client => ./pkg/client
 require (
 	github.com/formancehq/auth/pkg/client v0.0.0-00010101000000-000000000000
 	github.com/formancehq/go-libs/v3 v3.0.2-0.20250812180241-eda2c38030eb
-	github.com/go-chi/chi/v5 v5.2.2
+	github.com/go-chi/chi/v5 v5.2.3
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/google/uuid v1.6.0
 	github.com/oauth2-proxy/mockoidc v0.0.0-20220308204021-b9169deeb282
