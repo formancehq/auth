@@ -1,6 +1,6 @@
 module github.com/formancehq/auth
 
-go 1.23.7
+go 1.24.0
 
 replace github.com/formancehq/auth/pkg/client => ./pkg/client
 
@@ -23,7 +23,7 @@ require (
 	go.opentelemetry.io/otel v1.37.0
 	go.opentelemetry.io/otel/trace v1.37.0
 	go.uber.org/fx v1.24.0
-	golang.org/x/oauth2 v0.30.0
+	golang.org/x/oauth2 v0.31.0
 	golang.org/x/text v0.27.0
 	gopkg.in/go-jose/go-jose.v2 v2.6.3
 	gopkg.in/yaml.v3 v3.0.1
