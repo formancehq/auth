@@ -311,36 +311,31 @@ func (s *storageFacade) RevokeToken(ctx context.Context, tokenStr string, userID
 
 	accessToken, err := s.Storage.FindAccessToken(ctx, tokenStr)
 	if storage.IgnoreNotFoundError(err) != nil {
-		//nolint:govet
-		return oidc.ErrServerError().WithDescription(err.Error())
+		return oidc.ErrServerError().WithDescription("%s", err)
 	}
 	if err == nil {
 		if accessToken.ApplicationID != clientID {
 			return oidc.ErrInvalidClient().WithDescription("token was not issued for this client")
 		}
 		if err := s.Storage.DeleteAccessToken(ctx, tokenStr); err != nil {
-			//nolint:govet
-			return oidc.ErrServerError().WithDescription(err.Error())
+			return oidc.ErrServerError().WithDescription("%s", err)
 		}
 		return nil
 	}
 
 	refreshToken, err := s.Storage.FindRefreshToken(ctx, tokenStr)
 	if storage.IgnoreNotFoundError(err) != nil {
-		//nolint:govet
-		return oidc.ErrServerError().WithDescription(err.Error())
+		return oidc.ErrServerError().WithDescription("%s", err)
 	}
 	if err == nil {
 		if refreshToken.ApplicationID != clientID {
 			return oidc.ErrInvalidClient().WithDescription("token was not issued for this client")
 		}
 		if err := s.Storage.DeleteRefreshToken(ctx, tokenStr); err != nil {
-			//nolint:govet
-			return oidc.ErrServerError().WithDescription(err.Error())
+			return oidc.ErrServerError().WithDescription("%s", err)
 		}
 		if err := s.Storage.DeleteAccessTokensByRefreshToken(ctx, tokenStr); err != nil {
-			//nolint:govet
-			return oidc.ErrServerError().WithDescription(err.Error())
+			return oidc.ErrServerError().WithDescription("%s", err)
 		}
 		return nil
 	}
