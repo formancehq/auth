@@ -116,7 +116,7 @@ func newServeCommand() *cobra.Command {
 	return cmd
 }
 
-func runServe(cmd *cobra.Command, args []string) error {
+func runServe(cmd *cobra.Command, _ []string) error {
 	baseUrl, _ := cmd.Flags().GetString(BaseUrlFlag)
 	if baseUrl == "" {
 		return errors.New("base url must be defined")
