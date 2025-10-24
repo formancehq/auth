@@ -3,8 +3,8 @@
 package components
 
 type CreateSecretRequest struct {
-	Name     string         `json:"name"`
-	Metadata map[string]any `json:"metadata,omitempty"`
+	Name     string            `json:"name"`
+	Metadata map[string]string `json:"metadata,omitempty"`
 }
 
 func (o *CreateSecretRequest) GetName() string {
@@ -14,7 +14,7 @@ func (o *CreateSecretRequest) GetName() string {
 	return o.Name
 }
 
-func (o *CreateSecretRequest) GetMetadata() map[string]any {
+func (o *CreateSecretRequest) GetMetadata() map[string]string {
 	if o == nil {
 		return nil
 	}

@@ -3,14 +3,14 @@
 package components
 
 type CreateClientRequest struct {
-	Public                 *bool          `json:"public,omitempty"`
-	RedirectUris           []string       `json:"redirectUris,omitempty"`
-	Description            *string        `json:"description,omitempty"`
-	Name                   string         `json:"name"`
-	Trusted                *bool          `json:"trusted,omitempty"`
-	PostLogoutRedirectUris []string       `json:"postLogoutRedirectUris,omitempty"`
-	Metadata               map[string]any `json:"metadata,omitempty"`
-	Scopes                 []string       `json:"scopes,omitempty"`
+	Public                 *bool             `json:"public,omitempty"`
+	RedirectUris           []string          `json:"redirectUris,omitempty"`
+	Description            *string           `json:"description,omitempty"`
+	Name                   string            `json:"name"`
+	Trusted                *bool             `json:"trusted,omitempty"`
+	PostLogoutRedirectUris []string          `json:"postLogoutRedirectUris,omitempty"`
+	Metadata               map[string]string `json:"metadata,omitempty"`
+	Scopes                 []string          `json:"scopes,omitempty"`
 }
 
 func (o *CreateClientRequest) GetPublic() *bool {
@@ -55,7 +55,7 @@ func (o *CreateClientRequest) GetPostLogoutRedirectUris() []string {
 	return o.PostLogoutRedirectUris
 }
 
-func (o *CreateClientRequest) GetMetadata() map[string]any {
+func (o *CreateClientRequest) GetMetadata() map[string]string {
 	if o == nil {
 		return nil
 	}

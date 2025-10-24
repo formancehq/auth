@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	authlib "github.com/formancehq/go-libs/v3/auth"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -40,7 +41,7 @@ func withDbAndClientRouter(t *testing.T, callback func(router chi.Router, db *bu
 	require.NoError(t, sqlstorage.Migrate(context.Background(), db))
 
 	router := chi.NewRouter()
-	addClientRoutes(db, router)
+	addClientRoutes(db, router, authlib.NewNoAuth())
 
 	callback(router, db)
 }

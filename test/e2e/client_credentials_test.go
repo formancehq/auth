@@ -43,6 +43,7 @@ var _ = Context("Auth - Client credentials", func() {
 					Name:    "global",
 					Id:      "global",
 					Trusted: true,
+					Scopes:  []string{"auth:write"},
 				},
 				Secrets: []string{"global"},
 			}},
@@ -56,6 +57,7 @@ var _ = Context("Auth - Client credentials", func() {
 			config := clientcredentials.Config{
 				ClientID:     "global",
 				ClientSecret: "global",
+				Scopes:       []string{"auth:write"},
 				TokenURL:     fmt.Sprintf("%s/oauth/token", srv.ServerURL()),
 			}
 			httpClient = config.Client(ctx)

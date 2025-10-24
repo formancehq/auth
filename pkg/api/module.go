@@ -7,8 +7,6 @@ import (
 
 	"github.com/formancehq/go-libs/v3/service"
 
-	"github.com/formancehq/auth/pkg/api/authorization"
-
 	"github.com/formancehq/go-libs/v3/api"
 	"github.com/formancehq/go-libs/v3/health"
 	"github.com/formancehq/go-libs/v3/httpserver"
@@ -17,7 +15,11 @@ import (
 	"go.uber.org/fx"
 )
 
-func CreateRootRouter(o op.OpenIDProvider, logger logging.Logger, issuer string, debug bool) chi.Router {
+func CreateRootRouter(
+	logger logging.Logger,
+	issuer string,
+	debug bool,
+) chi.Router {
 	rootRouter := chi.NewRouter()
 	rootRouter.Use(service.OTLPMiddleware("auth", debug))
 	rootRouter.Use(httpserver.LoggerMiddleware(logger))
@@ -34,7 +36,6 @@ func CreateRootRouter(o op.OpenIDProvider, logger logging.Logger, issuer string,
 			))
 		})
 	})
-	rootRouter.Use(authorization.Middleware(o))
 	return rootRouter
 }
 
@@ -46,8 +47,8 @@ func Module(addr, issuer string, serviceInfo api.ServiceInfo, debug bool) fx.Opt
 	return fx.Options(
 		health.Module(),
 		fx.Supply(serviceInfo),
-		fx.Provide(func(o op.OpenIDProvider, logger logging.Logger) chi.Router {
-			return CreateRootRouter(o, logger, issuer, debug)
+		fx.Provide(func(logger logging.Logger) chi.Router {
+			return CreateRootRouter(logger, issuer, debug)
 		}),
 		fx.Invoke(
 			addInfoRoute,

@@ -1,6 +1,7 @@
 package api
 
 import (
+	authlib "github.com/formancehq/go-libs/v3/auth"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -11,8 +12,8 @@ import (
 	_ "github.com/formancehq/go-libs/v3/api"
 )
 
-func addClientRoutes(db *bun.DB, r chi.Router) {
-	r.Route("/clients", func(r chi.Router) {
+func addClientRoutes(db *bun.DB, r chi.Router, authenticator authlib.Authenticator) {
+	r.With(authlib.Middleware(authenticator)).Route("/clients", func(r chi.Router) {
 		r.Post("/", createClient(db))
 		r.Get("/", listClients(db))
 		r.Route("/{clientId}", func(r chi.Router) {
@@ -48,6 +49,7 @@ func mapBusinessClient(c auth.Client) clientView {
 			PostLogoutRedirectUris: c.PostLogoutRedirectUris,
 			Metadata:               c.Metadata,
 			Scopes:                 c.Scopes,
+			Trusted:                c.Trusted,
 		},
 		ID: c.Id,
 		Secrets: mapList(c.Secrets, func(i auth.ClientSecret) clientSecretView {
