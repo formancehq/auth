@@ -8,7 +8,7 @@ replace github.com/formancehq/auth/pkg/client => ./pkg/client
 
 require (
 	github.com/formancehq/auth/pkg/client v0.0.0-00010101000000-000000000000
-	github.com/formancehq/go-libs/v3 v3.2.2-0.20250924173449-eb9f2c9f0a7d
+	github.com/formancehq/go-libs/v3 v3.3.0
 	github.com/go-chi/chi/v5 v5.2.3
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/google/uuid v1.6.0
@@ -22,10 +22,10 @@ require (
 	github.com/zitadel/logging v0.6.2
 	github.com/zitadel/oidc/v2 v2.12.2
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.62.0
-	go.opentelemetry.io/otel/trace v1.37.0
+	go.opentelemetry.io/otel/trace v1.38.0
 	go.uber.org/fx v1.24.0
-	golang.org/x/oauth2 v0.30.0
-	golang.org/x/text v0.28.0
+	golang.org/x/oauth2 v0.31.0
+	golang.org/x/text v0.29.0
 	gopkg.in/go-jose/go-jose.v2 v2.6.3
 	gopkg.in/yaml.v3 v3.0.1
 )
@@ -143,7 +143,7 @@ require (
 	go.opentelemetry.io/contrib/instrumentation/host v0.62.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/runtime v0.62.0 // indirect
 	go.opentelemetry.io/contrib/propagators/b3 v1.37.0 // indirect
-	go.opentelemetry.io/otel v1.37.0 // indirect
+	go.opentelemetry.io/otel v1.38.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc v1.37.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp v1.37.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.37.0 // indirect
@@ -152,7 +152,7 @@ require (
 	go.opentelemetry.io/otel/exporters/stdout/stdoutmetric v1.37.0 // indirect
 	go.opentelemetry.io/otel/exporters/stdout/stdouttrace v1.37.0 // indirect
 	go.opentelemetry.io/otel/log v0.11.0 // indirect
-	go.opentelemetry.io/otel/metric v1.37.0 // indirect
+	go.opentelemetry.io/otel/metric v1.38.0 // indirect
 	go.opentelemetry.io/otel/sdk v1.37.0 // indirect
 	go.opentelemetry.io/otel/sdk/metric v1.37.0 // indirect
 	go.opentelemetry.io/proto/otlp v1.7.0 // indirect
@@ -161,10 +161,10 @@ require (
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.27.0 // indirect
 	golang.org/x/crypto v0.41.0 // indirect
-	golang.org/x/net v0.42.0 // indirect
-	golang.org/x/sync v0.16.0 // indirect
+	golang.org/x/net v0.43.0 // indirect
+	golang.org/x/sync v0.17.0 // indirect
 	golang.org/x/sys v0.35.0 // indirect
-	golang.org/x/tools v0.35.0 // indirect
+	golang.org/x/tools v0.36.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20250603155806-513f23925822 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250603155806-513f23925822 // indirect
 	google.golang.org/grpc v1.74.2 // indirect
