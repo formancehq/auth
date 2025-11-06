@@ -3,11 +3,11 @@
 package components
 
 type Secret struct {
-	Name       string         `json:"name"`
-	Metadata   map[string]any `json:"metadata,omitempty"`
-	ID         string         `json:"id"`
-	LastDigits string         `json:"lastDigits"`
-	Clear      string         `json:"clear"`
+	Name       string            `json:"name"`
+	Metadata   map[string]string `json:"metadata,omitempty"`
+	ID         string            `json:"id"`
+	LastDigits string            `json:"lastDigits"`
+	Clear      string            `json:"clear"`
 }
 
 func (o *Secret) GetName() string {
@@ -17,7 +17,7 @@ func (o *Secret) GetName() string {
 	return o.Name
 }
 
-func (o *Secret) GetMetadata() map[string]any {
+func (o *Secret) GetMetadata() map[string]string {
 	if o == nil {
 		return nil
 	}

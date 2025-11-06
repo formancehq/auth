@@ -253,7 +253,8 @@ components:
     Metadata:
       type: object
       nullable: true
-      additionalProperties: {}
+      additionalProperties:
+        type: string
     ClientOptions:
       type: object
       properties:

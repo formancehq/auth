@@ -539,7 +539,7 @@ func NewStorageFacade(storage Storage, rp rp.RelyingParty, privateKey *rsa.Priva
 	return &storageFacade{
 		Storage: storage,
 		signingKey: signingKey{
-			id:        "id",
+			id:        KeyID,
 			algorithm: "RS256",
 			key:       privateKey,
 		},
@@ -547,3 +547,5 @@ func NewStorageFacade(storage Storage, rp rp.RelyingParty, privateKey *rsa.Priva
 		staticClients: staticClients,
 	}
 }
+
+const KeyID = "id"

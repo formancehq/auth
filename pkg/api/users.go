@@ -1,6 +1,7 @@
 package api
 
 import (
+	authlib "github.com/formancehq/go-libs/v3/auth"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -10,8 +11,8 @@ import (
 	auth "github.com/formancehq/auth/pkg"
 )
 
-func addUserRoutes(db *bun.DB, r chi.Router) {
-	r.Route("/users", func(r chi.Router) {
+func addUserRoutes(db *bun.DB, r chi.Router, authenticator authlib.Authenticator) {
+	r.With(authlib.Middleware(authenticator)).Route("/users", func(r chi.Router) {
 		r.Get("/", listUsers(db))
 		r.Route("/{userId}", func(r chi.Router) {
 			r.Get("/", readUser(db))

@@ -5,6 +5,9 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
+	authlib "github.com/formancehq/go-libs/v3/auth"
+	oidclib "github.com/formancehq/go-libs/v3/oidc"
+	"github.com/go-jose/go-jose/v4"
 	"net/http"
 	"os"
 
@@ -77,18 +80,22 @@ EL/wy5C80pa3jahniqVgO5L6zz0ZLtRIRE7aCtCIu826gctJ1+ShIso=
 )
 
 func otlpHttpClientModule(debug bool) fx.Option {
-	return fx.Provide(func() *http.Client {
-		return &http.Client{
-			Transport: otlp.NewRoundTripper(http.DefaultTransport, debug, otelhttp.WithSpanNameFormatter(func(operation string, r *http.Request) string {
-				str := fmt.Sprintf("%s %s", r.Method, r.URL.Path)
-				if len(r.URL.Query()) == 0 {
-					return str
-				}
-
-				return fmt.Sprintf("%s?%s", str, r.URL.Query().Encode())
-			})),
-		}
+	return fx.Decorate(func() *http.Client {
+		return otlpHttpClient(debug)
 	})
+}
+
+func otlpHttpClient(debug bool) *http.Client {
+	return &http.Client{
+		Transport: otlp.NewRoundTripper(http.DefaultTransport, debug, otelhttp.WithSpanNameFormatter(func(operation string, r *http.Request) string {
+			str := fmt.Sprintf("%s %s", r.Method, r.URL.Path)
+			if len(r.URL.Query()) == 0 {
+				return str
+			}
+
+			return fmt.Sprintf("%s?%s", str, r.URL.Query().Encode())
+		})),
+	}
 }
 
 func newServeCommand() *cobra.Command {
@@ -104,6 +111,7 @@ func newServeCommand() *cobra.Command {
 	cmd.Flags().String(SigningKeyFlag, defaultSigningKey, "Signing key")
 	cmd.Flags().String(ListenFlag, ":8080", "Listening address")
 	cmd.Flags().String(ConfigFlag, "", "Config file name without extension")
+	cmd.Flags().Bool(authlib.AuthCheckScopesFlag, false, "Enable scope checking")
 
 	service.AddFlags(cmd.Flags())
 	licence.AddFlags(cmd.Flags())
@@ -169,15 +177,35 @@ func runServe(cmd *cobra.Command, _ []string) error {
 	}
 
 	listen, _ := cmd.Flags().GetString(ListenFlag)
+	checkScopes, _ := cmd.Flags().GetBool(authlib.AuthCheckScopesFlag)
 	options := []fx.Option{
 		otlpHttpClientModule(service.IsDebug(cmd)),
 		fx.Supply(fx.Annotate(cmd.Context(), fx.As(new(context.Context)))),
 		sqlstorage.Module(*connectionOptions, key, service.IsDebug(cmd), o.Clients...),
 		oidc.Module(key, baseUrl, o.Clients...),
-		api.Module(listen, baseUrl, sharedapi.ServiceInfo{
-			Version: Version,
-			Debug:   service.IsDebug(cmd),
-		}, service.IsDebug(cmd)),
+		api.Module(
+			listen,
+			baseUrl,
+			sharedapi.ServiceInfo{
+				Version: Version,
+				Debug:   service.IsDebug(cmd),
+			},
+			service.IsDebug(cmd),
+		),
+		authlib.Module(authlib.ModuleConfig{
+			Enabled:     true,
+			Issuer:      baseUrl,
+			CheckScopes: checkScopes,
+			Service:     ServiceName,
+		}),
+		fx.Decorate(func() oidclib.KeySet {
+			return oidclib.NewStaticKeySet(jose.JSONWebKey{
+				Key:       &key.PublicKey,
+				KeyID:     oidc.KeyID,
+				Algorithm: string(jose.RS256),
+				Use:       oidclib.KeyUseSignature,
+			})
+		}),
 	}
 
 	delegatedIssuer, _ := cmd.Flags().GetString(DelegatedIssuerFlag)
