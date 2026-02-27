@@ -93,6 +93,8 @@ func NewOpenIDProvider(storage op.Storage, issuer string, trustedIssuers []strin
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			host := HostFromRequest(r)
 			resolved := IssuerForHost(host, issuer, trustedIssuers)
+			w.Header().Set("X-Host", host)
+			w.Header().Set("X-Issuer", resolved)
 			handler.ServeHTTP(w, r.WithContext(
 				op.ContextWithIssuer(r.Context(), resolved),
 			))
