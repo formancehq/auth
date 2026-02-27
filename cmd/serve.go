@@ -44,6 +44,7 @@ const (
 	DelegatedClientSecretFlag = "delegated-client-secret"
 	DelegatedIssuerFlag       = "delegated-issuer"
 	BaseUrlFlag               = "base-url"
+	AuthIssuersFlag           = "auth-issuers"
 	ListenFlag                = "listen"
 	SigningKeyFlag            = "signing-key"
 	ConfigFlag                = "config"
@@ -108,6 +109,7 @@ func newServeCommand() *cobra.Command {
 	cmd.Flags().String(DelegatedClientIDFlag, "", "Delegated OIDC client id")
 	cmd.Flags().String(DelegatedClientSecretFlag, "", "Delegated OIDC client secret")
 	cmd.Flags().String(BaseUrlFlag, "http://localhost:8080", "Base service url")
+	cmd.Flags().StringSlice(AuthIssuersFlag, []string{}, "Additional trusted issuer URLs for multi-domain support")
 	cmd.Flags().String(SigningKeyFlag, defaultSigningKey, "Signing key")
 	cmd.Flags().String(ListenFlag, ":8080", "Listening address")
 	cmd.Flags().String(ConfigFlag, "", "Config file name without extension")
@@ -129,6 +131,9 @@ func runServe(cmd *cobra.Command, _ []string) error {
 	if baseUrl == "" {
 		return errors.New("base url must be defined")
 	}
+
+	additionalIssuers, _ := cmd.Flags().GetStringSlice(AuthIssuersFlag)
+	trustedIssuers := append([]string{baseUrl}, additionalIssuers...)
 
 	signingKey, _ := cmd.Flags().GetString(SigningKeyFlag)
 	if signingKey == "" {
@@ -182,10 +187,11 @@ func runServe(cmd *cobra.Command, _ []string) error {
 		otlpHttpClientModule(service.IsDebug(cmd)),
 		fx.Supply(fx.Annotate(cmd.Context(), fx.As(new(context.Context)))),
 		sqlstorage.Module(*connectionOptions, key, service.IsDebug(cmd), o.Clients...),
-		oidc.Module(key, baseUrl, o.Clients...),
+		oidc.Module(key, baseUrl, trustedIssuers, o.Clients...),
 		api.Module(
 			listen,
 			baseUrl,
+			trustedIssuers,
 			sharedapi.ServiceInfo{
 				Version: Version,
 				Debug:   service.IsDebug(cmd),

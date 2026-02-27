@@ -16,7 +16,7 @@ import (
 	"go.uber.org/fx"
 )
 
-func Module(privateKey *rsa.PrivateKey, issuer string, staticClients ...auth.StaticClient) fx.Option {
+func Module(privateKey *rsa.PrivateKey, issuer string, trustedIssuers []string, staticClients ...auth.StaticClient) fx.Option {
 	return fx.Options(
 		fx.Invoke(fx.Annotate(func(router chi.Router, provider op.OpenIDProvider,
 			storage Storage, relyingParty rp.RelyingParty) {
@@ -37,7 +37,7 @@ func Module(privateKey *rsa.PrivateKey, issuer string, staticClients ...auth.Sta
 				}
 			}
 
-			return NewOpenIDProvider(storage, issuer, configuration.Issuer, keySet)
+			return NewOpenIDProvider(storage, issuer, trustedIssuers, configuration.Issuer, keySet)
 		}, fx.ParamTags(``, ``, `optional:"true"`))),
 	)
 }

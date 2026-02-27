@@ -47,12 +47,12 @@ type provider struct {
 	op.OpenIDProvider
 	delegatedIssuerJsonWebKeySet jose.JSONWebKeySet
 	delegatedIssuer              string
-	issuer                       string
+	trustedIssuers               []string
 }
 
-func (p provider) JWTProfileVerifier() JWTProfileVerifier {
+func (p provider) JWTProfileVerifier(issuer string) JWTProfileVerifier {
 	return &verifier{
-		issuer:          p.issuer,
+		issuer:          issuer,
 		delegatedIssuer: p.delegatedIssuer,
 		mat:             time.Hour,
 		offset:          0,
@@ -62,7 +62,7 @@ func (p provider) JWTProfileVerifier() JWTProfileVerifier {
 
 var _ JWTAuthorizationGrantExchanger = (*provider)(nil)
 
-func NewOpenIDProvider(storage op.Storage, issuer, delegatedIssuer string, delegatedIssuerJsonWebKeySet *jose.JSONWebKeySet) (op.OpenIDProvider, error) {
+func NewOpenIDProvider(storage op.Storage, issuer string, trustedIssuers []string, delegatedIssuer string, delegatedIssuerJsonWebKeySet *jose.JSONWebKeySet) (op.OpenIDProvider, error) {
 	var p op.OpenIDProvider
 
 	interceptors := make([]op.Option, 0)
@@ -73,8 +73,8 @@ func NewOpenIDProvider(storage op.Storage, issuer, delegatedIssuer string, deleg
 				// as the library does not implement what we needs
 				if r.URL.Path == op.DefaultEndpoints.Token.Relative() &&
 					r.FormValue("grant_type") == string(oidc.GrantTypeBearer) {
-					grantTypeBearer(issuer, &provider{
-						issuer:                       issuer,
+					grantTypeBearer(&provider{
+						trustedIssuers:               trustedIssuers,
 						OpenIDProvider:               p,
 						delegatedIssuerJsonWebKeySet: *delegatedIssuerJsonWebKeySet,
 						delegatedIssuer:              delegatedIssuer,
@@ -86,6 +86,19 @@ func NewOpenIDProvider(storage op.Storage, issuer, delegatedIssuer string, deleg
 
 		}))
 	}
+
+	// Dynamic issuer interceptor: overrides ZITADEL's StaticIssuer with the
+	// correct issuer resolved from the incoming host header.
+	interceptors = append(interceptors, op.WithHttpInterceptors(func(handler http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			host := HostFromRequest(r)
+			resolved := IssuerForHost(host, issuer, trustedIssuers)
+			handler.ServeHTTP(w, r.WithContext(
+				op.ContextWithIssuer(r.Context(), resolved),
+			))
+		})
+	}))
+
 	interceptors = append(interceptors, op.WithAllowInsecure())
 
 	p, err := op.NewOpenIDProvider(issuer, &op.Config{

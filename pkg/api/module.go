@@ -11,13 +11,15 @@ import (
 	"github.com/formancehq/go-libs/v3/health"
 	"github.com/formancehq/go-libs/v3/httpserver"
 	"github.com/formancehq/go-libs/v3/logging"
+	authoidc "github.com/formancehq/auth/pkg/oidc"
 	"github.com/zitadel/oidc/v2/pkg/op"
 	"go.uber.org/fx"
 )
 
 func CreateRootRouter(
 	logger logging.Logger,
-	issuer string,
+	defaultIssuer string,
+	trustedIssuers []string,
 	debug bool,
 ) chi.Router {
 	rootRouter := chi.NewRouter()
@@ -31,6 +33,8 @@ func CreateRootRouter(
 	})
 	rootRouter.Use(func(handler http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			host := authoidc.HostFromRequest(r)
+			issuer := authoidc.IssuerForHost(host, defaultIssuer, trustedIssuers)
 			handler.ServeHTTP(w, r.WithContext(
 				op.ContextWithIssuer(r.Context(), issuer),
 			))
@@ -43,12 +47,12 @@ func addInfoRoute(router chi.Router, serviceInfo api.ServiceInfo) {
 	router.Get("/_info", api.InfoHandler(serviceInfo))
 }
 
-func Module(addr, issuer string, serviceInfo api.ServiceInfo, debug bool) fx.Option {
+func Module(addr, defaultIssuer string, trustedIssuers []string, serviceInfo api.ServiceInfo, debug bool) fx.Option {
 	return fx.Options(
 		health.Module(),
 		fx.Supply(serviceInfo),
 		fx.Provide(func(logger logging.Logger) chi.Router {
-			return CreateRootRouter(logger, issuer, debug)
+			return CreateRootRouter(logger, defaultIssuer, trustedIssuers, debug)
 		}),
 		fx.Invoke(
 			addInfoRoute,
