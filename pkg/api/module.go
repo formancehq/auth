@@ -35,6 +35,11 @@ func CreateRootRouter(
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			host := authoidc.HostFromRequest(r)
 			issuer := authoidc.IssuerForHost(host, defaultIssuer, trustedIssuers)
+			// Rewrite r.Host so ZITADEL's dynamic IssuerFromRequest reads
+			// the correct host for discovery and other OIDC endpoints.
+			if h := authoidc.HostFromIssuer(issuer); h != "" {
+				r.Host = h
+			}
 			handler.ServeHTTP(w, r.WithContext(
 				op.ContextWithIssuer(r.Context(), issuer),
 			))

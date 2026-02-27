@@ -23,3 +23,12 @@ func IssuerForHost(host, defaultIssuer string, trustedIssuers []string) string {
 	}
 	return defaultIssuer
 }
+
+// HostFromIssuer extracts the host component from an issuer URL.
+func HostFromIssuer(issuer string) string {
+	u, err := url.Parse(issuer)
+	if err != nil {
+		return ""
+	}
+	return u.Host
+}
