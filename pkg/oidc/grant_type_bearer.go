@@ -67,11 +67,13 @@ type JWTProfileVerifier interface {
 
 type JWTAuthorizationGrantExchanger interface {
 	op.Exchanger
-	JWTProfileVerifier() JWTProfileVerifier
+	JWTProfileVerifier(issuer string) JWTProfileVerifier
 }
 
-func grantTypeBearer(issuer string, p JWTAuthorizationGrantExchanger) http.HandlerFunc {
+func grantTypeBearer(p JWTAuthorizationGrantExchanger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		issuer := op.IssuerFromContext(r.Context())
+
 		profileRequest, err := op.ParseJWTProfileGrantRequest(r, p.Decoder())
 		if err != nil {
 			op.RequestError(w, r, err)
@@ -95,7 +97,7 @@ func grantTypeBearer(issuer string, p JWTAuthorizationGrantExchanger) http.Handl
 			}
 		}
 
-		tokenRequest, err := VerifyJWTAssertion(r.Context(), profileRequest.Assertion, p.JWTProfileVerifier())
+		tokenRequest, err := VerifyJWTAssertion(r.Context(), profileRequest.Assertion, p.JWTProfileVerifier(issuer))
 		if err != nil {
 			op.RequestError(w, r, err)
 			return
@@ -115,7 +117,7 @@ func grantTypeBearer(issuer string, p JWTAuthorizationGrantExchanger) http.Handl
 
 		tokenRequest.Scopes = tokens.Scopes
 
-		resp, err := CreateJWTTokenResponse(r.Context(), issuer, tokenRequest, p, client)
+		resp, err := CreateJWTTokenResponse(r.Context(), tokenRequest, p, client)
 		if err != nil {
 			op.RequestError(w, r, err)
 			return
@@ -136,7 +138,9 @@ func ParseAssertion(assertion string) (*oidc.AccessTokenClaims, error) {
 	return claims, nil
 }
 
-func CreateJWTTokenResponse(ctx context.Context, issuer string, tokenRequest *oidc.JWTTokenRequest, creator op.TokenCreator, client op.Client) (*oidc.AccessTokenResponse, error) {
+func CreateJWTTokenResponse(ctx context.Context, tokenRequest *oidc.JWTTokenRequest, creator op.TokenCreator, client op.Client) (*oidc.AccessTokenResponse, error) {
+	issuer := op.IssuerFromContext(ctx)
+
 	id, exp, err := creator.Storage().CreateAccessToken(ctx, tokenRequest)
 	if err != nil {
 		return nil, err

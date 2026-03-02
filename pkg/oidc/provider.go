@@ -3,6 +3,7 @@ package oidc
 import (
 	"crypto/sha256"
 	"net/http"
+	"net/url"
 	"time"
 
 	"github.com/zitadel/oidc/v2/pkg/oidc"
@@ -47,12 +48,12 @@ type provider struct {
 	op.OpenIDProvider
 	delegatedIssuerJsonWebKeySet jose.JSONWebKeySet
 	delegatedIssuer              string
-	issuer                       string
+	trustedIssuers               []string
 }
 
-func (p provider) JWTProfileVerifier() JWTProfileVerifier {
+func (p provider) JWTProfileVerifier(issuer string) JWTProfileVerifier {
 	return &verifier{
-		issuer:          p.issuer,
+		issuer:          issuer,
 		delegatedIssuer: p.delegatedIssuer,
 		mat:             time.Hour,
 		offset:          0,
@@ -62,8 +63,13 @@ func (p provider) JWTProfileVerifier() JWTProfileVerifier {
 
 var _ JWTAuthorizationGrantExchanger = (*provider)(nil)
 
-func NewOpenIDProvider(storage op.Storage, issuer, delegatedIssuer string, delegatedIssuerJsonWebKeySet *jose.JSONWebKeySet) (op.OpenIDProvider, error) {
+func NewOpenIDProvider(storage op.Storage, issuer string, trustedIssuers []string, delegatedIssuer string, delegatedIssuerJsonWebKeySet *jose.JSONWebKeySet) (op.OpenIDProvider, error) {
 	var p op.OpenIDProvider
+
+	parsedIssuer, err := url.Parse(issuer)
+	if err != nil {
+		return nil, err
+	}
 
 	interceptors := make([]op.Option, 0)
 	if delegatedIssuer != "" {
@@ -73,8 +79,8 @@ func NewOpenIDProvider(storage op.Storage, issuer, delegatedIssuer string, deleg
 				// as the library does not implement what we needs
 				if r.URL.Path == op.DefaultEndpoints.Token.Relative() &&
 					r.FormValue("grant_type") == string(oidc.GrantTypeBearer) {
-					grantTypeBearer(issuer, &provider{
-						issuer:                       issuer,
+					grantTypeBearer(&provider{
+						trustedIssuers:               trustedIssuers,
 						OpenIDProvider:               p,
 						delegatedIssuerJsonWebKeySet: *delegatedIssuerJsonWebKeySet,
 						delegatedIssuer:              delegatedIssuer,
@@ -86,9 +92,15 @@ func NewOpenIDProvider(storage op.Storage, issuer, delegatedIssuer string, deleg
 
 		}))
 	}
-	interceptors = append(interceptors, op.WithAllowInsecure())
 
-	p, err := op.NewOpenIDProvider(issuer, &op.Config{
+	if parsedIssuer.Scheme == "http" {
+		interceptors = append(interceptors, op.WithAllowInsecure())
+	}
+
+	// Use NewDynamicOpenIDProvider so ZITADEL reads the issuer from r.Host
+	// (which is set by the chi middleware based on trusted issuers) instead
+	// of using a static issuer string.
+	p, err = op.NewDynamicOpenIDProvider(parsedIssuer.Path, &op.Config{
 		CryptoKey:                sha256.Sum256([]byte("test")),
 		DefaultLogoutRedirectURI: pathLoggedOut,
 		CodeMethodS256:           true,
