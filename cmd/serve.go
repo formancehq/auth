@@ -200,17 +200,22 @@ func runServe(cmd *cobra.Command, _ []string) error {
 		),
 		authlib.Module(authlib.ModuleConfig{
 			Enabled:     true,
-			Issuer:      baseUrl,
+			Issuers:     trustedIssuers,
 			CheckScopes: checkScopes,
 			Service:     ServiceName,
 		}),
-		fx.Decorate(func() oidclib.KeySet {
-			return oidclib.NewStaticKeySet(jose.JSONWebKey{
+		fx.Decorate(func() authlib.Authenticator {
+			staticKeySet := oidclib.NewStaticKeySet(jose.JSONWebKey{
 				Key:       &key.PublicKey,
 				KeyID:     oidc.KeyID,
 				Algorithm: string(jose.RS256),
 				Use:       oidclib.KeyUseSignature,
 			})
+			keySets := make(map[string]oidclib.KeySet, len(trustedIssuers))
+			for _, issuer := range trustedIssuers {
+				keySets[issuer] = staticKeySet
+			}
+			return authlib.NewJWTAuth(keySets, ServiceName, checkScopes)
 		}),
 	}
 
