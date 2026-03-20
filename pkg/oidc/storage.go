@@ -139,7 +139,7 @@ func (s *storageFacade) SetUserinfoFromScopes(ctx context.Context, userinfo *oid
 }
 
 func (s *storageFacade) SetUserinfoFromToken(ctx context.Context, userinfo *oidc.UserInfo, tokenID, subject, origin string) error {
-	token, err := s.Storage.FindAccessToken(ctx, tokenID)
+	token, err := s.FindAccessToken(ctx, tokenID)
 	if err != nil {
 		return err
 	}
@@ -147,7 +147,7 @@ func (s *storageFacade) SetUserinfoFromToken(ctx context.Context, userinfo *oidc
 }
 
 func (s *storageFacade) SetIntrospectionFromToken(ctx context.Context, introspection *oidc.IntrospectionResponse, tokenID, subject, clientID string) error {
-	token, err := s.Storage.FindAccessToken(ctx, tokenID)
+	token, err := s.FindAccessToken(ctx, tokenID)
 	if err != nil {
 		return err
 	}
@@ -220,7 +220,7 @@ func (s *storageFacade) CreateAuthRequest(ctx context.Context, authReq *oidc.Aut
 		ID: uuid.NewString(),
 	}
 
-	if err := s.Storage.SaveAuthRequest(ctx, &request); err != nil {
+	if err := s.SaveAuthRequest(ctx, &request); err != nil {
 		return nil, err
 	}
 
@@ -237,7 +237,7 @@ func (s *storageFacade) AuthRequestByCode(ctx context.Context, code string) (op.
 // it will be called after the authentication has been successful and before redirecting the user agent to the redirect_uri
 // (in an authorization code flow)
 func (s *storageFacade) SaveAuthCode(ctx context.Context, id string, code string) error {
-	return s.Storage.UpdateAuthRequestCode(ctx, id, code)
+	return s.UpdateAuthRequestCode(ctx, id, code)
 }
 
 // CreateAccessToken implements the op.Storage interface
@@ -292,7 +292,7 @@ func (s *storageFacade) CreateAccessAndRefreshTokens(ctx context.Context, reques
 // TokenRequestByRefreshToken implements the op.Storage interface
 // it will be called after parsing and validation of the refresh token request
 func (s *storageFacade) TokenRequestByRefreshToken(ctx context.Context, refreshToken string) (op.RefreshTokenRequest, error) {
-	token, err := s.Storage.FindRefreshToken(ctx, refreshToken)
+	token, err := s.FindRefreshToken(ctx, refreshToken)
 	if err != nil {
 		return nil, fmt.Errorf("invalid refresh_token")
 	}
@@ -302,14 +302,14 @@ func (s *storageFacade) TokenRequestByRefreshToken(ctx context.Context, refreshT
 // TerminateSession implements the op.Storage interface
 // it will be called after the user signed out, therefore the access and refresh token of the user of this client must be removed
 func (s *storageFacade) TerminateSession(ctx context.Context, userID string, clientID string) error {
-	return s.Storage.DeleteAccessTokensForUserAndClient(ctx, userID, clientID)
+	return s.DeleteAccessTokensForUserAndClient(ctx, userID, clientID)
 }
 
 // RevokeToken implements the op.Storage interface
 // it will be called after parsing and validation of the token revocation request
 func (s *storageFacade) RevokeToken(ctx context.Context, tokenStr string, userID string, clientID string) *oidc.Error {
 
-	accessToken, err := s.Storage.FindAccessToken(ctx, tokenStr)
+	accessToken, err := s.FindAccessToken(ctx, tokenStr)
 	if storage.IgnoreNotFoundError(err) != nil {
 		return oidc.ErrServerError().WithDescription("%s", err)
 	}
@@ -317,13 +317,13 @@ func (s *storageFacade) RevokeToken(ctx context.Context, tokenStr string, userID
 		if accessToken.ApplicationID != clientID {
 			return oidc.ErrInvalidClient().WithDescription("token was not issued for this client")
 		}
-		if err := s.Storage.DeleteAccessToken(ctx, tokenStr); err != nil {
+		if err := s.DeleteAccessToken(ctx, tokenStr); err != nil {
 			return oidc.ErrServerError().WithDescription("%s", err)
 		}
 		return nil
 	}
 
-	refreshToken, err := s.Storage.FindRefreshToken(ctx, tokenStr)
+	refreshToken, err := s.FindRefreshToken(ctx, tokenStr)
 	if storage.IgnoreNotFoundError(err) != nil {
 		return oidc.ErrServerError().WithDescription("%s", err)
 	}
@@ -331,10 +331,10 @@ func (s *storageFacade) RevokeToken(ctx context.Context, tokenStr string, userID
 		if refreshToken.ApplicationID != clientID {
 			return oidc.ErrInvalidClient().WithDescription("token was not issued for this client")
 		}
-		if err := s.Storage.DeleteRefreshToken(ctx, tokenStr); err != nil {
+		if err := s.DeleteRefreshToken(ctx, tokenStr); err != nil {
 			return oidc.ErrServerError().WithDescription("%s", err)
 		}
-		if err := s.Storage.DeleteAccessTokensByRefreshToken(ctx, tokenStr); err != nil {
+		if err := s.DeleteAccessTokensByRefreshToken(ctx, tokenStr); err != nil {
 			return oidc.ErrServerError().WithDescription("%s", err)
 		}
 		return nil
@@ -351,7 +351,7 @@ func (s *storageFacade) findClient(ctx context.Context, clientID string) (Client
 	}
 	if client == nil {
 		var err error
-		client, err = s.Storage.FindClient(ctx, clientID)
+		client, err = s.FindClient(ctx, clientID)
 		if err != nil {
 			return nil, err
 		}
@@ -412,7 +412,7 @@ func (s *storageFacade) createRefreshToken(ctx context.Context, applicationID st
 		Expiration:    time.Now().Add(5 * time.Hour),
 		Scopes:        scopes,
 	}
-	if err := s.Storage.SaveRefreshToken(ctx, &token); err != nil {
+	if err := s.SaveRefreshToken(ctx, &token); err != nil {
 		return nil, err
 	}
 	return &token, nil
@@ -420,15 +420,15 @@ func (s *storageFacade) createRefreshToken(ctx context.Context, applicationID st
 
 // renewRefreshToken checks the provided refresh_token and creates a new one based on the current
 func (s *storageFacade) renewRefreshToken(ctx context.Context, currentRefreshToken string) (*auth.RefreshToken, error) {
-	refreshToken, err := s.Storage.FindRefreshToken(ctx, currentRefreshToken)
+	refreshToken, err := s.FindRefreshToken(ctx, currentRefreshToken)
 	if err != nil {
 		return nil, err
 	}
 	//deletes the refresh token and all access tokens which were issued based on this refresh token
-	if err := s.Storage.DeleteRefreshToken(ctx, currentRefreshToken); err != nil {
+	if err := s.DeleteRefreshToken(ctx, currentRefreshToken); err != nil {
 		return nil, err
 	}
-	if err := s.Storage.DeleteAccessTokensByRefreshToken(ctx, currentRefreshToken); err != nil {
+	if err := s.DeleteAccessTokensByRefreshToken(ctx, currentRefreshToken); err != nil {
 		return nil, err
 	}
 	//creates a new refresh token based on the current one
@@ -463,7 +463,7 @@ func (s *storageFacade) saveAccessToken(ctx context.Context, refreshToken *auth.
 			return refreshToken.ID
 		}(),
 	}
-	if err := s.Storage.SaveAccessToken(ctx, &token); err != nil {
+	if err := s.SaveAccessToken(ctx, &token); err != nil {
 		return nil, err
 	}
 	return &token, nil
@@ -472,7 +472,7 @@ func (s *storageFacade) saveAccessToken(ctx context.Context, refreshToken *auth.
 // setUserinfo sets the info based on the user, scopes and if necessary the clientID
 func (s *storageFacade) setUserinfo(ctx context.Context, userInfo *oidc.UserInfo, userID string, scopes []string) (err error) {
 
-	user, err := s.Storage.FindUser(ctx, userID)
+	user, err := s.FindUser(ctx, userID)
 	if err != nil {
 		return err
 	}

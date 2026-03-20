@@ -25,7 +25,7 @@ func (o *openIDKeySet) VerifySignature(ctx context.Context, jws *jose.JSONWebSig
 		key jose.JSONWebKey
 		err error
 	)
-	key, err = oidc.FindMatchingKey(keyID, oidc.KeyUseSignature, alg, o.JSONWebKeySet.Keys...)
+	key, err = oidc.FindMatchingKey(keyID, oidc.KeyUseSignature, alg, o.Keys...)
 	if err != nil {
 		return nil, fmt.Errorf("invalid signature: %w", err)
 	}
