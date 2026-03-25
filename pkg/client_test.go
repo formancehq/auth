@@ -41,7 +41,7 @@ func TestStaticClientFromEnvironment(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run("TestStaticClientFromEnvironment", func(t *testing.T) {
 			for key, value := range tc.environmentVariables {
-				os.Setenv(key, value)
+				_ = os.Setenv(key, value)
 			}
 
 			for _, staticClient := range tc.staticClients {

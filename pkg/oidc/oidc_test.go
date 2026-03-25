@@ -90,7 +90,7 @@ func withServer(t *testing.T, fn func(m *mockoidc.MockOIDC, storage *sqlstorage.
 		DatabaseSourceName: postgresDB.ConnString(),
 	}, hooks...)
 	require.NoError(t, err)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	require.NoError(t, sqlstorage.Migrate(context.TODO(), db))
 
@@ -125,7 +125,7 @@ func withServer(t *testing.T, fn func(m *mockoidc.MockOIDC, storage *sqlstorage.
 			require.Fail(t, err.Error())
 		}
 	}()
-	defer providerHttpServer.Close()
+	defer func() { _ = providerHttpServer.Close() }()
 
 	fn(mockOIDC, storage, serverUrl, provider)
 }

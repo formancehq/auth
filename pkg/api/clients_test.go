@@ -36,7 +36,7 @@ func withDbAndClientRouter(t *testing.T, callback func(router chi.Router, db *bu
 		DatabaseSourceName: pgDatabase.ConnString(),
 	}, hooks...)
 	require.NoError(t, err)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	require.NoError(t, sqlstorage.Migrate(context.Background(), db))
 
