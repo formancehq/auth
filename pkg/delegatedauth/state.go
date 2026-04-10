@@ -12,7 +12,11 @@ type DelegatedState struct {
 
 func (s DelegatedState) EncodeAsUrlParam() string {
 	buf := bytes.NewBufferString("")
-	if err := json.NewEncoder(base64.NewEncoder(base64.URLEncoding, buf)).Encode(s); err != nil {
+	encoder := base64.NewEncoder(base64.URLEncoding, buf)
+	if err := json.NewEncoder(encoder).Encode(s); err != nil {
+		panic(err)
+	}
+	if err := encoder.Close(); err != nil {
 		panic(err)
 	}
 	return buf.String()
