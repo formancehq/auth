@@ -33,6 +33,7 @@ import (
 	"github.com/formancehq/go-libs/v3/service"
 	"github.com/formancehq/go-libs/v5/pkg/fx/messagingfx"
 	"github.com/formancehq/go-libs/v5/pkg/messaging/publish"
+	logging5 "github.com/formancehq/go-libs/v5/pkg/observe/log"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	zLogging "github.com/zitadel/logging"
@@ -188,6 +189,9 @@ func runServe(cmd *cobra.Command, _ []string) error {
 	checkScopes, _ := cmd.Flags().GetBool(authlib.AuthCheckScopesFlag)
 	options := []fx.Option{
 		otlpHttpClientModule(service.IsDebug(cmd)),
+		fx.Provide(func() logging5.Logger {
+			return logging5.NewDefaultLogger(cmd.OutOrStdout(), service.IsDebug(cmd), false, false)
+		}),
 		messagingfx.PublishModuleFromFlags(cmd, service.IsDebug(cmd)),
 		fx.Supply(fx.Annotate(cmd.Context(), fx.As(new(context.Context)))),
 		sqlstorage.Module(*connectionOptions, key, service.IsDebug(cmd), o.Clients...),
