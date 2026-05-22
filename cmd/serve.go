@@ -31,6 +31,8 @@ import (
 	"github.com/formancehq/go-libs/v3/otlp/otlpmetrics"
 	"github.com/formancehq/go-libs/v3/otlp/otlptraces"
 	"github.com/formancehq/go-libs/v3/service"
+	"github.com/formancehq/go-libs/v5/pkg/fx/messagingfx"
+	"github.com/formancehq/go-libs/v5/pkg/messaging/publish"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	zLogging "github.com/zitadel/logging"
@@ -115,6 +117,7 @@ func newServeCommand() *cobra.Command {
 	cmd.Flags().String(ConfigFlag, "", "Config file name without extension")
 	cmd.Flags().Bool(authlib.AuthCheckScopesFlag, false, "Enable scope checking")
 
+	publish.AddFlags("auth", cmd.Flags())
 	service.AddFlags(cmd.Flags())
 	licence.AddFlags(cmd.Flags())
 	otlp.AddFlags(cmd.Flags())
@@ -185,6 +188,7 @@ func runServe(cmd *cobra.Command, _ []string) error {
 	checkScopes, _ := cmd.Flags().GetBool(authlib.AuthCheckScopesFlag)
 	options := []fx.Option{
 		otlpHttpClientModule(service.IsDebug(cmd)),
+		messagingfx.PublishModuleFromFlags(cmd, service.IsDebug(cmd)),
 		fx.Supply(fx.Annotate(cmd.Context(), fx.As(new(context.Context)))),
 		sqlstorage.Module(*connectionOptions, key, service.IsDebug(cmd), o.Clients...),
 		oidc.Module(key, baseUrl, trustedIssuers, o.Clients...),
