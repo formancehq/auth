@@ -31,6 +31,7 @@ import (
 	"github.com/formancehq/go-libs/v3/otlp/otlpmetrics"
 	"github.com/formancehq/go-libs/v3/otlp/otlptraces"
 	"github.com/formancehq/go-libs/v3/service"
+	"github.com/formancehq/go-libs/v5/pkg/audit"
 	"github.com/formancehq/go-libs/v5/pkg/fx/messagingfx"
 	"github.com/formancehq/go-libs/v5/pkg/messaging/publish"
 	logging5 "github.com/formancehq/go-libs/v5/pkg/observe/log"
@@ -118,6 +119,7 @@ func newServeCommand() *cobra.Command {
 	cmd.Flags().String(ConfigFlag, "", "Config file name without extension")
 	cmd.Flags().Bool(authlib.AuthCheckScopesFlag, false, "Enable scope checking")
 
+	audit.AddFlags(cmd.Flags())
 	publish.AddFlags("auth", cmd.Flags())
 	service.AddFlags(cmd.Flags())
 	licence.AddFlags(cmd.Flags())
@@ -187,6 +189,12 @@ func runServe(cmd *cobra.Command, _ []string) error {
 
 	listen, _ := cmd.Flags().GetString(ListenFlag)
 	checkScopes, _ := cmd.Flags().GetBool(authlib.AuthCheckScopesFlag)
+
+	auditConfig, err := audit.ConfigFromFlags(cmd.Flags())
+	if err != nil {
+		return err
+	}
+
 	options := []fx.Option{
 		otlpHttpClientModule(service.IsDebug(cmd)),
 		fx.Provide(func() logging5.Logger {
@@ -205,6 +213,7 @@ func runServe(cmd *cobra.Command, _ []string) error {
 				Debug:   service.IsDebug(cmd),
 			},
 			service.IsDebug(cmd),
+			auditConfig,
 		),
 		authlib.Module(authlib.ModuleConfig{
 			Enabled:     true,

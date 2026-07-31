@@ -7,6 +7,7 @@ import (
 	"github.com/go-chi/chi/v5"
 
 	"github.com/formancehq/go-libs/v3/service"
+	"github.com/formancehq/go-libs/v5/pkg/audit"
 	"github.com/formancehq/go-libs/v5/pkg/audit/httpaudit"
 
 	"github.com/formancehq/go-libs/v3/api"
@@ -24,10 +25,12 @@ func CreateRootRouter(
 	defaultIssuer string,
 	trustedIssuers []string,
 	debug bool,
+	auditConfig audit.Config,
 ) chi.Router {
 	rootRouter := chi.NewRouter()
 	rootRouter.Use(service.OTLPMiddleware("auth", debug))
 	rootRouter.Use(httpaudit.Middleware(publisher, "audit", "auth", nil,
+		httpaudit.WithConfig(auditConfig),
 		httpaudit.WithSensitivePaths("/api/auth/oauth/token"),
 	))
 	rootRouter.Use(httpserver.LoggerMiddleware(logger))
@@ -58,12 +61,12 @@ func addInfoRoute(router chi.Router, serviceInfo api.ServiceInfo) {
 	router.Get("/_info", api.InfoHandler(serviceInfo))
 }
 
-func Module(addr, defaultIssuer string, trustedIssuers []string, serviceInfo api.ServiceInfo, debug bool) fx.Option {
+func Module(addr, defaultIssuer string, trustedIssuers []string, serviceInfo api.ServiceInfo, debug bool, auditConfig audit.Config) fx.Option {
 	return fx.Options(
 		health.Module(),
 		fx.Supply(serviceInfo),
 		fx.Provide(func(logger logging.Logger, publisher message.Publisher) chi.Router {
-			return CreateRootRouter(logger, publisher, defaultIssuer, trustedIssuers, debug)
+			return CreateRootRouter(logger, publisher, defaultIssuer, trustedIssuers, debug, auditConfig)
 		}),
 		fx.Invoke(
 			addInfoRoute,
