@@ -8,7 +8,7 @@ require (
 	github.com/ThreeDotsLabs/watermill v1.5.1
 	github.com/formancehq/auth/pkg/client v0.0.0-00010101000000-000000000000
 	github.com/formancehq/go-libs/v3 v3.6.1
-	github.com/formancehq/go-libs/v5 v5.1.1-0.20260522083443-d2a60ed2e0dd
+	github.com/formancehq/go-libs/v5 v5.6.1
 	github.com/go-chi/chi/v5 v5.2.5
 	github.com/go-jose/go-jose/v4 v4.1.4
 	github.com/golang-jwt/jwt v3.2.2+incompatible
