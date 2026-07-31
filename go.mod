@@ -8,7 +8,7 @@ require (
 	github.com/ThreeDotsLabs/watermill v1.5.1
 	github.com/formancehq/auth/pkg/client v0.0.0-00010101000000-000000000000
 	github.com/formancehq/go-libs/v3 v3.6.1
-	github.com/formancehq/go-libs/v5 v5.1.1-0.20260522083443-d2a60ed2e0dd
+	github.com/formancehq/go-libs/v5 v5.7.0
 	github.com/go-chi/chi/v5 v5.2.5
 	github.com/go-jose/go-jose/v4 v4.1.4
 	github.com/golang-jwt/jwt v3.2.2+incompatible
@@ -163,7 +163,7 @@ require (
 	github.com/oklog/ulid v1.3.1 // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.1.1 // indirect
-	github.com/opencontainers/runc v1.2.8 // indirect
+	github.com/opencontainers/runc v1.3.6 // indirect
 	github.com/ory/dockertest/v3 v3.12.0 // indirect
 	github.com/perimeterx/marshmallow v1.1.5 // indirect
 	github.com/pierrec/lz4/v4 v4.1.26 // indirect
