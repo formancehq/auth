@@ -253,6 +253,7 @@ components:
     Metadata:
       type: object
       nullable: true
+      description: Arbitrary key/value pairs attached to the resource
       additionalProperties:
         type: string
     ClientOptions:
@@ -260,24 +261,31 @@ components:
       properties:
         public:
           type: boolean
+          description: Whether the client is public, meaning it cannot keep a secret and uses PKCE instead
         redirectUris:
           type: array
+          description: URIs the authorization server may redirect to after a successful authorization
           items:
             type: string
         description:
           type: string
+          description: Human-readable description of the client
         name:
           type: string
+          description: Display name of the client
         trusted:
           type: boolean
+          description: Whether the client is trusted, skipping the user consent screen
         postLogoutRedirectUris:
           type: array
+          description: URIs the authorization server may redirect to after logout
           items:
             type: string
         metadata:
           $ref: '#/components/schemas/Metadata'
         scopes:
           type: array
+          description: Scopes the client is allowed to request
           items:
             type: string
       required:
@@ -287,10 +295,13 @@ components:
       properties:
         lastDigits:
           type: string
+          description: Last digits of the secret, the only part retained after creation
         name:
           type: string
+          description: Human-readable name identifying the secret
         id:
           type: string
+          description: Unique identifier of the secret
         metadata:
           $ref: '#/components/schemas/Metadata'
       required:
@@ -298,6 +309,7 @@ components:
         - lastDigits
         - name
     Client:
+      description: An OAuth2 client registered on the stack
       allOf:
         - $ref: '#/components/schemas/ClientOptions'
         - type: object
@@ -315,6 +327,7 @@ components:
       properties:
         label:
           type: string
+          description: Human-readable label for the scope
         metadata:
           $ref: '#/components/schemas/Metadata'
       required:
@@ -337,11 +350,13 @@ components:
       properties:
         name:
           type: string
+          description: Human-readable name identifying the secret
         metadata:
           $ref: '#/components/schemas/Metadata'
       required:
         - name
     Secret:
+      description: A client secret. The full value is returned only at creation and cannot be retrieved again
       allOf:
         - $ref: '#/components/schemas/SecretOptions'
         - type: object
@@ -358,15 +373,19 @@ components:
             - clear
     User:
       type: object
+      description: A user known to the stack's identity provider
       properties:
         id:
           type: string
+          description: Unique identifier of the user
           example: 3bb03708-312f-48a0-821a-e765837dc2c4
         subject:
           type: string
+          description: Subject claim identifying the user with the identity provider
           example: Jane Doe
         email:
           type: string
+          description: Email address of the user
           example: user1@orga1.com
     CreateClientRequest:
       $ref: '#/components/schemas/ClientOptions'
@@ -380,6 +399,7 @@ components:
       properties:
         data:
           type: array
+          description: The clients registered on this stack
           items:
             $ref: '#/components/schemas/Client'
     UpdateClientRequest:
@@ -408,6 +428,7 @@ components:
       properties:
         data:
           type: array
+          description: The users known to this stack
           items:
             $ref: '#/components/schemas/User'
     ServerInfo:
@@ -417,3 +438,4 @@ components:
       properties:
         version:
           type: string
+          description: Version of the auth service
