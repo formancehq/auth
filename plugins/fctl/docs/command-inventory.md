@@ -157,9 +157,10 @@ Derived from method semantics only, and only that. `createClient` and
 `createSecret` are POSTs and the document declares no idempotency key header or
 request field anywhere, so a retried call creates a second object — for
 `createSecret`, a second live credential. `updateClient` is a PUT full
-replacement and both deletes are DELETEs, so all three are idempotent by
-method. Whether the server honours those semantics is unverified; no server was
-contacted.
+replacement; the plugin performs a bounded `readClient` first and merges only
+the explicitly supplied flags so omitted fields are not reset. Both deletes are
+DELETEs, so all three mutations are idempotent by method. Whether the server
+honours those semantics is unverified; no server was contacted.
 
 ### Pagination and streaming
 

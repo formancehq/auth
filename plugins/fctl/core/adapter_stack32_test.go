@@ -25,15 +25,18 @@ func TestExecuteDispatchesEveryAuthOperationThroughProductHTTP(t *testing.T) {
 		{"auth.v1.clients.create", "createClient", "POST", "/clients", `{"data":{"id":"c1","name":"app"}}`, []string{"app"}, 201, sdk.ResultObject},
 		{"auth.v1.clients.show", "readClient", "GET", "/clients/c1", `{"data":{"id":"c1","name":"app"}}`, []string{"c1"}, 200, sdk.ResultObject},
 		{"auth.v1.clients.update", "updateClient", "PUT", "/clients/c1", `{"data":{"id":"c1","name":"c1"}}`, []string{"c1"}, 200, sdk.ResultObject},
-		{"auth.v1.clients.delete", "deleteClient", "DELETE", "/clients/c1", "", []string{"c1"}, 204, sdk.ResultEmpty},
+		{"auth.v1.clients.delete", "deleteClient", "DELETE", "/clients/c1", "", []string{"c1"}, 204, sdk.ResultObject},
 		{"auth.v1.clients.secrets.create", "createSecret", "POST", "/clients/c1/secrets", `{"data":{"id":"s1","name":"main","lastDigits":"1234","clear":"must-not-emit"}}`, []string{"c1", "main"}, 200, sdk.ResultObject},
-		{"auth.v1.clients.secrets.delete", "deleteSecret", "DELETE", "/clients/c1/secrets/s1", "", []string{"c1", "s1"}, 204, sdk.ResultEmpty},
+		{"auth.v1.clients.secrets.delete", "deleteSecret", "DELETE", "/clients/c1/secrets/s1", "", []string{"c1", "s1"}, 204, sdk.ResultObject},
 		{"auth.v1.users.list", "listUsers", "GET", "/users", `{"data":[]}`, nil, 200, sdk.ResultCollection},
 		{"auth.v1.users.show", "readUser", "GET", "/users/u1", `{"data":{"id":"u1","email":"u@example.test"}}`, []string{"u1"}, 200, sdk.ResultObject},
 	}
 	for _, test := range tests {
 		t.Run(test.operation, func(t *testing.T) {
 			host := sdk.NewMemoryHost(func(_ context.Context, request sdk.Request) (sdk.Responses, error) {
+				if test.operation == "updateClient" && request.Operation == "readClient" {
+					return sdk.NewResponseStream(sdk.Response{Status: 200, ContentType: "application/json", Body: []byte(`{"data":{"id":"c1","name":"c1"}}`)}), nil
+				}
 				if request.Service != sdk.ServiceAuth || request.Capability != "auth.stack" || request.Operation != test.operation || request.HTTP == nil || request.HTTP.Method != test.method || request.HTTP.Path != test.path {
 					t.Fatalf("request = %#v", request)
 				}
@@ -44,6 +47,9 @@ func TestExecuteDispatchesEveryAuthOperationThroughProductHTTP(t *testing.T) {
 			}
 			if len(host.Events()) != 1 || host.Events()[0].Result == nil || host.Events()[0].Result.OperationID != test.id || host.Events()[0].Result.Shape != test.shape {
 				t.Fatalf("events = %#v", host.Events())
+			}
+			if test.status == 204 && string(host.Events()[0].Result.Data) != `{}` {
+				t.Fatalf("empty mutation result = %s, want canonical JSON object", host.Events()[0].Result.Data)
 			}
 			if test.operation == "createSecret" {
 				var result any
@@ -58,6 +64,92 @@ func TestExecuteDispatchesEveryAuthOperationThroughProductHTTP(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func TestUpdatePreservesExistingValuesForOmittedFlags(t *testing.T) {
+	t.Parallel()
+	calls := 0
+	host := sdk.NewMemoryHost(func(_ context.Context, request sdk.Request) (sdk.Responses, error) {
+		calls++
+		switch calls {
+		case 1:
+			if request.Operation != "readClient" || request.HTTP == nil || request.HTTP.Method != "GET" || request.HTTP.Path != "/clients/c1" {
+				t.Fatalf("first request = %#v, want readClient", request)
+			}
+			return sdk.NewResponseStream(sdk.Response{Status: 200, ContentType: "application/json", Body: []byte(`{"data":{"id":"c1","name":"existing-name","public":true,"trusted":true,"description":"old description","redirectUris":["https://example.test/callback"],"postLogoutRedirectUris":["https://example.test/logout"],"metadata":{"owner":"team"},"scopes":["ledger:read"]}}`)}), nil
+		case 2:
+			if request.Operation != "updateClient" || request.HTTP == nil || request.HTTP.Method != "PUT" || request.HTTP.Path != "/clients/c1" {
+				t.Fatalf("second request = %#v, want updateClient", request)
+			}
+			var body map[string]any
+			if err := json.Unmarshal(request.HTTP.Body, &body); err != nil {
+				t.Fatal(err)
+			}
+			want := map[string]any{
+				"name": "existing-name", "public": true, "trusted": true,
+				"description":            "new description",
+				"redirectUris":           []any{"https://example.test/callback"},
+				"postLogoutRedirectUris": []any{"https://example.test/logout"},
+				"metadata":               map[string]any{"owner": "team"},
+				"scopes":                 []any{"ledger:read"},
+			}
+			if !reflect.DeepEqual(body, want) {
+				t.Fatalf("update body = %#v, want %#v", body, want)
+			}
+			return sdk.NewResponseStream(sdk.Response{Status: 200, ContentType: "application/json", Body: []byte(`{"data":{"id":"c1","name":"existing-name","description":"new description"}}`)}), nil
+		default:
+			t.Fatalf("unexpected request %d: %#v", calls, request)
+			return sdk.NewResponseStream(), nil
+		}
+	})
+	request := executeRequest("auth.v1.clients.update", "c1")
+	request.Flags = []sdk.FlagOccurrence{{Name: "description", Value: "new description"}}
+	if err := (Plugin{}).Execute(context.Background(), request, host); err != nil {
+		t.Fatal(err)
+	}
+	if calls != 2 {
+		t.Fatalf("host requests = %d, want 2", calls)
+	}
+}
+
+func TestUpdateAcceptsAnExplicitClientName(t *testing.T) {
+	t.Parallel()
+	host := sdk.NewMemoryHost(func(_ context.Context, request sdk.Request) (sdk.Responses, error) {
+		switch request.Operation {
+		case "readClient":
+			return sdk.NewResponseStream(sdk.Response{Status: 200, ContentType: "application/json", Body: []byte(`{"data":{"id":"c1","name":"old-name"}}`)}), nil
+		case "updateClient":
+			var body map[string]any
+			if err := json.Unmarshal(request.HTTP.Body, &body); err != nil {
+				t.Fatal(err)
+			}
+			if body["name"] != "new-name" {
+				t.Fatalf("update name = %#v, want new-name", body["name"])
+			}
+			return sdk.NewResponseStream(sdk.Response{Status: 200, ContentType: "application/json", Body: []byte(`{"data":{"id":"c1","name":"new-name"}}`)}), nil
+		default:
+			t.Fatalf("unexpected operation %q", request.Operation)
+			return sdk.NewResponseStream(), nil
+		}
+	})
+	request := executeRequest("auth.v1.clients.update", "c1")
+	request.Flags = []sdk.FlagOccurrence{{Name: "name", Value: "new-name"}}
+	if err := (Plugin{}).Execute(context.Background(), request, host); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestUpdateRejectsAnEmptyExplicitClientName(t *testing.T) {
+	t.Parallel()
+	host := sdk.NewMemoryHost(func(_ context.Context, request sdk.Request) (sdk.Responses, error) {
+		t.Fatalf("host request = %#v, want validation before host access", request)
+		return sdk.NewResponseStream(), nil
+	})
+	request := executeRequest("auth.v1.clients.update", "c1")
+	request.Flags = []sdk.FlagOccurrence{{Name: "name", Value: ""}}
+	if err := (Plugin{}).Execute(context.Background(), request, host); err == nil {
+		t.Fatal("empty explicit name accepted")
 	}
 }
 

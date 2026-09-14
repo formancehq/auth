@@ -22,6 +22,7 @@ type commandSpec struct {
 	arguments           []sdk.Argument
 	flags               []sdk.Flag
 	operation           operationSpec
+	extraOperations     []operationSpec
 	mutating, sensitive bool
 }
 type operationSpec struct {
@@ -44,17 +45,17 @@ func (s commandSpec) command() sdk.Command {
 	if s.mutating {
 		risk = sdk.RiskMutation
 	}
-	contentTypes := []string(nil)
-	if s.operation.requestBody {
-		contentTypes = []string{"application/json"}
+	operations := make([]sdk.OperationPolicy, 0, 1+len(s.extraOperations))
+	for _, operation := range append([]operationSpec{s.operation}, s.extraOperations...) {
+		operations = append(operations, operation.policy())
 	}
 	command := sdk.Command{
 		ID: "auth.v1." + strings.Join(s.path, "."), ExecutionKind: sdk.ExecutionKindService, AuthMode: sdk.AuthModeCapability,
 		Path: s.path, PathAliases: s.aliases, Summary: s.summary, Long: s.summary + ". Endpoint, credentials and transport are supplied by the fctl host.", Example: strings.Join(s.path, " ") + " --help",
 		Arguments: args, Flags: flags, Auth: []sdk.AuthRequirement{{Capability: "auth.stack"}}, Target: sdk.TargetRequirement{Kind: sdk.TargetStack},
-		Operations:    []sdk.OperationPolicy{{ID: s.operation.id, Service: sdk.ServiceAuth, Scopes: []string{s.operation.scope}, HTTP: &sdk.HTTPOperationPolicy{Method: s.operation.method, GeneratedClient: &sdk.HTTPGeneratedClientPolicy{PathTemplate: s.operation.path, RequestContentTypes: contentTypes, RequestHeaders: []string{"Accept"}, MaxRequestBytes: requestBytes, ResponseLimits: sdk.ResponseLimits{MaxMessageBytes: responseBytes, MaxMessages: 1, MaxAggregateBytes: responseBytes}}}}},
+		Operations:    operations,
 		Compatibility: []sdk.ServiceCompatibility{{Service: sdk.ServiceAuth, Majors: []uint32{productMajor}}}, Risk: risk,
-		InputSchema: buildInputSchema(args, flags), RawOutputSchema: objectSchema, PublicOutputSchema: objectSchema, OutputMediaType: "application/json", ExecutionPolicy: &sdk.CommandExecutionPolicy{MaxHostRequests: 1},
+		InputSchema: buildInputSchema(args, flags), RawOutputSchema: objectSchema, PublicOutputSchema: objectSchema, OutputMediaType: "application/json", ExecutionPolicy: &sdk.CommandExecutionPolicy{MaxHostRequests: uint32(len(operations))},
 	}
 	if s.operation.id == "listClients" || s.operation.id == "listUsers" {
 		command.RawOutputSchema, command.PublicOutputSchema = collectionSchema, collectionSchema
@@ -63,6 +64,14 @@ func (s commandSpec) command() sdk.Command {
 		command.SensitiveOutputs = []sdk.SensitiveOutput{{JSONPointer: "/data/clear", AllowedDeliveries: []sdk.SensitiveDelivery{sdk.SensitiveDisplayOnce, sdk.SensitiveProfileAuth}}}
 	}
 	return command
+}
+
+func (s operationSpec) policy() sdk.OperationPolicy {
+	contentTypes := []string(nil)
+	if s.requestBody {
+		contentTypes = []string{"application/json"}
+	}
+	return sdk.OperationPolicy{ID: s.id, Service: sdk.ServiceAuth, Scopes: []string{s.scope}, HTTP: &sdk.HTTPOperationPolicy{Method: s.method, GeneratedClient: &sdk.HTTPGeneratedClientPolicy{PathTemplate: s.path, RequestContentTypes: contentTypes, RequestHeaders: []string{"Accept"}, MaxRequestBytes: requestBytes, ResponseLimits: sdk.ResponseLimits{MaxMessageBytes: responseBytes, MaxMessages: 1, MaxAggregateBytes: responseBytes}}}}
 }
 
 func catalogueSpecs() []commandSpec {
@@ -75,11 +84,12 @@ func catalogueSpecs() []commandSpec {
 	}
 	boolean := func(name, usage string) sdk.Flag { return sdk.Flag{Name: name, Usage: usage, Type: sdk.FlagBool} }
 	clientFlags := []sdk.Flag{boolean("public", "Public client"), boolean("trusted", "Trusted client"), flag("description", "Client description"), array("redirect-uri", "Redirect URI"), array("post-logout-redirect-uri", "Post-logout redirect URI"), array("scopes", "Allowed scopes")}
+	updateFlags := append([]sdk.Flag{flag("name", "Client name")}, clientFlags...)
 	return []commandSpec{
 		{path: []string{"clients", "list"}, aliases: [][]string{{"c", "client"}, {"l", "ls"}}, summary: "List clients", operation: operationSpec{"listClients", "GET", "/clients", "auth:read", false}},
 		{path: []string{"clients", "create"}, aliases: [][]string{{"c", "client"}, {"c"}}, summary: "Create a client", arguments: []sdk.Argument{arg("name", "Client name")}, flags: clientFlags, operation: operationSpec{"createClient", "POST", "/clients", "auth:write", true}, mutating: true},
 		{path: []string{"clients", "show"}, aliases: [][]string{{"c", "client"}, {"s"}}, summary: "Show a client", arguments: []sdk.Argument{arg("client-id", "Client ID")}, operation: operationSpec{"readClient", "GET", "/clients/{clientId}", "auth:read", false}},
-		{path: []string{"clients", "update"}, aliases: [][]string{{"c", "client"}, {"u", "upd"}}, summary: "Update a client", arguments: []sdk.Argument{arg("client-id", "Client ID")}, flags: clientFlags, operation: operationSpec{"updateClient", "PUT", "/clients/{clientId}", "auth:write", true}, mutating: true},
+		{path: []string{"clients", "update"}, aliases: [][]string{{"c", "client"}, {"u", "upd"}}, summary: "Update a client", arguments: []sdk.Argument{arg("client-id", "Client ID")}, flags: updateFlags, operation: operationSpec{"updateClient", "PUT", "/clients/{clientId}", "auth:write", true}, extraOperations: []operationSpec{{"readClient", "GET", "/clients/{clientId}", "auth:read", false}}, mutating: true},
 		{path: []string{"clients", "delete"}, aliases: [][]string{{"c", "client"}, {"d", "del"}}, summary: "Delete a client", arguments: []sdk.Argument{arg("client-id", "Client ID")}, operation: operationSpec{"deleteClient", "DELETE", "/clients/{clientId}", "auth:write", false}, mutating: true},
 		{path: []string{"clients", "secrets", "create"}, aliases: [][]string{{"c", "client"}, {"sec"}, {"c"}}, summary: "Create a client secret", arguments: []sdk.Argument{arg("client-id", "Client ID"), arg("secret-name", "Secret name")}, operation: operationSpec{"createSecret", "POST", "/clients/{clientId}/secrets", "auth:write", true}, mutating: true, sensitive: true},
 		{path: []string{"clients", "secrets", "delete"}, aliases: [][]string{{"c", "client"}, {"sec"}, {"d"}}, summary: "Delete a client secret", arguments: []sdk.Argument{arg("client-id", "Client ID"), arg("secret-id", "Secret ID")}, operation: operationSpec{"deleteSecret", "DELETE", "/clients/{clientId}/secrets/{secretId}", "auth:write", false}, mutating: true},

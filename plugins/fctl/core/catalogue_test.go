@@ -35,7 +35,11 @@ func TestCatalogueIsTheNineOperationAuthV1Surface(t *testing.T) {
 		if !ok {
 			t.Fatalf("unexpected command %q", command.ID)
 		}
-		if !reflect.DeepEqual(command.Path, expected.path) || !reflect.DeepEqual(command.PathAliases, expected.aliases) || len(command.Operations) != 1 || command.Operations[0].ID != expected.op || command.Operations[0].HTTP == nil || command.Operations[0].HTTP.Method != expected.method {
+		wantRequests := uint32(1)
+		if command.ID == "auth.v1.clients.update" {
+			wantRequests = 2
+		}
+		if !reflect.DeepEqual(command.Path, expected.path) || !reflect.DeepEqual(command.PathAliases, expected.aliases) || len(command.Operations) != int(wantRequests) || command.Operations[0].ID != expected.op || command.Operations[0].HTTP == nil || command.Operations[0].HTTP.Method != expected.method {
 			t.Fatalf("command %q mapping = %#v", command.ID, command)
 		}
 		if !reflect.DeepEqual(command.Operations[0].Scopes, []string{expected.scope}) || command.Operations[0].Service != sdk.ServiceAuth || command.Risk != expected.risk {
@@ -44,8 +48,14 @@ func TestCatalogueIsTheNineOperationAuthV1Surface(t *testing.T) {
 		if command.ExecutionKind != sdk.ExecutionKindService || command.AuthMode != sdk.AuthModeCapability || !reflect.DeepEqual(command.Auth, []sdk.AuthRequirement{{Capability: "auth.stack"}}) || command.Target.Kind != sdk.TargetStack {
 			t.Fatalf("command %q host contract = %#v", command.ID, command)
 		}
-		if !reflect.DeepEqual(command.Compatibility, []sdk.ServiceCompatibility{{Service: sdk.ServiceAuth, Majors: []uint32{1}}}) || command.ExecutionPolicy == nil || command.ExecutionPolicy.MaxHostRequests != 1 {
+		if !reflect.DeepEqual(command.Compatibility, []sdk.ServiceCompatibility{{Service: sdk.ServiceAuth, Majors: []uint32{1}}}) || command.ExecutionPolicy == nil || command.ExecutionPolicy.MaxHostRequests != wantRequests {
 			t.Fatalf("command %q compatibility/budget = %#v", command.ID, command)
+		}
+		if command.ID == "auth.v1.clients.update" {
+			read := command.Operations[1]
+			if read.ID != "readClient" || read.Service != sdk.ServiceAuth || !reflect.DeepEqual(read.Scopes, []string{"auth:read"}) || read.HTTP == nil || read.HTTP.Method != "GET" || read.HTTP.GeneratedClient == nil || read.HTTP.GeneratedClient.PathTemplate != "/clients/{clientId}" {
+				t.Fatalf("update read-before-write policy = %#v", read)
+			}
 		}
 	}
 }

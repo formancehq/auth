@@ -41,6 +41,12 @@ plugin result contains only the secret's ID, name, metadata, and last digits.
 The detailed OpenAPI and historical CLI correspondence remains in
 [`docs/command-inventory.md`](docs/command-inventory.md).
 
+Because the Auth API models `updateClient` as a full PUT replacement,
+`clients update` first reads the existing client and merges only explicitly
+provided flags before writing it back. Omitted fields are preserved; `--name`
+is the explicit rename flag. The command therefore declares one `auth:read`
+request followed by one `auth:write` request and a two-request host budget.
+
 ## Development
 
 From this directory, enter the repository's pinned development shell first:

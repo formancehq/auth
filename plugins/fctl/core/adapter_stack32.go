@@ -28,6 +28,11 @@ func executeStack32(ctx context.Context, request sdk.ExecuteRequest, host sdk.Ho
 	if err != nil {
 		return err
 	}
+	if request.CommandID == "auth.v1.clients.update" {
+		if values, ok := flags["name"]; ok && first(values) == "" {
+			return invalidArgument("flag %q must not be empty", "name")
+		}
+	}
 	bound, err := producthttp.New(host, command.Operations[0], "auth.stack")
 	if err != nil {
 		return fmt.Errorf("auth: configure generated client: %w", err)
@@ -70,12 +75,23 @@ func executeStack32(ctx context.Context, request sdk.ExecuteRequest, host sdk.Ho
 		}
 		return emitJSON(host, request.CommandID, sdk.ResultObject, response.ReadClientResponse.Data)
 	case "auth.v1.clients.update":
-		body, err := clientBody(request.Arguments[0], flags)
+		readBound, err := producthttp.New(host, command.Operations[1], "auth.stack")
+		if err != nil {
+			return fmt.Errorf("auth: configure read-before-update client: %w", err)
+		}
+		reader := authclient.New(authclient.WithClient(readBound), authclient.WithServerURL("https://product.invalid"))
+		current, err := reader.Auth.V1.ReadClient(ctx, operations.ReadClientRequest{ClientID: request.Arguments[0]})
 		if err != nil {
 			return err
 		}
-		update := components.UpdateClientRequest(body)
-		response, err := client.Auth.V1.UpdateClient(ctx, operations.UpdateClientRequest{ClientID: request.Arguments[0], UpdateClientRequest: &update})
+		if current == nil || current.ReadClientResponse == nil || current.ReadClientResponse.Data == nil {
+			return noResult("readClient")
+		}
+		body, err := updateClientBody(*current.ReadClientResponse.Data, flags)
+		if err != nil {
+			return err
+		}
+		response, err := client.Auth.V1.UpdateClient(ctx, operations.UpdateClientRequest{ClientID: request.Arguments[0], UpdateClientRequest: &body})
 		if err != nil {
 			return err
 		}
@@ -88,7 +104,7 @@ func executeStack32(ctx context.Context, request sdk.ExecuteRequest, host sdk.Ho
 		if err != nil {
 			return err
 		}
-		return emitEmpty(host, request.CommandID)
+		return emitJSON(host, request.CommandID, sdk.ResultObject, map[string]any{})
 	case "auth.v1.clients.secrets.create":
 		response, err := client.Auth.V1.CreateSecret(ctx, operations.CreateSecretRequest{ClientID: request.Arguments[0], CreateSecretRequest: &components.CreateSecretRequest{Name: request.Arguments[1]}})
 		if err != nil {
@@ -110,7 +126,7 @@ func executeStack32(ctx context.Context, request sdk.ExecuteRequest, host sdk.Ho
 		if err != nil {
 			return err
 		}
-		return emitEmpty(host, request.CommandID)
+		return emitJSON(host, request.CommandID, sdk.ResultObject, map[string]any{})
 	case "auth.v1.users.list":
 		response, err := client.Auth.V1.ListUsers(ctx)
 		if err != nil {
@@ -175,6 +191,61 @@ func clientBody(name string, flags map[string][]string) (components.CreateClient
 	}
 	return components.CreateClientRequest{Name: name, Public: public, Trusted: trusted, Description: optionalString(first(flags["description"])), RedirectUris: flags["redirect-uri"], PostLogoutRedirectUris: flags["post-logout-redirect-uri"], Scopes: flags["scopes"]}, nil
 }
+
+func updateClientBody(current components.Client, flags map[string][]string) (components.UpdateClientRequest, error) {
+	updated := components.UpdateClientRequest{
+		Public:                 current.Public,
+		RedirectUris:           append([]string(nil), current.RedirectUris...),
+		Description:            current.Description,
+		Name:                   current.Name,
+		Trusted:                current.Trusted,
+		PostLogoutRedirectUris: append([]string(nil), current.PostLogoutRedirectUris...),
+		Metadata:               cloneMetadata(current.Metadata),
+		Scopes:                 append([]string(nil), current.Scopes...),
+	}
+	if values, ok := flags["name"]; ok {
+		updated.Name = first(values)
+	}
+	if values, ok := flags["public"]; ok {
+		value, err := parseBool(first(values))
+		if err != nil {
+			return components.UpdateClientRequest{}, err
+		}
+		updated.Public = value
+	}
+	if values, ok := flags["trusted"]; ok {
+		value, err := parseBool(first(values))
+		if err != nil {
+			return components.UpdateClientRequest{}, err
+		}
+		updated.Trusted = value
+	}
+	if values, ok := flags["description"]; ok {
+		value := first(values)
+		updated.Description = &value
+	}
+	if values, ok := flags["redirect-uri"]; ok {
+		updated.RedirectUris = append([]string(nil), values...)
+	}
+	if values, ok := flags["post-logout-redirect-uri"]; ok {
+		updated.PostLogoutRedirectUris = append([]string(nil), values...)
+	}
+	if values, ok := flags["scopes"]; ok {
+		updated.Scopes = append([]string(nil), values...)
+	}
+	return updated, nil
+}
+
+func cloneMetadata(source map[string]string) map[string]string {
+	if source == nil {
+		return nil
+	}
+	cloned := make(map[string]string, len(source))
+	for key, value := range source {
+		cloned[key] = value
+	}
+	return cloned
+}
 func parseBool(value string) (*bool, error) {
 	if value == "" {
 		return nil, nil
@@ -203,9 +274,6 @@ func emitJSON(host sdk.Host, id string, shape sdk.ResultShape, value any) error 
 		return err
 	}
 	return host.Emit(sdk.Event{Kind: sdk.EventResult, Result: &sdk.ResultEnvelope{OperationID: id, Shape: shape, MediaType: "application/json", Data: encoded}})
-}
-func emitEmpty(host sdk.Host, id string) error {
-	return host.Emit(sdk.Event{Kind: sdk.EventResult, Result: &sdk.ResultEnvelope{OperationID: id, Shape: sdk.ResultEmpty, MediaType: "application/json", Data: []byte(`{}`)}})
 }
 func noResult(id string) error { return fmt.Errorf("auth: %s returned no result", id) }
 func invalidArgument(format string, values ...any) error {
