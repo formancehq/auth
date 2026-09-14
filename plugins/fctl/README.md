@@ -60,7 +60,7 @@ just build-component
 ```
 
 The shell pins the same `componentize-go`, patched `wasi-virt`, `wasm-tools`,
-and `wasm-opt` toolchain as fctl revision `545521bf`.
+and `wasm-opt` toolchain as fctl revision `e9b1395f`.
 
 `FCTL_SDK_ROOT` names an explicit fctl source root. The wrapper validates the
 SDK module's NAR content hash and canonical WIT hash against
