@@ -153,8 +153,8 @@ a header agree on Title Case:
   `693c58e27865f83332e6c3199d61fed81b742f41` prints
   `ID  Name  Description  Public  Permissions` for `auth clients list`
   (`cmd/auth/clients/list.go:105`) and `ID  Subject  Email` for
-  `auth users list` (`cmd/auth/users/list.go:97`). Two of the three user
-  columns here are byte-identical to that header row;
+  `auth users list` (`cmd/auth/users/list.go:97`). All three user columns here
+  are byte-identical to that header row;
 - the fctl SDK's own `RenderHints` examples —
   `{Header: "Display Name"}`, `{Header: "Tags"}`, `{Header: "Phase"}`
   (`pkg/plugin/sdk/contracts_v2_test.go`), `{Header: "Name"}`
@@ -190,9 +190,10 @@ view because a cell cannot hold them without printing raw JSON back at the
 reader, which is exactly what makes an unhinted table unreadable.
 
 **Nothing is lost.** Every dropped property stays in the emitted public result
-and in `PublicOutputSchema`, so `--output json` and `--output yaml` remain the
-exhaustive structured contract. The detail view a script needs is the
-structured one; the table is for a human scanning a terminal.
+and remains accepted by the permissive `PublicOutputSchema`, so `--output json`
+and `--output yaml` keep the complete structured output. The detail view a
+script needs is the structured one; the table is for a human scanning a
+terminal.
 
 `TestTablesAreACompactScalarSummaryWhileStructuredOutputStaysExhaustive`
 records this per command and fails three ways: if a column resolves to a
