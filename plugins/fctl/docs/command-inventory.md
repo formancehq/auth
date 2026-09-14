@@ -123,6 +123,55 @@ concrete scopes through it. This is recorded as divergence
 exact per-operation sets and the host validates them at dispatch. A populated
 upstream scheme map would provide an additional cross-check.
 
+## Human table rendering
+
+Seven of the nine commands declare a `RenderHints.Table`: an explicit, ordered,
+stable column list for the human view only. The column set is a deliberate
+subset; `PublicOutputSchema` is untouched and `--output json` and
+`--output yaml` keep returning the complete public result.
+
+| Command | Columns, in order |
+|---|---|
+| `auth clients list` | ID, Name, Public, Trusted |
+| `auth clients create` | ID, Name, Public, Trusted |
+| `auth clients show` | ID, Name, Public, Trusted |
+| `auth clients update` | ID, Name, Public, Trusted |
+| `auth clients secrets create` | ID, Name, Last Digits |
+| `auth users list` | ID, Subject, Email |
+| `auth users show` | ID, Subject, Email |
+
+Every `Field` names a scalar property the emitted public result really carries.
+This is not asserted from a hand-written list: `TestTableColumnFieldsAreCoherentWithTheRealPublicResult`
+executes each command against the widest documented fixture and reads the
+property set back out of the adapter's own emitted envelope, and
+`TestFixturesMatchTheGeneratedAuthClientTypes` pins those fixtures to the
+generated `components.Client` and `components.User` JSON tags. Column identity
+and order are pinned by `TestCatalogueDeclaresTheExactOrderedTableColumns`.
+
+Deliberately excluded from every table, and asserted by
+`TestTableColumnsExcludeSecretsNestedAndLongValues`:
+
+- `clear` — display-once credential material, already absent from the public
+  `createSecret` projection. `TestCreateSecretTableKeepsTheDisplayOnceBoundary`
+  re-proves both the absence and the retained sensitive-output declaration.
+- `metadata`, `secrets`, `redirectUris`, `postLogoutRedirectUris`, `scopes` —
+  containers a cell cannot hold without printing raw JSON back at the reader.
+- `description` — unbounded free text.
+
+### Commands left without a table hint
+
+`deleteClient` and `deleteSecret` return **204 with no declared response
+schema**, and the adapter emits a canonical empty object for both. There is no
+real property to put in a column, so `auth clients delete` and
+`auth clients secrets delete` declare **no** table hint rather than an invented
+one. `TestCommandsWithoutRenderableResultsDeclareNoTableHint` fails if either
+gains one without new response evidence.
+
+The fctl host at pinned revision `e9b1395f46f3100b381dbe00f5213de28e6df0e1`
+derives table columns from the result itself and does not yet read these hints
+(`internal/app/presentation.go`). The hints are therefore a declared, tested
+catalogue contract whose human effect remains an external acceptance gate.
+
 ## Risks
 
 ### Display-once credential material

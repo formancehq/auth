@@ -23,6 +23,7 @@ type commandSpec struct {
 	flags               []sdk.Flag
 	operation           operationSpec
 	extraOperations     []operationSpec
+	table               []sdk.TableColumn
 	mutating, sensitive bool
 }
 type operationSpec struct {
@@ -60,6 +61,9 @@ func (s commandSpec) command() sdk.Command {
 	if s.operation.id == "listClients" || s.operation.id == "listUsers" {
 		command.RawOutputSchema, command.PublicOutputSchema = collectionSchema, collectionSchema
 	}
+	if len(s.table) != 0 {
+		command.Render = sdk.RenderHints{Table: &sdk.TableRenderHint{Columns: append([]sdk.TableColumn(nil), s.table...)}}
+	}
 	if s.sensitive {
 		command.SensitiveOutputs = []sdk.SensitiveOutput{{JSONPointer: "/data/clear", AllowedDeliveries: []sdk.SensitiveDelivery{sdk.SensitiveDisplayOnce, sdk.SensitiveProfileAuth}}}
 	}
@@ -83,18 +87,43 @@ func catalogueSpecs() []commandSpec {
 		return sdk.Flag{Name: name, Usage: usage, Type: sdk.FlagStringArray}
 	}
 	boolean := func(name, usage string) sdk.Flag { return sdk.Flag{Name: name, Usage: usage, Type: sdk.FlagBool} }
+	// Human table columns are a deliberate, stable subset of the exhaustive
+	// public result: identity first, then the two booleans that decide how a
+	// client authenticates and consents. `description` is unbounded free text,
+	// and `redirectUris`, `postLogoutRedirectUris`, `scopes`, `metadata` and
+	// `secrets` are containers a cell cannot hold without printing raw JSON.
+	// All of them stay in --output json and --output yaml.
+	clientColumns := []sdk.TableColumn{
+		{Header: "ID", Field: "id"},
+		{Header: "Name", Field: "name"},
+		{Header: "Public", Field: "public"},
+		{Header: "Trusted", Field: "trusted"},
+	}
+	userColumns := []sdk.TableColumn{
+		{Header: "ID", Field: "id"},
+		{Header: "Subject", Field: "subject"},
+		{Header: "Email", Field: "email"},
+	}
+	// `clear` is display-once material and is already absent from the public
+	// create-secret projection; `lastDigits` is the identifying remnant the
+	// product publishes for exactly this purpose.
+	secretColumns := []sdk.TableColumn{
+		{Header: "ID", Field: "id"},
+		{Header: "Name", Field: "name"},
+		{Header: "Last Digits", Field: "lastDigits"},
+	}
 	clientFlags := []sdk.Flag{boolean("public", "Public client"), boolean("trusted", "Trusted client"), flag("description", "Client description"), array("redirect-uri", "Redirect URI"), array("post-logout-redirect-uri", "Post-logout redirect URI"), array("scopes", "Allowed scopes")}
 	updateFlags := append([]sdk.Flag{flag("name", "Client name")}, clientFlags...)
 	return []commandSpec{
-		{path: []string{"clients", "list"}, aliases: [][]string{{"c", "client"}, {"l", "ls"}}, summary: "List clients", operation: operationSpec{"listClients", "GET", "/clients", "auth:read", false}},
-		{path: []string{"clients", "create"}, aliases: [][]string{{"c", "client"}, {"c"}}, summary: "Create a client", arguments: []sdk.Argument{arg("name", "Client name")}, flags: clientFlags, operation: operationSpec{"createClient", "POST", "/clients", "auth:write", true}, mutating: true},
-		{path: []string{"clients", "show"}, aliases: [][]string{{"c", "client"}, {"s"}}, summary: "Show a client", arguments: []sdk.Argument{arg("client-id", "Client ID")}, operation: operationSpec{"readClient", "GET", "/clients/{clientId}", "auth:read", false}},
-		{path: []string{"clients", "update"}, aliases: [][]string{{"c", "client"}, {"u", "upd"}}, summary: "Update a client", arguments: []sdk.Argument{arg("client-id", "Client ID")}, flags: updateFlags, operation: operationSpec{"updateClient", "PUT", "/clients/{clientId}", "auth:write", true}, extraOperations: []operationSpec{{"readClient", "GET", "/clients/{clientId}", "auth:read", false}}, mutating: true},
+		{path: []string{"clients", "list"}, aliases: [][]string{{"c", "client"}, {"l", "ls"}}, summary: "List clients", operation: operationSpec{"listClients", "GET", "/clients", "auth:read", false}, table: clientColumns},
+		{path: []string{"clients", "create"}, aliases: [][]string{{"c", "client"}, {"c"}}, summary: "Create a client", arguments: []sdk.Argument{arg("name", "Client name")}, flags: clientFlags, operation: operationSpec{"createClient", "POST", "/clients", "auth:write", true}, table: clientColumns, mutating: true},
+		{path: []string{"clients", "show"}, aliases: [][]string{{"c", "client"}, {"s"}}, summary: "Show a client", arguments: []sdk.Argument{arg("client-id", "Client ID")}, operation: operationSpec{"readClient", "GET", "/clients/{clientId}", "auth:read", false}, table: clientColumns},
+		{path: []string{"clients", "update"}, aliases: [][]string{{"c", "client"}, {"u", "upd"}}, summary: "Update a client", arguments: []sdk.Argument{arg("client-id", "Client ID")}, flags: updateFlags, operation: operationSpec{"updateClient", "PUT", "/clients/{clientId}", "auth:write", true}, extraOperations: []operationSpec{{"readClient", "GET", "/clients/{clientId}", "auth:read", false}}, table: clientColumns, mutating: true},
 		{path: []string{"clients", "delete"}, aliases: [][]string{{"c", "client"}, {"d", "del"}}, summary: "Delete a client", arguments: []sdk.Argument{arg("client-id", "Client ID")}, operation: operationSpec{"deleteClient", "DELETE", "/clients/{clientId}", "auth:write", false}, mutating: true},
-		{path: []string{"clients", "secrets", "create"}, aliases: [][]string{{"c", "client"}, {"sec"}, {"c"}}, summary: "Create a client secret", arguments: []sdk.Argument{arg("client-id", "Client ID"), arg("secret-name", "Secret name")}, operation: operationSpec{"createSecret", "POST", "/clients/{clientId}/secrets", "auth:write", true}, mutating: true, sensitive: true},
+		{path: []string{"clients", "secrets", "create"}, aliases: [][]string{{"c", "client"}, {"sec"}, {"c"}}, summary: "Create a client secret", arguments: []sdk.Argument{arg("client-id", "Client ID"), arg("secret-name", "Secret name")}, operation: operationSpec{"createSecret", "POST", "/clients/{clientId}/secrets", "auth:write", true}, table: secretColumns, mutating: true, sensitive: true},
 		{path: []string{"clients", "secrets", "delete"}, aliases: [][]string{{"c", "client"}, {"sec"}, {"d"}}, summary: "Delete a client secret", arguments: []sdk.Argument{arg("client-id", "Client ID"), arg("secret-id", "Secret ID")}, operation: operationSpec{"deleteSecret", "DELETE", "/clients/{clientId}/secrets/{secretId}", "auth:write", false}, mutating: true},
-		{path: []string{"users", "list"}, aliases: [][]string{{"u", "user"}, {"l", "ls"}}, summary: "List users", operation: operationSpec{"listUsers", "GET", "/users", "auth:read", false}},
-		{path: []string{"users", "show"}, aliases: [][]string{{"u", "user"}, {"s"}}, summary: "Show a user", arguments: []sdk.Argument{arg("user-id", "User ID")}, operation: operationSpec{"readUser", "GET", "/users/{userId}", "auth:read", false}},
+		{path: []string{"users", "list"}, aliases: [][]string{{"u", "user"}, {"l", "ls"}}, summary: "List users", operation: operationSpec{"listUsers", "GET", "/users", "auth:read", false}, table: userColumns},
+		{path: []string{"users", "show"}, aliases: [][]string{{"u", "user"}, {"s"}}, summary: "Show a user", arguments: []sdk.Argument{arg("user-id", "User ID")}, operation: operationSpec{"readUser", "GET", "/users/{userId}", "auth:read", false}, table: userColumns},
 	}
 }
 
