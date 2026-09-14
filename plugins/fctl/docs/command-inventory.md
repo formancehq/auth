@@ -140,13 +140,68 @@ subset; `PublicOutputSchema` is untouched and `--output json` and
 | `auth users list` | ID, Subject, Email |
 | `auth users show` | ID, Subject, Email |
 
-Every `Field` names a scalar property the emitted public result really carries.
-This is not asserted from a hand-written list: `TestTableColumnFieldsAreCoherentWithTheRealPublicResult`
-executes each command against the widest documented fixture and reads the
-property set back out of the adapter's own emitted envelope, and
-`TestFixturesMatchTheGeneratedAuthClientTypes` pins those fixtures to the
-generated `components.Client` and `components.User` JSON tags. Column identity
-and order are pinned by `TestCatalogueDeclaresTheExactOrderedTableColumns`.
+### Header casing convention
+
+Headers are **Title Case**, derived from the field: split the last dotted
+segment at camelCase boundaries, upper-case a known initialism, Title Case
+every other word. So `id` is `ID`, `lastDigits` is `Last Digits`.
+
+This is a recorded decision, not an inference. Both sources that actually spell
+a header agree on Title Case:
+
+- the shipped CLI. `fctl` v3 at pinned revision
+  `693c58e27865f83332e6c3199d61fed81b742f41` prints
+  `ID  Name  Description  Public  Permissions` for `auth clients list`
+  (`cmd/auth/clients/list.go:105`) and `ID  Subject  Email` for
+  `auth users list` (`cmd/auth/users/list.go:97`). Two of the three user
+  columns here are byte-identical to that header row;
+- the fctl SDK's own `RenderHints` examples —
+  `{Header: "Display Name"}`, `{Header: "Tags"}`, `{Header: "Phase"}`
+  (`pkg/plugin/sdk/contracts_v2_test.go`), `{Header: "Name"}`
+  (`cmd/fctl/generic_test.go`, `pkg/plugin/sdk/validation_test.go`), and
+  `{Header: "ID"}` (`protocol/componentbridgev1alpha1/codec_test.go`).
+
+The fctl-v2 host's `strings.ToUpper` in `renderTable`
+(`internal/app/presentation.go`) is not a counter-example: it upper-cases keys
+*derived from a result that supplied no layout*, and never touches an authored
+`Header`. It is the fallback the hints exist to replace.
+
+`TestTableHeadersFollowTheDocumentedTitleCaseConvention` derives the expected
+header from the field rather than comparing against a second hand-written list,
+so a new column cannot introduce a different casing.
+
+`TableColumn.Field` is a dotted path in the SDK's own examples
+(`metadata.name`, `spec.displayName`, `status.phase`). Auth declares only
+top-level fields today, but the traversal the tests check with is generic and
+collection-transparent, and is proven directly by
+`TestFieldPathTraversalResolvesDottedPathsGenerically`.
+
+### The compact-detail trade-off
+
+`show`, `create` and `update` are hinted on purpose, and this costs something:
+under a host that honours the hints, those commands render a one-row table of
+the columns above instead of listing every property of the object. A reader of
+`auth clients show` therefore sees four scalars, not ten properties.
+
+That is the intended trade-off. The table is a **compact scalar summary**:
+identity first, then the two booleans that decide how a client authenticates
+and consents. Long and container-valued properties are dropped from the human
+view because a cell cannot hold them without printing raw JSON back at the
+reader, which is exactly what makes an unhinted table unreadable.
+
+**Nothing is lost.** Every dropped property stays in the emitted public result
+and in `PublicOutputSchema`, so `--output json` and `--output yaml` remain the
+exhaustive structured contract. The detail view a script needs is the
+structured one; the table is for a human scanning a terminal.
+
+`TestTablesAreACompactScalarSummaryWhileStructuredOutputStaysExhaustive`
+records this per command and fails three ways: if a column resolves to a
+container, if the set of omitted properties stops matching the recorded
+decision, or if an omitted property is no longer present in the emitted public
+result. `TestPublicOutputSchemaStaysTheExhaustiveStructuredContract` pins the
+schema bytes of all nine commands, so narrowing the contract to the table
+columns — or erasing it — fails in this package rather than only in the
+component descriptor test.
 
 Deliberately excluded from every table, and asserted by
 `TestTableColumnsExcludeSecretsNestedAndLongValues`:
@@ -158,6 +213,27 @@ Deliberately excluded from every table, and asserted by
   containers a cell cannot hold without printing raw JSON back at the reader.
 - `description` — unbounded free text.
 
+### Field evidence
+
+Every `Field` names a scalar property the emitted public result really carries.
+This is not asserted from a hand-written list:
+`TestTableColumnFieldsAreCoherentWithTheRealPublicResult` executes each command
+against the widest documented fixture and resolves every column against the
+adapter's own emitted envelope. A field is backed when the emitted result
+resolves it to a scalar, or when the public output schema declares it; a
+command with **no** public output schema is itself a violation, so erasing the
+contract cannot make the check pass.
+
+`TestFixturesMatchTheGeneratedAuthClientTypes` pins those fixtures to the JSON
+tags of every generated type they encode — `components.Client`,
+`components.ClientSecret`, `components.User` and `components.Secret` — so a
+fixture cannot drift from the type the adapter decodes into.
+`TestFieldCoherenceFailsClosedOnAMissingOrUnbackedField` drives the coherence
+check directly with absent, narrowed and unbacked inputs, so the check is
+proven non-vacuous on every run rather than only under a permissive schema.
+Column identity and order are pinned by
+`TestCatalogueDeclaresTheExactOrderedTableColumns`.
+
 ### Commands left without a table hint
 
 `deleteClient` and `deleteSecret` return **204 with no declared response
@@ -165,12 +241,14 @@ schema**, and the adapter emits a canonical empty object for both. There is no
 real property to put in a column, so `auth clients delete` and
 `auth clients secrets delete` declare **no** table hint rather than an invented
 one. `TestCommandsWithoutRenderableResultsDeclareNoTableHint` fails if either
-gains one without new response evidence.
+gains one, and also fails on a command this test classifies neither way, so a
+tenth command cannot slip past unexamined.
 
 The fctl host at pinned revision `e9b1395f46f3100b381dbe00f5213de28e6df0e1`
 derives table columns from the result itself and does not yet read these hints
 (`internal/app/presentation.go`). The hints are therefore a declared, tested
-catalogue contract whose human effect remains an external acceptance gate.
+catalogue contract whose human effect — including the compact-detail trade-off
+above — remains an external acceptance gate.
 
 ## Risks
 
