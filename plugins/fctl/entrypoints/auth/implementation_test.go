@@ -105,14 +105,40 @@ func TestGuestCreateSecretLifecycleRequestsResumesWithoutLeakingAndCloses(t *tes
 	Close(cancelID)
 }
 
+// The guest boundary must refuse an attested Auth major 1 before it emits any
+// host request, so a host on a superseded service line cannot reach product
+// traffic through the component.
+func TestGuestRejectsASupersededAuthMajorOneStart(t *testing.T) {
+	const executionID = "auth-create-secret-major-one"
+	frames := Start(executionID, authCreateSecretStartWithVersion(t, executionID, "1.0.0", 1))
+	if len(frames) != 1 {
+		t.Fatalf("Start frames = %d, want one termination", len(frames))
+	}
+	envelope := decodeAuthEnvelope(t, frames[0], pb.MessageKind_MESSAGE_KIND_TERMINATION)
+	var terminal pb.TerminationPayload
+	decodeAuthPayload(t, envelope, &terminal)
+	if terminal.GetSuccess() {
+		t.Fatal("guest admitted an incompatible Auth major 1 service context")
+	}
+	if got := terminal.GetFailure().GetCode(); got != string(sdk.FailureInvalidArgument) {
+		t.Fatalf("failure code = %q, want %q", got, sdk.FailureInvalidArgument)
+	}
+	Close(executionID)
+}
+
 func authCreateSecretStart(t *testing.T, executionID string) []byte {
+	t.Helper()
+	return authCreateSecretStartWithVersion(t, executionID, "2.5.0", 2)
+}
+
+func authCreateSecretStartWithVersion(t *testing.T, executionID, version string, major uint32) []byte {
 	t.Helper()
 	return authEnvelope(t, executionID, pb.MessageKind_MESSAGE_KIND_START_EXECUTION, &pb.StartPayload{
 		Start: &pb.StartPayload_Command{Command: &pb.CommandStart{
 			CommandId:       "auth.v1.clients.secrets.create",
 			Arguments:       []string{"c1", "main"},
 			Target:          &pb.TargetCoordinates{OrganizationId: "org", StackId: "stack"},
-			ServiceVersions: []*pb.ServiceVersion{{Service: pb.Service_SERVICE_AUTH, Version: "1.0.0", Major: 1}},
+			ServiceVersions: []*pb.ServiceVersion{{Service: pb.Service_SERVICE_AUTH, Version: version, Major: major}},
 			Continuation:    &pb.ContinuationControl{Mode: pb.ContinuationMode_CONTINUATION_MODE_SINGLE_PAGE},
 		}},
 	})

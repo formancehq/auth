@@ -88,7 +88,10 @@ artifact contract, and an aggregate statement-coverage gate with an enforced
 minimum of 80%. The repository-root `just pre-commit` runs the same coverage
 gate for this separate plugin module.
 
-The declared Auth service major is `1`; external acceptance still requires a
-real Stack service `/_info` receipt proving that major, plus CLI-host and
+The declared Auth service major is `2`. That value is the published Stack v3.2
+service-info authority, which binds Auth to image `v2.5.0`, and it agrees with
+this repository's own `v2.5.0` release line. A host that attests major `1` is
+rejected before any product request. External acceptance still requires a real
+Stack service `/_info` receipt proving that major, plus CLI-host and
 browser-host scenarios. Those external receipts are not produced by this
 repository-local implementation.

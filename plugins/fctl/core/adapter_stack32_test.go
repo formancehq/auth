@@ -11,7 +11,43 @@ import (
 )
 
 func executeRequest(command string, arguments ...string) sdk.ExecuteRequest {
-	return sdk.ExecuteRequest{CommandID: command, Arguments: arguments, Target: sdk.TargetSelection{OrganizationID: "org", StackID: "stack"}, ServiceVersions: []sdk.ServiceVersion{{Service: sdk.ServiceAuth, Version: "1.0.0", Major: 1}}, Continuation: sdk.SinglePageContinuationControl()}
+	return sdk.ExecuteRequest{CommandID: command, Arguments: arguments, Target: sdk.TargetSelection{OrganizationID: "org", StackID: "stack"}, ServiceVersions: []sdk.ServiceVersion{{Service: sdk.ServiceAuth, Version: "2.5.0", Major: 2}}, Continuation: sdk.SinglePageContinuationControl()}
+}
+
+// A host that attested Auth major 1 must not reach product traffic: the
+// published Stack v3.2 line serves Auth v2.5.0, so major 1 is an incompatible
+// service context rather than a supported older line.
+func TestExecuteRejectsASupersededAuthMajorOneServiceContext(t *testing.T) {
+	t.Parallel()
+	for _, command := range Catalogue() {
+		t.Run(command.ID, func(t *testing.T) {
+			host := sdk.NewMemoryHost(func(_ context.Context, request sdk.Request) (sdk.Responses, error) {
+				t.Fatalf("host was reached with an incompatible service context: %#v", request)
+				return sdk.NewResponseStream(), nil
+			})
+			request := executeRequest(command.ID, placeholderArguments(command)...)
+			request.ServiceVersions = []sdk.ServiceVersion{{Service: sdk.ServiceAuth, Version: "1.0.0", Major: 1}}
+			err := (Plugin{}).Execute(context.Background(), request, host)
+			if err == nil {
+				t.Fatal("Execute() error = nil, want an invalid-argument failure")
+			}
+			var failure sdk.Failure
+			if !errors.As(err, &failure) || failure.Code != string(sdk.FailureInvalidArgument) {
+				t.Fatalf("Execute() error = %#v, want %s", err, sdk.FailureInvalidArgument)
+			}
+			if len(host.Events()) != 0 {
+				t.Fatalf("events = %#v, want none", host.Events())
+			}
+		})
+	}
+}
+
+func placeholderArguments(command sdk.Command) []string {
+	arguments := make([]string, 0, len(command.Arguments))
+	for range command.Arguments {
+		arguments = append(arguments, "placeholder")
+	}
+	return arguments
 }
 
 func TestExecuteDispatchesEveryAuthOperationThroughProductHTTP(t *testing.T) {

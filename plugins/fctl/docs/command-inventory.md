@@ -15,7 +15,7 @@ both command and `auth.stack` facets. The catalogue retains the operation
 mapping, scope sets, risks, and exclusions established by this inventory.
 
 Repository-local tests do not replace external acceptance. In particular, the
-declared service major `1` still needs a real Stack `/_info` receipt. The
+declared service major `2` still needs a real Stack `/_info` receipt. The
 client-credentials contract is documented in
 [`auth-provider-contract.md`](auth-provider-contract.md). Real CLI-host and
 browser-host execution remains external acceptance evidence.
@@ -243,7 +243,7 @@ catalogue existed. They are retained only as provenance:
 | Historical ID | Earlier observation | Current disposition |
 |---|---|---|
 | `client-go-sum` | The nested generated-client module lacked dependency zip hashes. | Cleared for this plugin by its compiling, tested generated-client adapter and complete plugin-module sums; the nested upstream packaging issue remains provenance. |
-| `no-live-info-major` | No live host-owned Auth product-major receipt existed. | Reclassified as external acceptance; the catalogue declares major 1 and still requires a live `/_info` receipt before release. |
+| `no-live-info-major` | No live host-owned Auth product-major receipt existed. | Reclassified as external acceptance; the catalogue declares major 2, matching the published Stack v3.2 service-info authority and this repository's `v2.5.0` release line, and still requires a live `/_info` receipt before release. |
 | `no-live-service` | No real Stack service behavior had been exercised. | Reclassified as external acceptance; local adapter tests do not replace live CLI/browser scenarios. |
 | `empty-scheme-scopes` | The OAuth2 scheme map did not enumerate the operation scope names. | Reclassified as a source divergence; exact per-operation scope sets are pinned and host-validated. |
 

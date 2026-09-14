@@ -48,13 +48,38 @@ func TestCatalogueIsTheNineOperationAuthV1Surface(t *testing.T) {
 		if command.ExecutionKind != sdk.ExecutionKindService || command.AuthMode != sdk.AuthModeCapability || !reflect.DeepEqual(command.Auth, []sdk.AuthRequirement{{Capability: "auth.stack"}}) || command.Target.Kind != sdk.TargetStack {
 			t.Fatalf("command %q host contract = %#v", command.ID, command)
 		}
-		if !reflect.DeepEqual(command.Compatibility, []sdk.ServiceCompatibility{{Service: sdk.ServiceAuth, Majors: []uint32{1}}}) || command.ExecutionPolicy == nil || command.ExecutionPolicy.MaxHostRequests != wantRequests {
+		if !reflect.DeepEqual(command.Compatibility, []sdk.ServiceCompatibility{{Service: sdk.ServiceAuth, Majors: []uint32{2}}}) || command.ExecutionPolicy == nil || command.ExecutionPolicy.MaxHostRequests != wantRequests {
 			t.Fatalf("command %q compatibility/budget = %#v", command.ID, command)
 		}
 		if command.ID == "auth.v1.clients.update" {
 			read := command.Operations[1]
 			if read.ID != "readClient" || read.Service != sdk.ServiceAuth || !reflect.DeepEqual(read.Scopes, []string{"auth:read"}) || read.HTTP == nil || read.HTTP.Method != "GET" || read.HTTP.GeneratedClient == nil || read.HTTP.GeneratedClient.PathTemplate != "/clients/{clientId}" {
 				t.Fatalf("update read-before-write policy = %#v", read)
+			}
+		}
+	}
+}
+
+// The Stack v3.2 service-info authority binds Auth to image v2.5.0, product
+// major 2, and this repository's own latest release tag is v2.5.0. A catalogue
+// declaring major 1 would admit execution against a service line that no
+// published Stack composition serves.
+func TestCatalogueDeclaresTheStackV32AuthProductMajor(t *testing.T) {
+	want := []sdk.ServiceCompatibility{{Service: sdk.ServiceAuth, Majors: []uint32{2}}}
+	for _, command := range Catalogue() {
+		if !reflect.DeepEqual(command.Compatibility, want) {
+			t.Fatalf("command %q Compatibility = %#v, want %#v", command.ID, command.Compatibility, want)
+		}
+	}
+}
+
+func TestCatalogueRejectsTheSupersededAuthProductMajorOne(t *testing.T) {
+	for _, command := range Catalogue() {
+		for _, compatibility := range command.Compatibility {
+			for _, major := range compatibility.Majors {
+				if major == 1 {
+					t.Fatalf("command %q still declares the superseded Auth major 1", command.ID)
+				}
 			}
 		}
 	}

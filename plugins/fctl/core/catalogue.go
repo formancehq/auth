@@ -10,7 +10,7 @@ import (
 const (
 	Name                 = "auth"
 	Version              = "0.1.0"
-	productMajor  uint32 = 1
+	productMajor  uint32 = 2
 	requestBytes  int64  = 256 << 10
 	responseBytes int64  = 512 << 10
 )
