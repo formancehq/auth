@@ -1,0 +1,27 @@
+set shell := ["bash", "-euo", "pipefail", "-c"]
+
+validate-sdk:
+    GOWORK=off go test ./scripts
+    ./scripts/test-fctl-sdk-contract.sh
+    ./scripts/test-tidy-with-fctl-sdk.sh
+    ./scripts/with-fctl-sdk.sh true
+
+tidy:
+    ./scripts/with-fctl-sdk.sh ./scripts/tidy-with-fctl-sdk.sh
+
+tidy-check:
+    ./scripts/with-fctl-sdk.sh ./scripts/tidy-with-fctl-sdk.sh --check
+
+test: validate-sdk tidy-check
+    bash ./scripts/check-coverage_test.sh
+    bash ./scripts/build-component-contract_test.sh
+    ./scripts/check-component-toolchain_test.sh
+    ./scripts/go-component-build_test.sh
+    coverage_profile="$(mktemp "${TMPDIR:-/tmp}/auth-fctl-coverage.XXXXXXXX")"; \
+      trap 'rm -f "$coverage_profile"' EXIT; \
+      ./scripts/with-fctl-sdk.sh go test -race -count=1 -covermode=atomic -coverprofile="$coverage_profile" ./...; \
+      ./scripts/check-coverage.sh "$coverage_profile"
+    ./scripts/with-fctl-sdk.sh go test -race -tags=fctl_component_guest ./entrypoints/... -count=1
+
+build-component: test
+    ./scripts/with-fctl-sdk.sh ./scripts/build-component.sh

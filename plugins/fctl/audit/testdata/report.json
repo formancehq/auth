@@ -1,0 +1,582 @@
+{
+  "specDocument": "openapi.yaml",
+  "document": {
+    "openapi": "3.0.3",
+    "title": "Auth API",
+    "version": "0.1.0",
+    "servers": [
+      "http://localhost:8080/"
+    ]
+  },
+  "revisions": {
+    "product": "e4979fe9a52de6601d60d45d6c695db25f391f7a",
+    "baseline": "693c58e27865f83332e6c3199d61fed81b742f41",
+    "fctlV2": "8de8c4539ea6664351762dd8dd0e865292e3f216"
+  },
+  "totals": {
+    "specOperations": 11,
+    "uniqueOperationIds": 11,
+    "specPaths": 8,
+    "deprecatedOperations": 0,
+    "included": 9,
+    "excluded": 2,
+    "reads": 4,
+    "writes": 2,
+    "destructive": 2,
+    "sensitive": 1,
+    "baselinePaths": 11,
+    "baselineCanonical": 9,
+    "baselineDuplicate": 2,
+    "baselineOperations": 9,
+    "baselineConfirmedPaths": 5,
+    "includedWithBaseline": 9,
+    "includedWithoutBaseline": 0,
+    "scopedOperations": 11,
+    "readScoped": 6,
+    "writeScoped": 5,
+    "paginatedOperations": 0,
+    "moduleWideBlockers": 0,
+    "blockedOperations": 0,
+    "divergences": 7
+  },
+  "operations": [
+    {
+      "operationId": "createClient",
+      "method": "POST",
+      "path": "/clients",
+      "tag": "auth.v1",
+      "summary": "Create client",
+      "deprecated": false,
+      "hasSecurity": true,
+      "scopes": [
+        "auth:write"
+      ],
+      "parameters": null,
+      "requestBody": "CreateClientRequest",
+      "successCode": "201",
+      "successBody": "CreateClientResponse",
+      "family": "clients",
+      "risk": "write",
+      "idempotence": "not-idempotent",
+      "included": true,
+      "baselineCommands": [
+        "auth clients create \u003cname\u003e"
+      ],
+      "baselineConfirmed": true,
+      "blockers": [],
+      "divergences": [
+        "create-secret-success-code"
+      ]
+    },
+    {
+      "operationId": "createSecret",
+      "method": "POST",
+      "path": "/clients/{clientId}/secrets",
+      "tag": "auth.v1",
+      "summary": "Add a secret to a client",
+      "deprecated": false,
+      "hasSecurity": true,
+      "scopes": [
+        "auth:write"
+      ],
+      "parameters": [
+        {
+          "name": "clientId",
+          "in": "path",
+          "required": true
+        }
+      ],
+      "requestBody": "CreateSecretRequest",
+      "successCode": "200",
+      "successBody": "CreateSecretResponse",
+      "family": "secrets",
+      "risk": "sensitive",
+      "idempotence": "not-idempotent",
+      "included": true,
+      "baselineCommands": [
+        "auth clients secrets create \u003cclient-id\u003e \u003csecret-name\u003e"
+      ],
+      "baselineConfirmed": true,
+      "sensitivePointer": "/data/clear",
+      "blockers": [],
+      "divergences": [
+        "create-secret-success-code"
+      ]
+    },
+    {
+      "operationId": "deleteClient",
+      "method": "DELETE",
+      "path": "/clients/{clientId}",
+      "tag": "auth.v1",
+      "summary": "Delete client",
+      "deprecated": false,
+      "hasSecurity": true,
+      "scopes": [
+        "auth:write"
+      ],
+      "parameters": [
+        {
+          "name": "clientId",
+          "in": "path",
+          "required": true
+        }
+      ],
+      "requestBody": "",
+      "successCode": "204",
+      "successBody": "",
+      "family": "clients",
+      "risk": "destructive",
+      "idempotence": "idempotent-by-method",
+      "included": true,
+      "baselineCommands": [
+        "auth clients delete \u003cclient-id\u003e"
+      ],
+      "baselineConfirmed": true,
+      "blockers": [],
+      "divergences": null
+    },
+    {
+      "operationId": "deleteSecret",
+      "method": "DELETE",
+      "path": "/clients/{clientId}/secrets/{secretId}",
+      "tag": "auth.v1",
+      "summary": "Delete a secret from a client",
+      "deprecated": false,
+      "hasSecurity": true,
+      "scopes": [
+        "auth:write"
+      ],
+      "parameters": [
+        {
+          "name": "clientId",
+          "in": "path",
+          "required": true
+        },
+        {
+          "name": "secretId",
+          "in": "path",
+          "required": true
+        }
+      ],
+      "requestBody": "",
+      "successCode": "204",
+      "successBody": "",
+      "family": "secrets",
+      "risk": "destructive",
+      "idempotence": "idempotent-by-method",
+      "included": true,
+      "baselineCommands": [
+        "auth clients secrets delete \u003cclient-id\u003e \u003csecret-id\u003e"
+      ],
+      "baselineConfirmed": true,
+      "blockers": [],
+      "divergences": null
+    },
+    {
+      "operationId": "getOIDCWellKnowns",
+      "method": "GET",
+      "path": "/.well-known/openid-configuration",
+      "tag": "auth.v1",
+      "summary": "Retrieve OpenID connect well-knowns.",
+      "deprecated": false,
+      "hasSecurity": true,
+      "scopes": [
+        "auth:read"
+      ],
+      "parameters": null,
+      "requestBody": "",
+      "successCode": "200",
+      "successBody": "",
+      "family": "discovery",
+      "risk": "read",
+      "idempotence": "idempotent-by-method",
+      "included": false,
+      "baselineCommands": null,
+      "baselineConfirmed": false,
+      "blockers": [],
+      "divergences": null
+    },
+    {
+      "operationId": "getServerInfo",
+      "method": "GET",
+      "path": "/_info",
+      "tag": "auth.v1",
+      "summary": "Get server info",
+      "deprecated": false,
+      "hasSecurity": true,
+      "scopes": [
+        "auth:read"
+      ],
+      "parameters": null,
+      "requestBody": "",
+      "successCode": "200",
+      "successBody": "ServerInfo",
+      "family": "discovery",
+      "risk": "read",
+      "idempotence": "idempotent-by-method",
+      "included": false,
+      "baselineCommands": null,
+      "baselineConfirmed": false,
+      "blockers": [],
+      "divergences": null
+    },
+    {
+      "operationId": "listClients",
+      "method": "GET",
+      "path": "/clients",
+      "tag": "auth.v1",
+      "summary": "List clients",
+      "deprecated": false,
+      "hasSecurity": true,
+      "scopes": [
+        "auth:read"
+      ],
+      "parameters": null,
+      "requestBody": "",
+      "successCode": "200",
+      "successBody": "ListClientsResponse",
+      "family": "clients",
+      "risk": "read",
+      "idempotence": "idempotent-by-method",
+      "included": true,
+      "baselineCommands": [
+        "auth clients list"
+      ],
+      "baselineConfirmed": false,
+      "blockers": [],
+      "divergences": [
+        "no-pagination"
+      ]
+    },
+    {
+      "operationId": "listUsers",
+      "method": "GET",
+      "path": "/users",
+      "tag": "auth.v1",
+      "summary": "List users",
+      "deprecated": false,
+      "hasSecurity": true,
+      "scopes": [
+        "auth:read"
+      ],
+      "parameters": null,
+      "requestBody": "",
+      "successCode": "200",
+      "successBody": "ListUsersResponse",
+      "family": "users",
+      "risk": "read",
+      "idempotence": "idempotent-by-method",
+      "included": true,
+      "baselineCommands": [
+        "auth clients users list",
+        "auth users list"
+      ],
+      "baselineConfirmed": false,
+      "blockers": [],
+      "divergences": [
+        "no-pagination"
+      ]
+    },
+    {
+      "operationId": "readClient",
+      "method": "GET",
+      "path": "/clients/{clientId}",
+      "tag": "auth.v1",
+      "summary": "Read client",
+      "deprecated": false,
+      "hasSecurity": true,
+      "scopes": [
+        "auth:read"
+      ],
+      "parameters": [
+        {
+          "name": "clientId",
+          "in": "path",
+          "required": true
+        }
+      ],
+      "requestBody": "",
+      "successCode": "200",
+      "successBody": "ReadClientResponse",
+      "family": "clients",
+      "risk": "read",
+      "idempotence": "idempotent-by-method",
+      "included": true,
+      "baselineCommands": [
+        "auth clients show \u003cclient-id\u003e"
+      ],
+      "baselineConfirmed": false,
+      "blockers": [],
+      "divergences": null
+    },
+    {
+      "operationId": "readUser",
+      "method": "GET",
+      "path": "/users/{userId}",
+      "tag": "auth.v1",
+      "summary": "Read user",
+      "deprecated": false,
+      "hasSecurity": true,
+      "scopes": [
+        "auth:read"
+      ],
+      "parameters": [
+        {
+          "name": "userId",
+          "in": "path",
+          "required": true
+        }
+      ],
+      "requestBody": "",
+      "successCode": "200",
+      "successBody": "ReadUserResponse",
+      "family": "users",
+      "risk": "read",
+      "idempotence": "idempotent-by-method",
+      "included": true,
+      "baselineCommands": [
+        "auth clients users show \u003cuser-id\u003e",
+        "auth users show \u003cuser-id\u003e"
+      ],
+      "baselineConfirmed": false,
+      "blockers": [],
+      "divergences": null
+    },
+    {
+      "operationId": "updateClient",
+      "method": "PUT",
+      "path": "/clients/{clientId}",
+      "tag": "auth.v1",
+      "summary": "Update client",
+      "deprecated": false,
+      "hasSecurity": true,
+      "scopes": [
+        "auth:write"
+      ],
+      "parameters": [
+        {
+          "name": "clientId",
+          "in": "path",
+          "required": true
+        }
+      ],
+      "requestBody": "UpdateClientRequest",
+      "successCode": "200",
+      "successBody": "UpdateClientResponse",
+      "family": "clients",
+      "risk": "write",
+      "idempotence": "idempotent-by-method",
+      "included": true,
+      "baselineCommands": [
+        "auth clients update \u003cclient-id\u003e"
+      ],
+      "baselineConfirmed": true,
+      "blockers": [],
+      "divergences": null
+    }
+  ],
+  "declaredScopes": [
+    "auth:read",
+    "auth:write"
+  ],
+  "baseline": [
+    {
+      "path": "auth clients list",
+      "aliases": [
+        "l",
+        "ls"
+      ],
+      "args": "ExactArgs(0)",
+      "confirm": false,
+      "operationId": "listClients",
+      "source": "cmd/auth/clients/list.go:42-46",
+      "duplicate": false
+    },
+    {
+      "path": "auth clients create \u003cname\u003e",
+      "aliases": [
+        "c"
+      ],
+      "args": "ExactArgs(1)",
+      "confirm": true,
+      "operationId": "createClient",
+      "source": "cmd/auth/clients/create.go:58-69,90",
+      "duplicate": false
+    },
+    {
+      "path": "auth clients show \u003cclient-id\u003e",
+      "aliases": [
+        "s"
+      ],
+      "args": "ExactArgs(1)",
+      "confirm": false,
+      "operationId": "readClient",
+      "source": "cmd/auth/clients/show.go:36-40",
+      "duplicate": false
+    },
+    {
+      "path": "auth clients update \u003cclient-id\u003e",
+      "aliases": [
+        "u",
+        "upd"
+      ],
+      "args": "ExactArgs(1)",
+      "confirm": true,
+      "operationId": "updateClient",
+      "source": "cmd/auth/clients/update.go:65-70,97",
+      "duplicate": false
+    },
+    {
+      "path": "auth clients delete \u003cclient-id\u003e",
+      "aliases": [
+        "d",
+        "del"
+      ],
+      "args": "ExactArgs(1)",
+      "confirm": true,
+      "operationId": "deleteClient",
+      "source": "cmd/auth/clients/delete.go:34-41,60",
+      "duplicate": false
+    },
+    {
+      "path": "auth clients secrets create \u003cclient-id\u003e \u003csecret-name\u003e",
+      "aliases": [
+        "c"
+      ],
+      "args": "ExactArgs(2)",
+      "confirm": true,
+      "operationId": "createSecret",
+      "source": "cmd/auth/clients/secrets/create.go:37-43,62",
+      "duplicate": false
+    },
+    {
+      "path": "auth clients secrets delete \u003cclient-id\u003e \u003csecret-id\u003e",
+      "aliases": [
+        "d"
+      ],
+      "args": "ExactArgs(2)",
+      "confirm": true,
+      "operationId": "deleteSecret",
+      "source": "cmd/auth/clients/secrets/delete.go:35-39,60",
+      "duplicate": false
+    },
+    {
+      "path": "auth users list",
+      "aliases": [
+        "l",
+        "ls"
+      ],
+      "args": "ExactArgs(0)",
+      "confirm": false,
+      "operationId": "listUsers",
+      "source": "cmd/auth/users/list.go:40-43; mounted by cmd/auth/root.go:16",
+      "duplicate": false
+    },
+    {
+      "path": "auth users show \u003cuser-id\u003e",
+      "aliases": [
+        "s"
+      ],
+      "args": "ExactArgs(1)",
+      "confirm": false,
+      "operationId": "readUser",
+      "source": "cmd/auth/users/show.go:34-37; mounted by cmd/auth/root.go:16",
+      "duplicate": false
+    },
+    {
+      "path": "auth clients users list",
+      "aliases": [
+        "l",
+        "ls"
+      ],
+      "args": "ExactArgs(0)",
+      "confirm": false,
+      "operationId": "listUsers",
+      "source": "cmd/auth/users/list.go:40-43; mounted by cmd/auth/clients/root.go:22",
+      "duplicate": true
+    },
+    {
+      "path": "auth clients users show \u003cuser-id\u003e",
+      "aliases": [
+        "s"
+      ],
+      "args": "ExactArgs(1)",
+      "confirm": false,
+      "operationId": "readUser",
+      "source": "cmd/auth/users/show.go:34-37; mounted by cmd/auth/clients/root.go:22",
+      "duplicate": true
+    }
+  ],
+  "exclusions": [
+    {
+      "operationId": "getServerInfo",
+      "reason": "Service version and capability discovery is owned by the fctl host, not by a product plugin. The programme requires the product major to come from the host's own /_info call so one host response drives every plugin's supported-major check; a plugin that called /_info itself would be attesting its own version.",
+      "owner": "fctl host target resolution",
+      "evidence": "fctl-v2 docs/superpowers/plans/2026-08-26-fctl-complete-program.md:557 binds the Auth service to the stack gateway route /api/auth and describes /_info as the public host-owned response; Task 9 (line 2276) requires the major to be attested by that host response. No legacy fctl auth command dispatches getServerInfo."
+    },
+    {
+      "operationId": "getOIDCWellKnowns",
+      "reason": "OIDC provider metadata is consumed by the host authentication broker while it performs the OAuth2 client-credentials exchange. The public directional client-credentials facet exposes only AuthorizeClientCredentials and BindCredential to this provider. Endpoint discovery, credential generation checks, token persistence, and capability-scoped invalidation remain host-owned, so the plugin cannot be the party that fetches provider metadata.",
+      "owner": "fctl host authentication broker",
+      "evidence": "fctl-v2 pkg/plugin/sdk/plugin.go defines the directional ClientCredentialsAuthHost call set and excludes endpoint and credential material. The operation also declares no response content schema in openapi.yaml:15-27, so it exposes no typed result a command could render. No legacy fctl auth command dispatches it."
+    }
+  ],
+  "blockers": [],
+  "divergences": [
+    {
+      "id": "no-pagination",
+      "operationIds": [
+        "listClients",
+        "listUsers"
+      ],
+      "statement": "Neither collection operation offers pagination. Both return an unbounded array, so response size is governed only by how many objects the stack holds.",
+      "evidence": "listClients (GET /clients) and listUsers (GET /users) declare no parameters at all. ListClientsResponse.data and ListUsersResponse.data are plain arrays of Client and User with no cursor, page-size, total, or next-page field. Operation.Paginated() is false for every operation in the document; the golden report pins that.",
+      "impact": "The plugin cannot offer paging, streaming, or a page-size flag for these operations without a product change, and must not present a synthetic cursor. A host rendering these results should expect an unbounded payload."
+    },
+    {
+      "id": "localhost-server",
+      "operationIds": null,
+      "statement": "The document's only declared server is a local development address, not the stack route the plugin will actually be bound to.",
+      "evidence": "openapi.yaml declares `servers: [{url: http://localhost:8080/}]`, whereas fctl-v2 binds the Auth service to the selected stack gateway route /api/auth (plan line 557).",
+      "impact": "Endpoint selection is host-owned and the document's server list must be ignored by the plugin. Only the paths are usable; the base URL is not. This is consistent with Task 9 forbidding the auth facet from receiving endpoint bytes at all."
+    },
+    {
+      "id": "create-secret-success-code",
+      "operationIds": [
+        "createSecret",
+        "createClient"
+      ],
+      "statement": "The two creating operations disagree on their success code: createClient returns 201 while createSecret returns 200.",
+      "evidence": "openapi.yaml:72 declares '201' for createSecret's sibling createClient (POST /clients), and openapi.yaml:168 declares '200' for createSecret (POST /clients/{clientId}/secrets).",
+      "impact": "A plugin adapter must key success on the per-operation code recorded here rather than on a family-wide rule for POST, and must not normalise one to the other."
+    },
+    {
+      "id": "no-error-responses",
+      "operationIds": null,
+      "statement": "No operation declares any 4xx or 5xx response, so no error status code or error body shape is proven for any operation.",
+      "evidence": "The document contains zero response keys beginning with 4 or 5 and no error schema. Error handling is delegated wholesale to the generator via `x-speakeasy-errors: {statusCodes: [default]}`.",
+      "impact": "Error mapping, retry classification, and the destructive-operation not-found case cannot be derived from the document. The adapter uses the generated client's behavior, but live-service evidence remains an external acceptance requirement."
+    },
+    {
+      "id": "paths-vendor-extension",
+      "operationIds": null,
+      "statement": "A vendor extension is placed inside the `paths` object as a sibling of the path items, where the OpenAPI 3.0 schema expects only path items and `x-` extensions at that level are generator-specific.",
+      "evidence": "openapi.yaml:8-11 places `x-speakeasy-errors` under `paths:` before the first real path. A naive loader that decodes every key under `paths` as a path item would silently treat it as a path with no operations.",
+      "impact": "The loader in spec.go skips exactly this one known extension key and errors on any other non-path key, so a future document change cannot be absorbed unnoticed."
+    },
+    {
+      "id": "client-module-go-version",
+      "operationIds": null,
+      "statement": "The generated client module declares a Go version far below the product module's, and its go.mod is inconsistently indented.",
+      "evidence": "pkg/client/go.mod declares `go 1.20` while the root go.mod declares `go 1.26.0`. The client's require block mixes a leading tab on the first entry with four-space indentation on the other two, and the file begins with a blank line.",
+      "impact": "The plugin module compiles and tests its generated-client adapter with its own dependency sums. The nested module formatting and version remain upstream packaging provenance, not a catalogue-admission blocker."
+    },
+    {
+      "id": "empty-scheme-scopes",
+      "operationIds": null,
+      "statement": "The OAuth2 scheme's scopes map is empty even though every operation requires exactly auth:read or auth:write.",
+      "evidence": "openapi.yaml declares `scopes: { }` for the Authorization client-credentials flow, while all 11 operation security requirements name exactly one of auth:read and auth:write.",
+      "impact": "The catalogue pins and the host enforces the exact per-operation scope sets. The empty scheme-wide map remains a source-document limitation to cross-check if upstream begins enumerating scopes."
+    }
+  ]
+}
