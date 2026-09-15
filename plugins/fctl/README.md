@@ -53,7 +53,6 @@ From this directory, enter the repository's pinned development shell first:
 
 ```sh
 nix develop ../..
-export FCTL_SDK_ROOT=/path/to/fctl-v2-poc
 just test
 just tidy-check
 ```
@@ -71,14 +70,23 @@ packages rather than in the default development shell: that toolchain is built
 from Rust sources, and carrying it in the shell every Go CI job enters makes
 those jobs fetch crates for a build they never run.
 
-`FCTL_SDK_ROOT` names an explicit fctl source root. The wrapper validates the
-SDK module's NAR content hash and canonical WIT hash against
-`fctl-sdk.lock.json`. When the source includes Git metadata, it also requires
-the locked commit and origin, then projects those exact committed SDK and WIT
-paths before validation. Ignored or modified working-tree files therefore
-cannot affect the command. The wrapper creates an ephemeral Go workspace, runs
-the requested command against the validated SDK source, and removes the whole
-projection afterward. No workstation path or Nix store path is tracked.
+No fctl checkout is needed. `fctl-sdk.lock.json` names a `bundlePath`, and the
+wrapper falls back to the SDK projection committed under `sdk/` when
+`FCTL_SDK_ROOT` is unset. The fctl repository is private and the Auth CI token
+is scoped to this repository, so no CI job can clone it; `sdk/README.md`
+records which files that projection contains and why.
+
+`FCTL_SDK_ROOT` remains an override naming an explicit fctl source root. In
+both cases the wrapper validates the SDK module path, the module's NAR content
+hash and the canonical WIT hash against `fctl-sdk.lock.json`. When the source
+includes Git metadata, it also requires the locked commit and origin, then
+projects those exact committed SDK and WIT paths before validation. Ignored or
+modified working-tree files therefore cannot affect the command. Because the
+locked hash covers the committed projection, an override must name a source
+root holding that same projection. The wrapper creates an ephemeral Go
+workspace, runs the requested command against the validated SDK source, and
+removes the whole projection afterward. No workstation path or Nix store path
+is tracked.
 
 `just tidy` updates `go.mod` and `go.sum` from an isolated alternate modfile;
 `just tidy-check` reports drift without changing them. The temporary modfile

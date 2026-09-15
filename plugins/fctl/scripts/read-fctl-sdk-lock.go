@@ -14,6 +14,7 @@ type sdkLock struct {
 	ModulePath    string `json:"modulePath"`
 	Repository    string `json:"repository"`
 	Commit        string `json:"commit"`
+	BundlePath    string `json:"bundlePath"`
 	SDKPath       string `json:"sdkPath"`
 	SDKNarHash    string `json:"sdkNarHash"`
 	WITPath       string `json:"witPath"`
@@ -38,13 +39,14 @@ func main() {
 		lock.ModulePath,
 		lock.Repository,
 		lock.Commit,
+		lock.BundlePath,
 		lock.SDKPath,
 		lock.SDKNarHash,
 		lock.WITPath,
 		lock.WITSHA256,
 	}
 
-	fmt.Printf("%s\t%s\t%s\t%s\t%s\t%s\t%s\n", fields[0], fields[1], fields[2], fields[3], fields[4], fields[5], fields[6])
+	fmt.Printf("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n", fields[0], fields[1], fields[2], fields[3], fields[4], fields[5], fields[6], fields[7])
 }
 
 func decodeLock(r io.Reader) (sdkLock, error) {
@@ -68,10 +70,14 @@ func decodeLock(r io.Reader) (sdkLock, error) {
 		lock.ModulePath,
 		lock.Repository,
 		lock.Commit,
+		lock.BundlePath,
 		lock.SDKPath,
 		lock.SDKNarHash,
 		lock.WITPath,
 		lock.WITSHA256,
+	}
+	if err := validateRelativePath("bundlePath", lock.BundlePath); err != nil {
+		return sdkLock{}, err
 	}
 	for _, value := range fields {
 		if value == "" || strings.ContainsAny(value, "\t\r\n") {

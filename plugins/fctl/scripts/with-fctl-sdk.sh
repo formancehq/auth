@@ -6,15 +6,25 @@ readonly lock_path="$plugin_root/fctl-sdk.lock.json"
 readonly lock_reader="$plugin_root/scripts/read-fctl-sdk-lock.go"
 
 [[ "$#" -gt 0 ]] || { printf 'usage: with-fctl-sdk.sh COMMAND [ARG...]\n' >&2; exit 2; }
-[[ -n "${FCTL_SDK_ROOT:-}" ]] || { printf 'FCTL_SDK_ROOT is required\n' >&2; exit 2; }
-[[ -d "$FCTL_SDK_ROOT" ]] || { printf 'FCTL_SDK_ROOT is not a directory: %s\n' "$FCTL_SDK_ROOT" >&2; exit 2; }
 
-IFS=$'\t' read -r module_path repository expected_commit sdk_path expected_nar_hash wit_path expected_wit_hash < <(
+IFS=$'\t' read -r module_path repository expected_commit bundle_path sdk_path expected_nar_hash wit_path expected_wit_hash < <(
   GOWORK=off go run "$lock_reader" "$lock_path"
 )
-readonly module_path repository expected_commit sdk_path expected_nar_hash wit_path expected_wit_hash
+readonly module_path repository expected_commit bundle_path sdk_path expected_nar_hash wit_path expected_wit_hash
 
-sdk_root="$(cd "$FCTL_SDK_ROOT" && pwd -P)"
+# FCTL_SDK_ROOT stays an override for working against a local SDK source.
+# Without it, use the reviewable source projection committed with this plugin.
+# The authoritative repository is private and a repository-scoped CI token
+# cannot clone it; the bundle is still pinned by commit provenance and verified
+# by the same SDK and WIT content hashes below.
+if [[ -n "${FCTL_SDK_ROOT:-}" ]]; then
+  [[ -d "$FCTL_SDK_ROOT" ]] || { printf 'FCTL_SDK_ROOT is not a directory: %s\n' "$FCTL_SDK_ROOT" >&2; exit 2; }
+  sdk_root="$(cd "$FCTL_SDK_ROOT" && pwd -P)"
+else
+  sdk_root="$plugin_root/$bundle_path"
+  [[ -d "$sdk_root" ]] || { printf 'bundled fctl SDK is missing: %s\n' "$sdk_root" >&2; exit 1; }
+  sdk_root="$(cd "$sdk_root" && pwd -P)"
+fi
 readonly sdk_root
 
 workspace_directory="$(mktemp -d "${TMPDIR:-/tmp}/fctl-sdk-work.XXXXXXXX")"

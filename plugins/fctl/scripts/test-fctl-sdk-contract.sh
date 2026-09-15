@@ -7,7 +7,7 @@ unset -f nix 2>/dev/null || true
 
 readonly plugin_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 readonly wrapper="$plugin_root/scripts/with-fctl-sdk.sh"
-readonly expected_nar_hash='sha256-DnTiEFya3R9KCYmgv5SO/1StKTCPmndObQrrVHf79Xk='
+readonly expected_nar_hash='sha256-pDXwGgWba9XYBbkZfoYKTYC2D+3mDjDIw1e+gSHzpc8='
 readonly expected_wit_hash='38fdf377264eeada82b23fef153e6bf106ed0624e8916ff62cabdf210d6255f5'
 readonly expected_commit='e9b1395f46f3100b381dbe00f5213de28e6df0e1'
 readonly expected_repository='https://github.com/formancehq/fctl-v2-poc.git'
@@ -120,8 +120,18 @@ chmod +x "$test_root/signal-wrapper.sh"
 
 [[ -x "$wrapper" ]] || fail "wrapper is missing or not executable: $wrapper"
 
-expect_failure 'FCTL_SDK_ROOT is required' env -u FCTL_SDK_ROOT \
-  PATH="$fake_bin:$PATH" FAKE_NAR_HASH="$expected_nar_hash" "$wrapper" true
+# An unset FCTL_SDK_ROOT is no longer a hard failure: the wrapper falls back to
+# the SDK projection committed with this plugin, which is what CI consumes. Run
+# this case against the real nix and the real bundle so the committed projection
+# is proven to satisfy the lock end to end.
+env -u FCTL_SDK_ROOT "$wrapper" true
+
+# The fallback is hash-gated exactly like an explicit source root.
+expect_failure 'fctl SDK content hash mismatch' env -u FCTL_SDK_ROOT \
+  PATH="$fake_bin:$PATH" FAKE_NAR_HASH='sha256-wrong' "$wrapper" true
+
+expect_failure 'FCTL_SDK_ROOT is not a directory' env \
+  PATH="$fake_bin:$PATH" FCTL_SDK_ROOT="$test_root/absent" FAKE_NAR_HASH="$expected_nar_hash" "$wrapper" true
 
 expect_failure 'fctl SDK content hash mismatch' env \
   PATH="$fake_bin:$PATH" FCTL_SDK_ROOT="$sdk_root" FAKE_NAR_HASH='sha256-wrong' "$wrapper" true
@@ -198,7 +208,7 @@ actual_wit_hash="$(shasum -a 256 "$plugin_root/wit/plugin.wit" | awk '{print $1}
 absolute_prefix="/$('printf' Users)/$('printf' davidragot)"
 if rg -n --fixed-strings "$absolute_prefix" \
   "$plugin_root/go.mod" "$plugin_root/fctl-sdk.lock.json" "$plugin_root/Justfile" \
-  "$plugin_root/README.md" "$plugin_root/scripts"; then
+  "$plugin_root/README.md" "$plugin_root/scripts" "$plugin_root/sdk"; then
   fail 'tracked plugin contract contains a workstation-absolute path'
 fi
 
