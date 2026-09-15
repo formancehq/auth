@@ -48,6 +48,13 @@ fctl-audit-tidy:
 fctl-audit-tidy-check:
   @cd plugins/fctl && ./scripts/with-fctl-sdk.sh ./scripts/tidy-with-fctl-sdk.sh --check
 
+# Produce the deterministic portable component. Kept out of `pre-commit` and
+# out of the default dev shell: it is the only gate needing the Rust authoring
+# toolchain, and pulling that into every Go job makes unrelated CI runs fetch
+# crates. It enters the pinned tools explicitly instead.
+fctl-component-build:
+  @nix shell .#componentize-go .#wasi-virt .#wasm-tools .#wasm-opt --command bash -c 'cd plugins/fctl && just build-component'
+
 generate-client:
   @speakeasy generate sdk -s openapi.yaml -o ./pkg/client -l go
 

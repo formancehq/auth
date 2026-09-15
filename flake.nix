@@ -58,7 +58,18 @@
     in
     {
       packages = forEachSupportedSystem ({ pkgs, pkgs-unstable, system }:
+        let
+          componentTools = pkgs.callPackage ./nix/fctl-component-tools.nix { };
+        in
         {
+          # The fctl Auth plugin builds a portable WebAssembly component. Its
+          # authoring toolchain is Rust, so it stays out of the default shell:
+          # making every Go CI job compile it turns a crates.io rate limit into
+          # an unrelated red build. `just fctl-component-build` enters these
+          # packages explicitly instead.
+          inherit (componentTools) componentize-go wasi-virt wasm-tools;
+          wasm-opt = pkgs.binaryen;
+
           speakeasy = pkgs.stdenv.mkDerivation {
             pname = "speakeasy";
             version = speakeasyVersion;
@@ -90,16 +101,11 @@
 
       devShells = forEachSupportedSystem ({ pkgs, pkgs-unstable, system }:
         let
-          componentTools = pkgs.callPackage ./nix/fctl-component-tools.nix { };
           stablePackages = with pkgs; [
-            binaryen
-            componentTools.componentize-go
             ginkgo
             go_1_26
             gotools
             just
-            componentTools.wasi-virt
-            componentTools.wasm-tools
           ];
           unstablePackages = with pkgs-unstable; [
             golangci-lint

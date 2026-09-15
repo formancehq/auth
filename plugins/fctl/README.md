@@ -56,11 +56,20 @@ nix develop ../..
 export FCTL_SDK_ROOT=/path/to/fctl-v2-poc
 just test
 just tidy-check
-just build-component
 ```
 
-The shell pins the same `componentize-go`, patched `wasi-virt`, `wasm-tools`,
-and `wasm-opt` toolchain as fctl revision `e9b1395f`.
+The component build is a separate, heavier gate. Run it from the repository
+root so it enters its own tool environment:
+
+```sh
+just fctl-component-build
+```
+
+The flake pins the same `componentize-go`, patched `wasi-virt`, `wasm-tools`,
+and `wasm-opt` toolchain as fctl revision `e9b1395f`, but exposes it as flake
+packages rather than in the default development shell: that toolchain is built
+from Rust sources, and carrying it in the shell every Go CI job enters makes
+those jobs fetch crates for a build they never run.
 
 `FCTL_SDK_ROOT` names an explicit fctl source root. The wrapper validates the
 SDK module's NAR content hash and canonical WIT hash against
