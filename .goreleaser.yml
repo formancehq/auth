@@ -4,7 +4,7 @@ project_name: auth
 
 includes:
   - from_url:
-      url: https://raw.githubusercontent.com/formancehq/earthly/refs/heads/main/.goreleaser.default.yaml
+      url: https://raw.githubusercontent.com/formancehq/earthly/refs/heads/main/.goreleaser.default-v2.yaml
 
 builds:
   - binary: auth
@@ -24,9 +24,9 @@ builds:
 
 archives:
   - id: "{{.ProjectName}}"
-    builds:
+    ids:
       - auth
-    format: tar.gz
+    formats: [tar.gz]
     name_template: "{{.ProjectName}}_{{.Os}}-{{.Arch}}"
 
 
