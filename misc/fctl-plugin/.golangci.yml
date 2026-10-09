@@ -1,0 +1,70 @@
+# yaml-language-server: $schema=https://golangci-lint.run/jsonschema/golangci.jsonschema.json
+version: "2"
+
+formatters:
+  enable:
+    - gci
+    - gofmt
+    - goimports
+  settings:
+    gci:
+      sections:
+        - standard
+        - default
+        - prefix(github.com/formancehq/)
+        - localmodule
+      custom-order: true
+
+run:
+  timeout: 5m
+
+linters:
+  default: none
+  enable:
+    - bodyclose
+    - contextcheck
+    - errcheck
+    - errorlint
+    - exhaustive
+    - gocognit
+    - gosec
+    - govet
+    - ineffassign
+    - modernize
+    - nilerr
+    - noctx
+    - nolintlint
+    - revive
+    - staticcheck
+    - unused
+    - usetesting
+  settings:
+    errcheck:
+      check-blank: true
+      check-type-assertions: true
+      disable-default-exclusions: true
+    exhaustive:
+      # A default branch must not hide a newly added enum value.
+      default-signifies-exhaustive: false
+    gocognit:
+      min-complexity: 15
+    nolintlint:
+      allow-unused: false
+      require-explanation: true
+      require-specific: true
+    revive:
+      rules:
+        - name: blank-imports
+        - name: context-as-argument
+        - name: context-keys-type
+        - name: dot-imports
+        - name: empty-block
+        - name: error-naming
+        - name: error-return
+        - name: error-strings
+        - name: errorf
+        - name: increment-decrement
+        - name: receiver-naming
+        - name: time-naming
+        - name: unexported-return
+        - name: var-naming

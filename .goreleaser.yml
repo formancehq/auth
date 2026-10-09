@@ -6,6 +6,9 @@ includes:
   - from_url:
       url: https://raw.githubusercontent.com/formancehq/earthly/refs/heads/main/.goreleaser.default-v2.yaml
 
+env:
+  - PLUGIN_REVISION={{ envOrDefault "PLUGIN_REVISION" "1" }}
+
 builds:
   - binary: auth
     id: auth
@@ -22,6 +25,24 @@ builds:
       - amd64
       - arm64
 
+  - binary: fctl-plugin-auth
+    id: fctl-plugin-auth
+    dir: misc/fctl-plugin
+    main: ./cmd/fctl-plugin-auth
+    ldflags:
+      - -s -w
+      - -X main.serviceVersion={{ .Version }}
+      - -X main.revision={{ .Env.PLUGIN_REVISION }}
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+
 archives:
   - id: "{{.ProjectName}}"
     ids:
@@ -29,6 +50,19 @@ archives:
     formats: [tar.gz]
     name_template: "{{.ProjectName}}_{{.Os}}-{{.Arch}}"
 
+  - id: fctl-plugin-auth
+    ids:
+      - fctl-plugin-auth
+    formats:
+      - tar.gz
+    format_overrides:
+      - goos: windows
+        formats:
+          - zip
+    name_template: "fctl-plugin-auth_v{{ .Version }}_r{{ .Env.PLUGIN_REVISION }}_{{ .Os }}-{{ .Arch }}"
+    files:
+      - src: misc/fctl-plugin/README.md
+        dst: README.md
 
 release:
   prerelease: auto
