@@ -91,6 +91,11 @@
             go_1_26
             gotools
             just
+            bash
+            coreutils
+            jq
+            gh
+            oras
           ];
           unstablePackages = with pkgs-unstable; [
             golangci-lint

@@ -104,3 +104,77 @@ Catalogue schema 1 entries use service `auth`, the manifest emitted by the
 actual binary, the executable checksum and immutable OCI artifact digest.
 Uploading public artifacts and advertising them in the official catalogue are
 separate release operations; a snapshot does neither.
+
+## Tagged release publication
+
+After this workflow change is merged, the **next** Auth tag matching `v*.*.*`
+starts `.github/workflows/releases.yml`. No existing release is republished.
+For releases cut from a maintenance branch, cherry-pick the release tooling,
+plugin module, GoReleaser configuration and Nix toolchain changes onto that
+branch before tagging. Merging to another branch alone does not update its
+release workflow.
+
+Every work step runs through Nix and a root Just recipe. Before GoReleaser,
+CI runs the plugin tests and real local OCI layout fixtures with race detection.
+GoReleaser builds the server and the six plugin executables once. The publisher
+consumes `dist/artifacts.json`, exports `--manifest` from that run's Linux/amd64
+binary, and checks every binary before the first upload:
+
+- Auth manifest name, service, root command and SDK protocol.
+- Exact service version from the tag with the leading `v` removed.
+- Separate positive `PLUGIN_REVISION` (currently `1` in the workflow).
+- Auth executable entry point and embedded GOOS/GOARCH matching all six
+  Linux, macOS and Windows amd64/arm64 combinations.
+- Contained regular executable files, bounded sizes, and actual SHA-256 checksums.
+
+Keep linker build metadata enabled: `-trimpath` would remove the linker flags
+needed for this preflight. The publisher uses only the standard library and
+public `pluginsdk`; it does not import fctl internals.
+
+ORAS from the pinned Nix flake authenticates to GHCR with the job's
+`GITHUB_TOKEN`, scoped to `packages: write`, through `--password-stdin`.
+Credentials stay in a temporary Docker config removed when the recipe exits.
+The publisher pushes to `ghcr.io/formancehq/fctl-plugin-auth`. Each artifact has
+one raw executable layer (`application/vnd.formance.fctl.plugin.executable.v1`),
+artifact type `application/vnd.formance.fctl.plugin.v1`, and an empty JSON config
+(`application/vnd.oci.empty.v1+json`), using OCI image specification 1.1.
+
+Only after all six pushes return valid immutable SHA-256 digests does the
+publisher emit catalogue schemaVersion `1`. Each `releases` entry includes
+`service`, `serviceVersion`, `revision`, `platform` (`os`, `arch`), `artifact`
+(`registry`, `repository`, `digest`), `sha256`, and the native SDK `manifest`.
+CI atomically replaces `dist/fctl-plugin-catalogue.json` and uploads it as an
+Auth GitHub release asset. A preflight failure uploads nothing. An ORAS failure
+emits no catalogue, though earlier successful platform uploads can remain.
+Rerunning the tagged job reuses checksum-qualified tags and replaces the
+catalogue asset only after a complete successful set.
+
+To test artifact serialization without contacting a registry:
+
+```sh
+nix develop --impure --command just test-fctl-plugin test-fctl-plugin-publisher
+```
+
+The `fctl-plugin-publish` helper also accepts `--layout /absolute/fixture/path`,
+`--manifest`, `--artifacts`, `--source-root`, `--service-version` and `--revision`.
+For root GoReleaser builds, source-root is the repository root because artifact
+paths include `dist/`; absolute contained artifact paths also work. Layout mode
+still names GHCR in catalogue metadata, but creates no hosted download endpoint.
+
+### First-publication GHCR setup
+
+GitHub creates new GHCR packages privately by default. After the first successful
+publication, an organization/package administrator must set
+`formancehq/fctl-plugin-auth` to **Public** in GitHub package settings. For a
+private Auth source repository, remove inherited repository permissions if
+required and retain publishing access for the Auth Actions repository. If the
+package already exists, grant this repository Actions access before release.
+The workflow does not change package visibility or source repository visibility.
+See [GitHub's Container registry documentation](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry).
+
+After that setup, use `just verify-fctl-plugin-anonymous` against the generated
+catalogue (or a downloaded release asset) to fetch every artifact and verify
+each executable checksum with an empty registry credential file. Run it before
+advertising the entries in the official fctl catalogue. Release-asset publication
+and public download availability are separate gates; the Auth workflow does not
+change fctl's default catalogue or dependency pins.
