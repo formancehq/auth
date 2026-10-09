@@ -1,0 +1,49 @@
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+version: 2
+project_name: fctl-plugin-auth
+dist: build/fctl-plugin
+
+env:
+  - PLUGIN_REVISION={{ envOrDefault "PLUGIN_REVISION" "1" }}
+  - AUTH_SERVICE_VERSION={{ envOrDefault "AUTH_SERVICE_VERSION" .Version }}
+
+builds:
+  - id: fctl-plugin-auth
+    binary: fctl-plugin-auth
+    dir: misc/fctl-plugin
+    main: ./cmd/fctl-plugin-auth
+    env:
+      - CGO_ENABLED=0
+    ldflags:
+      - -s -w
+      - -X main.serviceVersion={{ .Env.AUTH_SERVICE_VERSION }}
+      - -X main.revision={{ .Env.PLUGIN_REVISION }}
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+
+archives:
+  - ids:
+      - fctl-plugin-auth
+    name_template: "{{ .ProjectName }}_v{{ .Env.AUTH_SERVICE_VERSION }}_r{{ .Env.PLUGIN_REVISION }}_{{ .Os }}-{{ .Arch }}"
+    formats:
+      - tar.gz
+    format_overrides:
+      - goos: windows
+        formats:
+          - zip
+    files:
+      - src: misc/fctl-plugin/README.md
+        dst: README.md
+
+checksum:
+  name_template: checksums.txt
+
+release:
+  disable: true
+changelog:
+  disable: true

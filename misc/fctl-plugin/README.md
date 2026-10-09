@@ -80,3 +80,27 @@ checks the host authentication broker, gateway prefix, creation form, exact
 JSON and rejected payloads. These are local fixtures, not live Auth validation.
 The fctl loader, host UI and distribution pipeline are maintained separately.
 Root-module `go test ./...` does not discover this nested module.
+
+## Product builds
+
+From the Auth repository root, `just test-fctl-plugin` tests this module with
+race detection. The normal `just tests`, `just tidy` and `just lint` recipes
+also include it. Build and inspect the exact service version with:
+
+```sh
+nix develop --impure --command just build-fctl-plugin 2.5.0-beta.1 1
+nix develop --impure --command just fctl-plugin-manifest
+nix develop --impure --command just package-fctl-plugin 2.5.0-beta.1 1
+```
+
+The snapshot recipe builds Linux, macOS and Windows executables for amd64 and
+arm64, with archives and checksums under `build/fctl-plugin`. It skips
+publication. The product GoReleaser configuration attaches the same six builds
+to Auth releases, using the release service version and `PLUGIN_REVISION`.
+
+fctl installs this executable with `plugins install --service auth --binary`
+or resolves an exact-version OCI release with `plugins sync --service auth`.
+Catalogue schema 1 entries use service `auth`, the manifest emitted by the
+actual binary, the executable checksum and immutable OCI artifact digest.
+Uploading public artifacts and advertising them in the official catalogue are
+separate release operations; a snapshot does neither.
