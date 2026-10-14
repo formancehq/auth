@@ -2,6 +2,10 @@ package testserver
 
 import (
 	"context"
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/x509"
+	"encoding/pem"
 	"errors"
 	"fmt"
 	authlib "github.com/formancehq/go-libs/v3/auth"
@@ -9,6 +13,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"time"
 
@@ -77,11 +82,21 @@ type Server struct {
 }
 
 func (s *Server) Start() error {
+	signingKey, err := rsa.GenerateKey(rand.Reader, 2048)
+	if err != nil {
+		return err
+	}
+	signingKeyPEM := pem.EncodeToMemory(&pem.Block{
+		Type:  "RSA PRIVATE KEY",
+		Bytes: x509.MarshalPKCS1PrivateKey(signingKey),
+	})
+
 	rootCmd := cmd.NewRootCommand()
 	args := []string{
 		"serve",
 		"--" + cmd.ListenFlag, ":0",
 		"--" + cmd.BaseUrlFlag, s.configuration.BaseURL,
+		"--" + cmd.SigningKeyFlag, string(signingKeyPEM),
 		"--" + bunconnect.PostgresURIFlag, s.configuration.PostgresConfiguration.DatabaseSourceName,
 		"--" + bunconnect.PostgresMaxOpenConnsFlag, fmt.Sprint(s.configuration.PostgresConfiguration.MaxOpenConns),
 		"--" + bunconnect.PostgresConnMaxIdleTimeFlag, fmt.Sprint(s.configuration.PostgresConfiguration.ConnMaxIdleTime),
@@ -191,7 +206,13 @@ func (s *Server) Start() error {
 		args = append(args, "--"+authlib.AuthCheckScopesFlag)
 	}
 
-	s.logger.Logf("Starting application with flags: %s", strings.Join(args, " "))
+	logArgs := slices.Clone(args)
+	for i, arg := range logArgs {
+		if arg == "--"+cmd.SigningKeyFlag && i+1 < len(logArgs) {
+			logArgs[i+1] = "<redacted>"
+		}
+	}
+	s.logger.Logf("Starting application with flags: %s", strings.Join(logArgs, " "))
 	rootCmd.SetArgs(args)
 	rootCmd.SilenceErrors = true
 	output := s.configuration.Output

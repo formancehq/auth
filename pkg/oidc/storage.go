@@ -3,6 +3,9 @@ package oidc
 import (
 	"context"
 	"crypto/rsa"
+	"crypto/sha256"
+	"crypto/x509"
+	"encoding/base64"
 	"fmt"
 	"strings"
 	"time"
@@ -539,7 +542,7 @@ func NewStorageFacade(storage Storage, rp rp.RelyingParty, privateKey *rsa.Priva
 	return &storageFacade{
 		Storage: storage,
 		signingKey: signingKey{
-			id:        KeyID,
+			id:        SigningKeyID(privateKey),
 			algorithm: "RS256",
 			key:       privateKey,
 		},
@@ -548,4 +551,8 @@ func NewStorageFacade(storage Storage, rp rp.RelyingParty, privateKey *rsa.Priva
 	}
 }
 
-const KeyID = "id"
+func SigningKeyID(privateKey *rsa.PrivateKey) string {
+	der := x509.MarshalPKCS1PublicKey(&privateKey.PublicKey)
+	digest := sha256.Sum256(der)
+	return base64.RawURLEncoding.EncodeToString(digest[:])
+}
