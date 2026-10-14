@@ -1,5 +1,7 @@
 # Auth server
 
+Developer and operator documentation is available in [`docs/`](docs/README.md).
+
 ## Generate client code
 
 ```

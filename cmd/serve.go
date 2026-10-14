@@ -100,7 +100,7 @@ func newServeCommand() *cobra.Command {
 	cmd.Flags().String(DelegatedClientSecretFlag, "", "Delegated OIDC client secret")
 	cmd.Flags().String(BaseUrlFlag, "http://localhost:8080", "Base service url")
 	cmd.Flags().StringSlice(AuthIssuersFlag, []string{}, "Additional trusted issuer URLs for multi-domain support")
-	cmd.Flags().String(SigningKeyFlag, "", "Signing key")
+	cmd.Flags().String(SigningKeyFlag, "", "PEM-encoded PKCS#1 RSA private key used to sign tokens (required)")
 	cmd.Flags().String(ListenFlag, ":8080", "Listening address")
 	cmd.Flags().String(ConfigFlag, "", "Config file name without extension")
 	cmd.Flags().Bool(authlib.AuthCheckScopesFlag, false, "Enable scope checking")
