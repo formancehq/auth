@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"sync"
+	"time"
 
 	"github.com/formancehq/auth/pkg/delegatedauth"
 	"github.com/zitadel/oidc/v2/pkg/client"
@@ -23,7 +24,7 @@ func ReadKeySet(httpClient *http.Client, ctx context.Context, configuration dele
 		httpClient: httpClient,
 		jwksURI:    discoveryConfiguration.JwksURI,
 	}
-	if _, err := keySet.keysFromRemote(ctx); err != nil {
+	if _, err := keySet.keysFromRemote(ctx, 0); err != nil {
 		return nil, err
 	}
 	return keySet, nil
@@ -36,9 +37,10 @@ type remoteKeySet struct {
 	httpClient *http.Client
 	jwksURI    string
 
-	mu       sync.Mutex
-	keys     jose.JSONWebKeySet
-	inflight *keySetRefresh
+	mu         sync.Mutex
+	keys       jose.JSONWebKeySet
+	generation uint64
+	inflight   *keySetRefresh
 }
 
 type keySetRefresh struct {
@@ -49,7 +51,7 @@ type keySetRefresh struct {
 
 func (r *remoteKeySet) VerifySignature(ctx context.Context, jws *jose.JSONWebSignature) ([]byte, error) {
 	keyID, alg := oidc.GetKeyIDAndAlg(jws)
-	keys := r.cachedKeys()
+	keys, generation := r.cachedKeys()
 
 	key, err := oidc.FindMatchingKey(keyID, oidc.KeyUseSignature, alg, keys...)
 	if err == nil {
@@ -62,7 +64,7 @@ func (r *remoteKeySet) VerifySignature(ctx context.Context, jws *jose.JSONWebSig
 		}
 	}
 
-	remoteKeys, err := r.keysFromRemote(ctx)
+	remoteKeys, err := r.keysFromRemote(ctx, generation)
 	if err != nil {
 		return nil, fmt.Errorf("unable to fetch key for signature validation: %w", err)
 	}
@@ -77,17 +79,27 @@ func (r *remoteKeySet) VerifySignature(ctx context.Context, jws *jose.JSONWebSig
 	return payload, nil
 }
 
-func (r *remoteKeySet) cachedKeys() []jose.JSONWebKey {
+func (r *remoteKeySet) cachedKeys() ([]jose.JSONWebKey, uint64) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
-	return r.keys.Keys
+	return r.keys.Keys, r.generation
 }
 
-func (r *remoteKeySet) keysFromRemote(ctx context.Context) (jose.JSONWebKeySet, error) {
+func (r *remoteKeySet) keysFromRemote(ctx context.Context, generation uint64) (jose.JSONWebKeySet, error) {
 	r.mu.Lock()
+	if r.generation != generation {
+		keys := r.keys
+		r.mu.Unlock()
+		return keys, nil
+	}
 	if r.inflight == nil {
 		r.inflight = &keySetRefresh{done: make(chan struct{})}
-		go r.refresh(ctx, r.inflight)
+		// Each waiter can cancel independently; the shared fetch has its own deadline.
+		refreshCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), 30*time.Second)
+		go func(refresh *keySetRefresh) {
+			defer cancel()
+			r.refresh(refreshCtx, refresh)
+		}(r.inflight)
 	}
 	inflight := r.inflight
 	r.mu.Unlock()
@@ -106,6 +118,7 @@ func (r *remoteKeySet) refresh(ctx context.Context, refresh *keySetRefresh) {
 	r.mu.Lock()
 	if err == nil {
 		r.keys = keys
+		r.generation++
 	}
 	refresh.keys = keys
 	refresh.err = err
@@ -123,7 +136,7 @@ func (r *remoteKeySet) fetchRemoteKeys(ctx context.Context) (jose.JSONWebKeySet,
 	if err != nil {
 		return jose.JSONWebKeySet{}, err
 	}
-	defer rsp.Body.Close()
+	defer func() { _ = rsp.Body.Close() }()
 	if rsp.StatusCode < http.StatusOK || rsp.StatusCode >= http.StatusMultipleChoices {
 		return jose.JSONWebKeySet{}, fmt.Errorf("JWKS endpoint returned status %s", rsp.Status)
 	}
