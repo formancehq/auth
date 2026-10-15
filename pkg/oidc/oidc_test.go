@@ -56,6 +56,12 @@ func (u *user) Userinfo(scope []string) ([]byte, error) {
 }
 
 func withServer(t *testing.T, fn func(m *mockoidc.MockOIDC, storage *sqlstorage.Storage, issuer string, provider op.OpenIDProvider)) {
+	withServerDB(t, func(m *mockoidc.MockOIDC, storage *sqlstorage.Storage, issuer string, provider op.OpenIDProvider, _ *bun.DB) {
+		fn(m, storage, issuer, provider)
+	})
+}
+
+func withServerDB(t *testing.T, fn func(m *mockoidc.MockOIDC, storage *sqlstorage.Storage, issuer string, provider op.OpenIDProvider, db *bun.DB)) {
 	t.Parallel()
 
 	// Create a mock OIDC server which will always return a default user
@@ -127,7 +133,7 @@ func withServer(t *testing.T, fn func(m *mockoidc.MockOIDC, storage *sqlstorage.
 	}()
 	defer func() { _ = providerHttpServer.Close() }()
 
-	fn(mockOIDC, storage, serverUrl, provider)
+	fn(mockOIDC, storage, serverUrl, provider, db)
 }
 
 func Test3LeggedFlow(t *testing.T) {

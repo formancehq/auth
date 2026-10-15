@@ -18,9 +18,68 @@ import (
 	"github.com/google/uuid"
 	"github.com/oauth2-proxy/mockoidc"
 	"github.com/stretchr/testify/require"
+	"github.com/uptrace/bun"
 	zoidc "github.com/zitadel/oidc/v2/pkg/oidc"
 	"github.com/zitadel/oidc/v2/pkg/op"
 )
+
+func TestRefreshRevocationRollbackAndRetry(t *testing.T) {
+	withServerDB(t, func(_ *mockoidc.MockOIDC, store *sqlstorage.Storage, issuer string, provider op.OpenIDProvider, db *bun.DB) {
+		ctx := op.ContextWithIssuer(t.Context(), issuer)
+		client := auth.NewClient(auth.ClientOptions{Scopes: auth.Array[string]{"openid", "offline_access"}})
+		_, secret := client.GenerateNewSecret(auth.SecretCreate{})
+		require.NoError(t, store.SaveClient(ctx, client))
+		user := &auth.User{ID: uuid.NewString(), Subject: uuid.NewString()}
+		require.NoError(t, store.SaveUser(ctx, user))
+		request := &auth.AuthRequest{ApplicationID: client.Id, UserID: user.ID, Scopes: auth.Array[string]{"openid", "offline_access"}, AuthTime: time.Now()}
+		accessID, refreshID, expiration, err := provider.Storage().CreateAccessAndRefreshTokens(ctx, request, "")
+		require.NoError(t, err)
+		accessJWT, err := op.CreateJWT(ctx, issuer, request, expiration, accessID, oidc.NewClientFacade(client, nil), provider.Storage())
+		require.NoError(t, err)
+
+		// Fail after the transaction deletes the refresh row. PostgreSQL must
+		// roll that deletion back along with the failed access-token deletion.
+		_, err = db.ExecContext(ctx, `CREATE FUNCTION fail_access_token_delete() RETURNS trigger AS $$
+			BEGIN RAISE EXCEPTION 'injected access deletion failure'; END;
+			$$ LANGUAGE plpgsql`)
+		require.NoError(t, err)
+		_, err = db.ExecContext(ctx, `CREATE TRIGGER fail_access_token_delete BEFORE DELETE ON access_tokens
+			FOR EACH ROW EXECUTE FUNCTION fail_access_token_delete()`)
+		require.NoError(t, err)
+		post := func() int {
+			req, err := http.NewRequestWithContext(ctx, http.MethodPost, issuer+"/revoke", strings.NewReader(url.Values{"token": {refreshID}}.Encode()))
+			require.NoError(t, err)
+			req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+			req.SetBasicAuth(client.Id, secret)
+			resp, err := http.DefaultClient.Do(req)
+			require.NoError(t, err)
+			defer func() { _ = resp.Body.Close() }()
+			return resp.StatusCode
+		}
+		require.Equal(t, http.StatusInternalServerError, post())
+		_, err = store.FindRefreshToken(ctx, refreshID)
+		require.NoError(t, err)
+		_, err = store.FindAccessToken(ctx, accessID)
+		require.NoError(t, err)
+
+		_, err = db.ExecContext(ctx, `DROP TRIGGER fail_access_token_delete ON access_tokens`)
+		require.NoError(t, err)
+		_, err = db.ExecContext(ctx, `DROP FUNCTION fail_access_token_delete()`)
+		require.NoError(t, err)
+		require.Equal(t, http.StatusOK, post())
+		_, err = store.FindRefreshToken(ctx, refreshID)
+		require.ErrorIs(t, err, storage.ErrNotFound)
+		_, err = store.FindAccessToken(ctx, accessID)
+		require.ErrorIs(t, err, storage.ErrNotFound)
+		req, err := http.NewRequestWithContext(ctx, http.MethodGet, issuer+"/userinfo", nil)
+		require.NoError(t, err)
+		req.Header.Set("Authorization", "Bearer "+accessJWT)
+		resp, err := http.DefaultClient.Do(req)
+		require.NoError(t, err)
+		defer func() { _ = resp.Body.Close() }()
+		require.Equal(t, http.StatusForbidden, resp.StatusCode)
+	})
+}
 
 func TestRevocation(t *testing.T) {
 	withServer(t, func(m *mockoidc.MockOIDC, db *sqlstorage.Storage, issuer string, provider op.OpenIDProvider) {
