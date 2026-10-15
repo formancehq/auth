@@ -1,8 +1,12 @@
 package api
 
 import (
-	authlib "github.com/formancehq/go-libs/v3/auth"
+	"context"
+	"database/sql"
+	"errors"
 	"net/http"
+
+	authlib "github.com/formancehq/go-libs/v3/auth"
 
 	"github.com/go-chi/chi/v5"
 
@@ -67,24 +71,43 @@ type secretCreateResult struct {
 	Clear      string `json:"clear"`
 }
 
+// mutateClient serializes read-modify-write operations on a client. Every writer
+// of the client row must acquire this lock before reading its current secrets.
+// A non-nil result means the update AND its transaction have committed.
+func mutateClient(w http.ResponseWriter, r *http.Request, db *bun.DB, mutate func(*auth.Client) error) *auth.Client {
+	client := &auth.Client{}
+	err := db.RunInTx(r.Context(), nil, func(ctx context.Context, tx bun.Tx) error {
+		if err := tx.NewSelect().Model(client).
+			Where("id = ?", chi.URLParam(r, "clientId")).
+			For("UPDATE").Scan(ctx); err != nil {
+			return err
+		}
+		if err := mutate(client); err != nil {
+			return err
+		}
+		_, err := tx.NewUpdate().Model(client).Where("id = ?", client.Id).Exec(ctx)
+		return err
+	})
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			w.WriteHeader(http.StatusNotFound)
+		} else {
+			internalServerError(w, r, err)
+		}
+		return nil
+	}
+	return client
+}
+
 func deleteSecret(db *bun.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		client := findById[*auth.Client](w, r, db, "clientId")
+		client := mutateClient(w, r, db, func(client *auth.Client) error {
+			if !client.DeleteSecret(chi.URLParam(r, "secretId")) {
+				return sql.ErrNoRows
+			}
+			return nil
+		})
 		if client == nil {
-			return
-		}
-
-		if !client.DeleteSecret(chi.URLParam(r, "secretId")) {
-			w.WriteHeader(http.StatusNotFound)
-			return
-		}
-
-		_, err := db.NewUpdate().
-			Model(client).
-			Where("id = ?", client.Id).
-			Exec(r.Context())
-		if err != nil {
-			internalServerError(w, r, err)
 			return
 		}
 		w.WriteHeader(http.StatusNoContent)
@@ -93,33 +116,26 @@ func deleteSecret(db *bun.DB) http.HandlerFunc {
 
 func createSecret(db *bun.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		client := findById[*auth.Client](w, r, db, "clientId")
-		if client == nil {
-			return
-		}
-
 		sc := readJSONObject[auth.SecretCreate](w, r)
 		if sc == nil {
 			return
 		}
 
-		secret, clear := client.GenerateNewSecret(*sc)
-
-		_, err := db.NewUpdate().
-			Model(client).
-			Where("id = ?", client.Id).
-			Exec(r.Context())
-		if err != nil {
-			internalServerError(w, r, err)
+		var result secretCreateResult
+		client := mutateClient(w, r, db, func(client *auth.Client) error {
+			secret, clear := client.GenerateNewSecret(*sc)
+			result = secretCreateResult{
+				ID:         secret.ID,
+				LastDigits: secret.LastDigits,
+				Name:       secret.Name,
+				Clear:      clear,
+			}
+			return nil
+		})
+		if client == nil {
 			return
 		}
-
-		writeJSONObject(w, r, secretCreateResult{
-			ID:         secret.ID,
-			LastDigits: secret.LastDigits,
-			Name:       secret.Name,
-			Clear:      clear,
-		})
+		writeJSONObject(w, r, result)
 	}
 }
 
@@ -164,28 +180,18 @@ func listClients(db *bun.DB) http.HandlerFunc {
 
 func updateClient(db *bun.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-
-		client := findById[*auth.Client](w, r, db, "clientId")
-		if client == nil {
-			return
-		}
-
 		opts := readJSONObject[auth.ClientOptions](w, r)
 		if opts == nil {
 			return
 		}
 
-		client.Update(*opts)
-
-		_, err := db.NewUpdate().
-			Model(client).
-			Where("id = ?", client.Id).
-			Exec(r.Context())
-		if err != nil {
-			internalServerError(w, r, err)
+		client := mutateClient(w, r, db, func(client *auth.Client) error {
+			client.Update(*opts)
+			return nil
+		})
+		if client == nil {
 			return
 		}
-
 		writeJSONObject(w, r, mapBusinessClient(*client))
 	}
 }
