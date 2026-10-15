@@ -7,6 +7,7 @@ import (
 	"crypto/rsa"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -141,13 +142,13 @@ func Test3LeggedFlow(t *testing.T) {
 		defer clientHttpServer.Close()
 
 		// Create a OAuth2 client which represent our client application
-		client := auth.NewClient(auth.ClientOptions{})
+		client := auth.NewClient(auth.ClientOptions{Scopes: []string{"auth:read"}})
 		client.RedirectURIs.Append(clientHttpServer.URL)          // Need to configure the redirect uri
 		_, clear := client.GenerateNewSecret(auth.SecretCreate{}) // Need to generate a secret
 		require.NoError(t, storage.SaveClient(context.TODO(), client))
 
 		// As our client is a relying party, we can use the library to get some helpers
-		clientRelyingParty, err := rp.NewRelyingPartyOIDC(issuer, client.Id, clear, client.RedirectURIs[0], []string{"openid", "email"})
+		clientRelyingParty, err := rp.NewRelyingPartyOIDC(issuer, client.Id, clear, client.RedirectURIs[0], []string{"openid", "email", "offline_access", "auth:read"})
 		require.NoError(t, err)
 
 		m.QueueUser(&user{
@@ -170,6 +171,20 @@ func Test3LeggedFlow(t *testing.T) {
 			tokens, err := rp.CodeExchange[*zoidc.IDTokenClaims](context.TODO(), code, clientRelyingParty)
 			require.NoError(t, err)
 			require.Equal(t, time.Until(tokens.Expiry).Round(oidc.ExpirationToken3Legged), oidc.ExpirationToken3Legged)
+			accessClaims := &zoidc.AccessTokenClaims{}
+			_, err = zoidc.ParseToken(tokens.AccessToken, accessClaims)
+			require.NoError(t, err)
+			require.Contains(t, accessClaims.Scopes, "auth:read")
+			require.NotContains(t, accessClaims.Scopes, "auth:write")
+			require.NotEmpty(t, tokens.RefreshToken)
+			// Force the OAuth client to use the real refresh-token endpoint.
+			tokens.Expiry = time.Now().Add(-time.Minute)
+			refreshed, err := clientRelyingParty.OAuthConfig().TokenSource(context.Background(), tokens.Token).Token()
+			require.NoError(t, err)
+			refreshedClaims := &zoidc.AccessTokenClaims{}
+			_, err = zoidc.ParseToken(refreshed.AccessToken, refreshedClaims)
+			require.NoError(t, err)
+			require.ElementsMatch(t, accessClaims.Scopes, refreshedClaims.Scopes)
 
 			// Create a OAuth2 client which represent our client application
 			secondaryClient := auth.NewClient(auth.ClientOptions{
@@ -181,7 +196,7 @@ func Test3LeggedFlow(t *testing.T) {
 			resourceServer, err := rs.NewResourceServerClientCredentials(issuer, secondaryClient.Id, clear)
 			require.NoError(t, err)
 
-			introspection, err := rs.Introspect(context.TODO(), resourceServer, tokens.AccessToken)
+			introspection, err := rs.Introspect(context.TODO(), resourceServer, refreshed.AccessToken)
 			require.NoError(t, err)
 			require.True(t, introspection.Active)
 
@@ -230,14 +245,11 @@ func TestJWTAssertions(t *testing.T) {
 		_, clear := client.GenerateNewSecret(auth.SecretCreate{}) // Need to generate a secret
 		require.NoError(t, storage.SaveClient(context.TODO(), client))
 
-		// As our client is a relying party, we can use the library to get some helpers
-		clientRelyingParty, err := rp.NewRelyingPartyOIDC(m.Issuer(), client.Id, clear, "", []string{"openid", "email"})
-		require.NoError(t, err)
-
 		token, err := m.Keypair.SignJWT(jwt.MapClaims{
-			"aud": []string{m.Issuer()},
-			"exp": time.Now().Add(5 * time.Minute).Unix(),
-			"iss": m.Issuer(),
+			"aud":   []string{issuer},
+			"exp":   time.Now().Add(5 * time.Minute).Unix(),
+			"iss":   m.Issuer(),
+			"scope": "openid auth:read",
 		})
 		require.NoError(t, err)
 
@@ -247,14 +259,26 @@ func TestJWTAssertions(t *testing.T) {
 			"assertion":  []string{token},
 			"scope":      []string{"openid email"},
 		}
-		req, err := http.NewRequest(http.MethodPost, clientRelyingParty.OAuthConfig().Endpoint.TokenURL,
+		req, err := http.NewRequest(http.MethodPost, issuer+"/oauth/token",
 			bytes.NewBufferString(form.Encode()))
 		require.NoError(t, err)
 		req.SetBasicAuth(client.Id, clear)
 		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
-		_, err = http.DefaultClient.Do(req)
+		response, err := http.DefaultClient.Do(req)
 		require.NoError(t, err)
+		defer func() { _ = response.Body.Close() }()
+		body, err := io.ReadAll(response.Body)
+		require.NoError(t, err)
+		require.Equal(t, http.StatusOK, response.StatusCode, "%s", body)
+		var tokenResponse struct {
+			AccessToken string `json:"access_token"`
+		}
+		require.NoError(t, json.Unmarshal(body, &tokenResponse))
+		accessClaims := &zoidc.AccessTokenClaims{}
+		_, err = zoidc.ParseToken(tokenResponse.AccessToken, accessClaims)
+		require.NoError(t, err)
+		require.ElementsMatch(t, []string{"openid", "auth:read"}, accessClaims.Scopes)
 	})
 }
 
