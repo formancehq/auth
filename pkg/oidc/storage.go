@@ -176,28 +176,30 @@ func (s *storageFacade) SetIntrospectionFromToken(ctx context.Context, introspec
 		return fmt.Errorf("token is not valid for this client")
 	}
 
-	user, err := s.FindUser(ctx, token.UserID)
-	if err != nil {
-		return errors.Wrapf(err, "retrieving user: %s", token.UserID)
-	}
+	if token.UserID != "" {
+		user, err := s.FindUser(ctx, token.UserID)
+		if err != nil {
+			return errors.Wrapf(err, "retrieving user: %s", token.UserID)
+		}
 
-	for _, scope := range token.Scopes {
-		switch scope {
-		case oidc.ScopeOpenID:
-			introspection.Subject = token.UserID
-		case oidc.ScopeEmail:
-			introspection.Email = user.Email
-			introspection.EmailVerified = true // TODO: Get the information
-		case oidc.ScopeProfile:
-			// TODO: Support that
-		case oidc.ScopePhone:
-			// TODO: Support that ?
+		for _, scope := range token.Scopes {
+			switch scope {
+			case oidc.ScopeOpenID:
+				introspection.Subject = token.UserID
+			case oidc.ScopeEmail:
+				introspection.Email = user.Email
+				introspection.EmailVerified = true // TODO: Get the information
+			case oidc.ScopeProfile:
+				// TODO: Support that
+			case oidc.ScopePhone:
+				// TODO: Support that ?
+			}
 		}
 	}
 
 	introspection.Scope = oidc.SpaceDelimitedArray(token.Scopes)
 	introspection.ClientID = token.ApplicationID
-	introspection.Active = time.Now().After(token.Expiration)
+	introspection.Active = time.Now().Before(token.Expiration)
 	return nil
 }
 

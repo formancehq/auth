@@ -30,3 +30,19 @@ Revoking an access token deletes its stored token record. Its refresh token, if 
 Auth endpoints that consult stored access tokens, such as `/userinfo`, reject them after deletion. Revocation does not invalidate a JWT's signature. A consumer that checks only the signature and expiry can continue accepting a revoked access token until it expires; immediate revocation requires the consumer to check token state as well.
 
 New JWT bearer access tokens retain the identity of the authenticated issuing client. Assertion claims such as `client_id` and `azp` do not select the token owner. JWT bearer tokens issued before this fix may have an empty stored `ApplicationID`. Auth does not backfill these records from assertion claims: the client's `/revoke` request cannot revoke them, and they remain subject to their original expiry.
+
+## Client-credentials token introspection
+
+A confidential client can obtain an access token through the `client_credentials` grant at `/oauth/token`. It can then authenticate with its client ID and secret at `/oauth/introspect` to inspect that token.
+
+A valid machine token now returns `active: true`, its issuing `client_id`, and its granted scopes in the space-delimited `scope` field. For example:
+
+```json
+{"active":true,"scope":"auth:read auth:write","client_id":"machine"}
+```
+
+Previously, introspection attempted to load a user for every token and returned `{"active":false}` for machine tokens because they have no user. Integrations that use introspection can now accept these valid tokens. The change does not grant additional scopes.
+
+Machine-token responses contain no user subject (`sub`), email, or other user claims, even when the token includes `openid` or `email` scopes. Tokens associated with a user retain their existing scope-dependent user claims.
+
+The access restrictions are unchanged. The requesting client must authenticate and must either be in the token's audience or have `trusted: true`. A client can introspect its own token without being trusted. A trusted client inspecting another client's token receives that token's issuing `client_id`, not its own ID. This behavior does not allow an untrusted client outside the audience to inspect the token.
