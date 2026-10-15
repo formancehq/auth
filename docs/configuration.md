@@ -8,9 +8,12 @@ clients and static clients. It lets existing callers receive their configured
 scopes without changing their token request during the first rollout phase.
 
 When `scope` is present, Auth grants only the intersection of requested and
-configured scopes. An explicitly empty `scope` grants no scopes. A client with
-no configured scopes receives no scopes, including when it requests privileged
-scopes. Changing client configuration affects newly issued tokens; existing
+configured scopes. An explicitly empty `scope` (`scope=`) is malformed and
+returns HTTP 400 with the OAuth error `invalid_scope`, without issuing a token.
+Omission and an empty value are distinct: the documented default applies only
+to omission, as permitted by [RFC 6749 section 3.3](https://www.rfc-editor.org/rfc/rfc6749.html#section-3.3).
+A client with no configured scopes receives no scopes, including when it requests
+privileged scopes. Changing client configuration affects newly issued tokens; existing
 tokens are not rewritten.
 
 JWT access tokens carry granted resource scopes in the space-delimited `scope`

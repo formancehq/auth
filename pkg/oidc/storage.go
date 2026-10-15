@@ -517,9 +517,15 @@ func (s *storageFacade) ClientCredentialsTokenRequest(ctx context.Context, clien
 
 	allowedScopes := auth.Array[string]{}
 	// An omitted scope parameter defaults to this client's configured scopes.
-	// A supplied (even empty) scope parameter still uses the intersection below.
+	// The decoder represents scope= as []string{""}, not nil.
 	if scopes == nil {
 		scopes = client.GetScopes()
+	} else {
+		for _, scope := range scopes {
+			if scope == "" {
+				return nil, oidc.ErrInvalidScope().WithDescription("scope must not contain an empty scope token")
+			}
+		}
 	}
 
 l:

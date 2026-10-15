@@ -19,6 +19,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/golang-jwt/jwt"
 	"github.com/stretchr/testify/require"
+	"github.com/zitadel/oidc/v2/pkg/op"
 )
 
 func TestClientCredentialsGrantedScopes(t *testing.T) {
@@ -33,11 +34,14 @@ func TestClientCredentialsGrantedScopes(t *testing.T) {
 				configured []string
 				requested  *string
 				want       []string
+				invalid    bool
 			}{
 				{name: "omitted", configured: []string{"openid", "auth:read", "auth:write"}, want: []string{"openid", "auth:read", "auth:write"}},
 				{name: "subset", configured: []string{"auth:read", "auth:write"}, requested: scopeParameter("auth:read unrelated:write"), want: []string{"auth:read"}},
 				{name: "unauthorized", configured: []string{"auth:read"}, requested: scopeParameter("auth:write")},
-				{name: "explicit empty", configured: []string{"auth:read"}, requested: scopeParameter("")},
+				{name: "explicit empty", configured: []string{"auth:read"}, requested: scopeParameter(""), invalid: true},
+				{name: "unconfigured empty", requested: scopeParameter(""), invalid: true},
+				{name: "empty scope token", configured: []string{"auth:read"}, requested: scopeParameter("auth:read "), invalid: true},
 				{name: "unconfigured omitted"},
 				{name: "unconfigured explicit", requested: scopeParameter("auth:write")},
 			} {
@@ -70,6 +74,17 @@ func TestClientCredentialsGrantedScopes(t *testing.T) {
 					if tc.requested != nil {
 						form.Set("scope", *tc.requested)
 					}
+					// Assert the actual decoder distinction: omission is nil; scope=
+					// invokes SpaceDelimitedArray.UnmarshalText and becomes []string{""}.
+					decodeReq := httptest.NewRequest(http.MethodPost, "/oauth/token", strings.NewReader(form.Encode()))
+					decodeReq.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+					decoded, err := op.ParseClientCredentialsRequest(decodeReq, provider.Decoder())
+					require.NoError(t, err)
+					if tc.requested == nil {
+						require.Nil(t, decoded.Scope)
+					} else {
+						require.Equal(t, strings.Split(*tc.requested, " "), []string(decoded.Scope))
+					}
 					req, err := http.NewRequestWithContext(ctx, http.MethodPost, server.URL+"/oauth/token", strings.NewReader(form.Encode()))
 					require.NoError(t, err)
 					req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
@@ -77,6 +92,18 @@ func TestClientCredentialsGrantedScopes(t *testing.T) {
 					res, err := server.Client().Do(req)
 					require.NoError(t, err)
 					defer func() { _ = res.Body.Close() }()
+					if tc.invalid {
+						require.Equal(t, http.StatusBadRequest, res.StatusCode)
+						var response map[string]any
+						require.NoError(t, json.NewDecoder(res.Body).Decode(&response))
+						require.Equal(t, "invalid_scope", response["error"])
+						require.NotContains(t, response, "access_token")
+						require.NotContains(t, response, "refresh_token")
+						count, err := db.NewSelect().Model(&auth.AccessToken{}).Count(ctx)
+						require.NoError(t, err)
+						require.Zero(t, count, "invalid scope must not issue a token")
+						return
+					}
 					require.Equal(t, http.StatusOK, res.StatusCode)
 					var response struct {
 						AccessToken string `json:"access_token"`
