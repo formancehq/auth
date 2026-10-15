@@ -138,10 +138,23 @@ func ParseAssertion(assertion string) (*oidc.AccessTokenClaims, error) {
 	return claims, nil
 }
 
+// jwtTokenRequest carries the authenticated client separately from assertion claims.
+type jwtTokenRequest struct {
+	*oidc.JWTTokenRequest
+	clientID string
+}
+
+func (r *jwtTokenRequest) GetClientID() string {
+	return r.clientID
+}
+
 func CreateJWTTokenResponse(ctx context.Context, tokenRequest *oidc.JWTTokenRequest, creator op.TokenCreator, client op.Client) (*oidc.AccessTokenResponse, error) {
 	issuer := op.IssuerFromContext(ctx)
 
-	id, exp, err := creator.Storage().CreateAccessToken(ctx, tokenRequest)
+	id, exp, err := creator.Storage().CreateAccessToken(ctx, &jwtTokenRequest{
+		JWTTokenRequest: tokenRequest,
+		clientID:        client.GetID(),
+	})
 	if err != nil {
 		return nil, err
 	}

@@ -117,12 +117,16 @@ type storageFacade struct {
 }
 
 func (s *storageFacade) GetRefreshTokenInfo(ctx context.Context, clientID string, token string) (userID string, tokenID string, err error) {
-	accessToken, err := s.FindAccessToken(ctx, token)
+	refreshToken, err := s.FindRefreshToken(ctx, token)
+	if errors.Is(err, storage.ErrNotFound) {
+		// Let the revocation handler resolve an access token or an unknown token.
+		return "", "", op.ErrInvalidRefreshToken
+	}
 	if err != nil {
 		return "", "", err
 	}
 
-	return accessToken.UserID, accessToken.ID, nil
+	return refreshToken.UserID, refreshToken.ID, nil
 }
 
 func (s *storageFacade) SigningKey(ctx context.Context) (op.SigningKey, error) {
@@ -247,10 +251,10 @@ func (s *storageFacade) SaveAuthCode(ctx context.Context, id string, code string
 // it will be called for all requests able to return an access token (Authorization Code Flow, Implicit Flow, JWT Profile, ...)
 func (s *storageFacade) CreateAccessToken(ctx context.Context, request op.TokenRequest) (string, time.Time, error) {
 	var applicationID string
-	//if authenticated for an app (auth code / implicit flow) we must save the client_id to the token
-	authReq, ok := request.(*auth.AuthRequest)
+	// Persist the issuing client for flows that carry an authenticated client ID.
+	clientRequest, ok := request.(interface{ GetClientID() string })
 	if ok {
-		applicationID = authReq.ApplicationID
+		applicationID = clientRequest.GetClientID()
 	}
 	token, err := s.saveAccessToken(ctx, nil, applicationID, request.GetSubject(), request.GetAudience(), request.GetScopes())
 	if err != nil {
