@@ -2,36 +2,13 @@ package oidc
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"time"
 
 	httphelper "github.com/zitadel/oidc/v2/pkg/http"
 	"github.com/zitadel/oidc/v2/pkg/oidc"
 	"github.com/zitadel/oidc/v2/pkg/op"
-	"gopkg.in/go-jose/go-jose.v2"
 )
-
-type openIDKeySet struct {
-	jose.JSONWebKeySet
-}
-
-// VerifySignature implements the oidc.KeySet interface
-// providing an implementation for the keys stored in the OP Storage interface
-func (o *openIDKeySet) VerifySignature(ctx context.Context, jws *jose.JSONWebSignature) ([]byte, error) {
-	keyID, alg := oidc.GetKeyIDAndAlg(jws)
-
-	var (
-		key jose.JSONWebKey
-		err error
-	)
-	key, err = oidc.FindMatchingKey(keyID, oidc.KeyUseSignature, alg, o.Keys...)
-	if err != nil {
-		return nil, fmt.Errorf("invalid signature: %w", err)
-	}
-
-	return jws.Verify(&key)
-}
 
 func VerifyJWTAssertion(ctx context.Context, assertion string, v JWTProfileVerifier) (*oidc.JWTTokenRequest, error) {
 	request := new(oidc.JWTTokenRequest)
@@ -49,9 +26,7 @@ func VerifyJWTAssertion(ctx context.Context, assertion string, v JWTProfileVerif
 		return nil, err
 	}
 
-	accessTokenVerifier := op.NewAccessTokenVerifier(v.DelegatedIssuer(), &openIDKeySet{
-		v.JSONWebKeySet(),
-	})
+	accessTokenVerifier := op.NewAccessTokenVerifier(v.DelegatedIssuer(), v.KeySet())
 	if _, err := op.VerifyAccessToken[*oidc.TokenClaims](ctx, assertion, accessTokenVerifier); err != nil {
 		return nil, err
 	}
@@ -62,7 +37,7 @@ func VerifyJWTAssertion(ctx context.Context, assertion string, v JWTProfileVerif
 type JWTProfileVerifier interface {
 	oidc.Verifier
 	DelegatedIssuer() string
-	JSONWebKeySet() jose.JSONWebKeySet
+	KeySet() oidc.KeySet
 }
 
 type JWTAuthorizationGrantExchanger interface {
