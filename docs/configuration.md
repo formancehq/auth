@@ -13,6 +13,8 @@ auth serve --signing-key "$(cat auth-signing-key.pem)"
 
 Do not store the private key in the repository, a container image, or command output. The service refuses to start when the flag is empty, the PEM cannot be decoded, the key is not a PKCS#1 RSA private key, or the key matches the compromised legacy key removed from this repository.
 
+When delegated OIDC is enabled, Auth loads the provider's JWKS at startup and caches it. During JWT bearer token exchange, an assertion signed with an unknown `kid` triggers a single coalesced JWKS refresh; concurrent requests wait for the same refresh. This allows external OIDC signing-key rotation without restarting Auth.
+
 The service derives the JSON Web Key Set (JWKS) `kid` from the SHA-256 digest of the public key. Replacing the private key therefore publishes a new `kid` and invalidates tokens signed with the previous key. Services that validate Auth tokens must refresh their JWKS cache after a rotation.
 
 ## Migration from the embedded key

@@ -7,11 +7,10 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	"gopkg.in/go-jose/go-jose.v2"
-
 	auth "github.com/formancehq/auth/pkg"
 	"github.com/formancehq/auth/pkg/delegatedauth"
 	"github.com/zitadel/oidc/v2/pkg/client/rp"
+	"github.com/zitadel/oidc/v2/pkg/oidc"
 	"github.com/zitadel/oidc/v2/pkg/op"
 	"go.uber.org/fx"
 )
@@ -27,7 +26,7 @@ func Module(privateKey *rsa.PrivateKey, issuer string, trustedIssuers []string, 
 		}, fx.As(new(op.Storage)), fx.ParamTags(``, `optional:"true"`))),
 		fx.Provide(fx.Annotate(func(httpClient *http.Client, storage op.Storage, configuration delegatedauth.Config) (op.OpenIDProvider, error) {
 			var (
-				keySet *jose.JSONWebKeySet
+				keySet oidc.KeySet
 				err    error
 			)
 			if configuration.Issuer != "" {

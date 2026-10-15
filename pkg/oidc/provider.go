@@ -9,7 +9,6 @@ import (
 	"github.com/zitadel/oidc/v2/pkg/oidc"
 	"github.com/zitadel/oidc/v2/pkg/op"
 	"golang.org/x/text/language"
-	"gopkg.in/go-jose/go-jose.v2"
 )
 
 const (
@@ -20,7 +19,7 @@ type verifier struct {
 	issuer          string
 	mat             time.Duration
 	offset          time.Duration
-	jsonWebKeySet   jose.JSONWebKeySet
+	keySet          oidc.KeySet
 	delegatedIssuer string
 }
 
@@ -28,8 +27,8 @@ func (v verifier) DelegatedIssuer() string {
 	return v.delegatedIssuer
 }
 
-func (v verifier) JSONWebKeySet() jose.JSONWebKeySet {
-	return v.jsonWebKeySet
+func (v verifier) KeySet() oidc.KeySet {
+	return v.keySet
 }
 
 func (v verifier) Issuer() string {
@@ -46,9 +45,9 @@ func (v verifier) Offset() time.Duration {
 
 type provider struct {
 	op.OpenIDProvider
-	delegatedIssuerJsonWebKeySet jose.JSONWebKeySet
-	delegatedIssuer              string
-	trustedIssuers               []string
+	delegatedIssuerKeySet oidc.KeySet
+	delegatedIssuer       string
+	trustedIssuers        []string
 }
 
 func (p provider) JWTProfileVerifier(issuer string) JWTProfileVerifier {
@@ -57,13 +56,13 @@ func (p provider) JWTProfileVerifier(issuer string) JWTProfileVerifier {
 		delegatedIssuer: p.delegatedIssuer,
 		mat:             time.Hour,
 		offset:          0,
-		jsonWebKeySet:   p.delegatedIssuerJsonWebKeySet,
+		keySet:          p.delegatedIssuerKeySet,
 	}
 }
 
 var _ JWTAuthorizationGrantExchanger = (*provider)(nil)
 
-func NewOpenIDProvider(storage op.Storage, issuer string, trustedIssuers []string, delegatedIssuer string, delegatedIssuerJsonWebKeySet *jose.JSONWebKeySet) (op.OpenIDProvider, error) {
+func NewOpenIDProvider(storage op.Storage, issuer string, trustedIssuers []string, delegatedIssuer string, delegatedIssuerKeySet oidc.KeySet) (op.OpenIDProvider, error) {
 	var p op.OpenIDProvider
 
 	parsedIssuer, err := url.Parse(issuer)
@@ -80,10 +79,10 @@ func NewOpenIDProvider(storage op.Storage, issuer string, trustedIssuers []strin
 				if r.URL.Path == op.DefaultEndpoints.Token.Relative() &&
 					r.FormValue("grant_type") == string(oidc.GrantTypeBearer) {
 					grantTypeBearer(&provider{
-						trustedIssuers:               trustedIssuers,
-						OpenIDProvider:               p,
-						delegatedIssuerJsonWebKeySet: *delegatedIssuerJsonWebKeySet,
-						delegatedIssuer:              delegatedIssuer,
+						trustedIssuers:        trustedIssuers,
+						OpenIDProvider:        p,
+						delegatedIssuerKeySet: delegatedIssuerKeySet,
+						delegatedIssuer:       delegatedIssuer,
 					}).ServeHTTP(w, r)
 					return
 				}
