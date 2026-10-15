@@ -70,7 +70,20 @@ func NewOpenIDProvider(storage op.Storage, issuer string, trustedIssuers []strin
 		return nil, err
 	}
 
-	interceptors := make([]op.Option, 0)
+	interceptors := []op.Option{op.WithHttpInterceptors(func(handler http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if r.URL.Path == op.DefaultEndpoints.Revocation.Relative() {
+				if err := r.ParseForm(); err != nil {
+					op.RevocationRequestError(w, r, oidc.ErrInvalidRequest().WithParent(err))
+					return
+				}
+				// RFC 7009 permits ignoring hints. Always resolve refresh tokens
+				// first: the library may decrypt an opaque UUID as an access token.
+				r.Form.Del("token_type_hint")
+			}
+			handler.ServeHTTP(w, r)
+		})
+	})}
 	if delegatedIssuer != "" {
 		interceptors = append(interceptors, op.WithHttpInterceptors(func(handler http.Handler) http.Handler {
 			return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

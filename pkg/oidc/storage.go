@@ -43,6 +43,8 @@ type Storage interface {
 	DeleteAccessToken(ctx context.Context, token string) error
 	DeleteAccessTokensForUserAndClient(ctx context.Context, userID string, clientID string) error
 	DeleteAccessTokensByRefreshToken(ctx context.Context, token string) error
+	RevokeRefreshToken(ctx context.Context, token, clientID string) error
+	RotateRefreshToken(ctx context.Context, token, newID string) (*auth.RefreshToken, error)
 
 	FindUser(ctx context.Context, id string) (*auth.User, error)
 	FindUserBySubject(ctx context.Context, subject string) (*auth.User, error)
@@ -117,12 +119,16 @@ type storageFacade struct {
 }
 
 func (s *storageFacade) GetRefreshTokenInfo(ctx context.Context, clientID string, token string) (userID string, tokenID string, err error) {
-	accessToken, err := s.FindAccessToken(ctx, token)
+	refreshToken, err := s.FindRefreshToken(ctx, token)
+	if errors.Is(err, storage.ErrNotFound) {
+		// Let the revocation handler resolve an access token or an unknown token.
+		return "", "", op.ErrInvalidRefreshToken
+	}
 	if err != nil {
 		return "", "", err
 	}
 
-	return accessToken.UserID, accessToken.ID, nil
+	return refreshToken.UserID, refreshToken.ID, nil
 }
 
 func (s *storageFacade) SigningKey(ctx context.Context) (op.SigningKey, error) {
@@ -249,10 +255,10 @@ func (s *storageFacade) SaveAuthCode(ctx context.Context, id string, code string
 // it will be called for all requests able to return an access token (Authorization Code Flow, Implicit Flow, JWT Profile, ...)
 func (s *storageFacade) CreateAccessToken(ctx context.Context, request op.TokenRequest) (string, time.Time, error) {
 	var applicationID string
-	//if authenticated for an app (auth code / implicit flow) we must save the client_id to the token
-	authReq, ok := request.(*auth.AuthRequest)
+	// Persist the issuing client for flows that carry an authenticated client ID.
+	clientRequest, ok := request.(interface{ GetClientID() string })
 	if ok {
-		applicationID = authReq.ApplicationID
+		applicationID = clientRequest.GetClientID()
 	}
 	token, err := s.saveAccessToken(ctx, nil, applicationID, request.GetSubject(), request.GetAudience(), request.GetScopes())
 	if err != nil {
@@ -328,21 +334,12 @@ func (s *storageFacade) RevokeToken(ctx context.Context, tokenStr string, userID
 		return nil
 	}
 
-	refreshToken, err := s.FindRefreshToken(ctx, tokenStr)
+	err = s.RevokeRefreshToken(ctx, tokenStr, clientID)
+	if errors.Is(err, storage.ErrTokenNotOwned) {
+		return oidc.ErrInvalidClient().WithDescription("token was not issued for this client")
+	}
 	if storage.IgnoreNotFoundError(err) != nil {
 		return oidc.ErrServerError().WithDescription("%s", err)
-	}
-	if err == nil {
-		if refreshToken.ApplicationID != clientID {
-			return oidc.ErrInvalidClient().WithDescription("token was not issued for this client")
-		}
-		if err := s.DeleteRefreshToken(ctx, tokenStr); err != nil {
-			return oidc.ErrServerError().WithDescription("%s", err)
-		}
-		if err := s.DeleteAccessTokensByRefreshToken(ctx, tokenStr); err != nil {
-			return oidc.ErrServerError().WithDescription("%s", err)
-		}
-		return nil
 	}
 	return nil
 }
@@ -425,25 +422,7 @@ func (s *storageFacade) createRefreshToken(ctx context.Context, applicationID st
 
 // renewRefreshToken checks the provided refresh_token and creates a new one based on the current
 func (s *storageFacade) renewRefreshToken(ctx context.Context, currentRefreshToken string) (*auth.RefreshToken, error) {
-	refreshToken, err := s.FindRefreshToken(ctx, currentRefreshToken)
-	if err != nil {
-		return nil, err
-	}
-	//deletes the refresh token and all access tokens which were issued based on this refresh token
-	if err := s.DeleteRefreshToken(ctx, currentRefreshToken); err != nil {
-		return nil, err
-	}
-	if err := s.DeleteAccessTokensByRefreshToken(ctx, currentRefreshToken); err != nil {
-		return nil, err
-	}
-	//creates a new refresh token based on the current one
-	refreshToken.ID = uuid.NewString()
-
-	if err := s.SaveRefreshToken(ctx, refreshToken); err != nil {
-		return nil, err
-	}
-
-	return refreshToken, nil
+	return s.RotateRefreshToken(ctx, currentRefreshToken, uuid.NewString())
 }
 
 // accessToken will store an access_token in-memory based on the provided information

@@ -201,6 +201,52 @@ func (s *Storage) DeleteAccessTokensByRefreshToken(ctx context.Context, token st
 	return mapSqlError(err)
 }
 
+// RevokeRefreshToken locks the token so a concurrent rotation cannot create a
+// replacement while the revocation cascade is in progress.
+func (s *Storage) RevokeRefreshToken(ctx context.Context, token, clientID string) error {
+	return s.db.RunInTx(ctx, nil, func(ctx context.Context, tx bun.Tx) error {
+		refresh := new(auth.RefreshToken)
+		if err := tx.NewSelect().Model(refresh).Where("id = ?", token).For("UPDATE").Scan(ctx); err != nil {
+			return mapSqlError(err)
+		}
+		if refresh.ApplicationID != clientID {
+			return storage.ErrTokenNotOwned
+		}
+		if _, err := tx.NewDelete().Model(refresh).Where("id = ?", token).Exec(ctx); err != nil {
+			return err
+		}
+		_, err := tx.NewDelete().Model(&auth.AccessToken{}).
+			Where("refresh_token_id = ?", token).Exec(ctx)
+		return err
+	})
+}
+
+// RotateRefreshToken uses the same row lock as revocation. A failed deletion or
+// insert rolls the entire rotation back, leaving the old token retriable.
+func (s *Storage) RotateRefreshToken(ctx context.Context, token, newID string) (*auth.RefreshToken, error) {
+	var refresh *auth.RefreshToken
+	err := s.db.RunInTx(ctx, nil, func(ctx context.Context, tx bun.Tx) error {
+		refresh = new(auth.RefreshToken)
+		if err := tx.NewSelect().Model(refresh).Where("id = ?", token).For("UPDATE").Scan(ctx); err != nil {
+			return mapSqlError(err)
+		}
+		if _, err := tx.NewDelete().Model(&auth.AccessToken{}).
+			Where("refresh_token_id = ?", token).Exec(ctx); err != nil {
+			return err
+		}
+		if _, err := tx.NewDelete().Model(refresh).Where("id = ?", token).Exec(ctx); err != nil {
+			return err
+		}
+		refresh.ID = newID
+		_, err := tx.NewInsert().Model(refresh).Exec(ctx)
+		return err
+	})
+	if err != nil {
+		return nil, err
+	}
+	return refresh, nil
+}
+
 func (s *Storage) FindUser(ctx context.Context, id string) (*auth.User, error) {
 	ret := &auth.User{}
 	err := s.db.NewSelect().

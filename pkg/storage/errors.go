@@ -5,7 +5,8 @@ import (
 )
 
 var (
-	ErrNotFound = errors.New("not found")
+	ErrNotFound      = errors.New("not found")
+	ErrTokenNotOwned = errors.New("token was not issued for this client")
 )
 
 func IgnoreNotFoundError(err error) error {
