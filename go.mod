@@ -94,7 +94,7 @@ require (
 	github.com/ericlagergren/decimal v0.0.0-20221120152707-495c53812d05 // indirect
 	github.com/fatih/color v1.18.0 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
-	github.com/getkin/kin-openapi v0.144.0 // indirect
+	github.com/getkin/kin-openapi v0.149.0 // indirect
 	github.com/go-chi/chi v4.1.2+incompatible // indirect
 	github.com/go-chi/render v1.0.3 // indirect
 	github.com/go-logr/logr v1.4.4 // indirect
@@ -170,7 +170,7 @@ require (
 	github.com/rcrowley/go-metrics v0.0.0-20250401214520-65e299d6c5c9 // indirect
 	github.com/riandyrn/otelchi v0.12.2 // indirect
 	github.com/rs/cors v1.11.1 // indirect
-	github.com/santhosh-tekuri/jsonschema/v6 v6.0.2 // indirect
+	github.com/santhosh-tekuri/jsonschema/v6 v6.0.3 // indirect
 	github.com/shirou/gopsutil/v4 v4.26.2 // indirect
 	github.com/sirupsen/logrus v1.9.4 // indirect
 	github.com/spf13/pflag v1.0.10 // indirect
