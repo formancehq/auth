@@ -1,7 +1,11 @@
 {
-  description = "A Nix-flake-based Go 1.26 development environment";
+  description = "A Nix-flake-based Go 1.27.3 development environment";
 
   inputs = {
+    go-tooling = {
+      url = "github:NixOS/nixpkgs/8cec5ef1131078ea76689e84c362b0ed6a1fb6a1";
+      flake = false;
+    };
     nixpkgs.url = "https://flakehub.com/f/NixOS/nixpkgs/0.2511";
     nixpkgs-unstable.url = "https://flakehub.com/f/NixOS/nixpkgs/0.1";
 
@@ -11,7 +15,7 @@
     };
   };
 
-  outputs = { self, nixpkgs, nixpkgs-unstable, goreleaser }:
+  outputs = { self, nixpkgs, nixpkgs-unstable, goreleaser, go-tooling }:
     let
       supportedSystems = [
         "x86_64-linux"
@@ -86,9 +90,17 @@
 
       devShells = forEachSupportedSystem ({ pkgs, pkgs-unstable, system }:
         let
+          # Import Go 1.27 with its matching patches and bootstrap, retaining package pins.
+          patchedGo = pkgs.callPackage "${go-tooling}/pkgs/development/compilers/go/1.27.nix" {
+            inherit buildGo127Module;
+          };
+          buildGo127Module = pkgs.buildGoModule.override { go = patchedGo; };
+          golangci-lint = pkgs.callPackage "${go-tooling}/pkgs/by-name/go/golangci-lint/package.nix" {
+            inherit buildGo127Module;
+          };
           stablePackages = with pkgs; [
             ginkgo
-            go_1_26
+            patchedGo
             gotools
             just
             bash
@@ -97,7 +109,7 @@
             gh
             oras
           ];
-          unstablePackages = with pkgs-unstable; [
+          unstablePackages = [
             golangci-lint
           ];
           otherPackages = [
@@ -108,6 +120,8 @@
         {
           default = pkgs.mkShell {
             packages = stablePackages ++ unstablePackages ++ otherPackages;
+            GOTOOLCHAIN = "local";
+            GOROOT = "${patchedGo}/share/go";
           };
         }
       );
