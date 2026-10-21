@@ -86,9 +86,17 @@
 
       devShells = forEachSupportedSystem ({ pkgs, pkgs-unstable, system }:
         let
+          # Keep the existing tool set; update only the application compiler.
+          patchedGo = pkgs.go_1_26.overrideAttrs (_: {
+            version = "1.26.10";
+            src = pkgs.fetchurl {
+              url = "https://go.dev/dl/go1.26.10.src.tar.gz";
+              hash = "sha256-/WPog7ovK/ypPBZGsx6+9j4rHk0rMXyXidl2po2B828=";
+            };
+          });
           stablePackages = with pkgs; [
             ginkgo
-            go_1_26
+            patchedGo
             gotools
             just
             bash
@@ -108,6 +116,7 @@
         {
           default = pkgs.mkShell {
             packages = stablePackages ++ unstablePackages ++ otherPackages;
+            GOTOOLCHAIN = "local";
           };
         }
       );
