@@ -311,8 +311,12 @@ func (s *storageFacade) TokenRequestByRefreshToken(ctx context.Context, refreshT
 }
 
 // TerminateSession implements the op.Storage interface
-// it will be called after the user signed out, therefore the access and refresh token of the user of this client must be removed
+// It removes the user's access tokens for this client after sign-out.
 func (s *storageFacade) TerminateSession(ctx context.Context, userID string, clientID string) error {
+	// Without a verified subject, an empty user ID would match machine tokens.
+	if userID == "" {
+		return oidc.ErrInvalidRequest().WithDescription("cannot terminate a session without a user subject")
+	}
 	return s.DeleteAccessTokensForUserAndClient(ctx, userID, clientID)
 }
 
