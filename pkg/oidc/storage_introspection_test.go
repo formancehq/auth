@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/rand"
 	"crypto/rsa"
+	"crypto/sha256"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -151,7 +152,7 @@ func TestClientCredentialsIntrospection(t *testing.T) {
 		tokens:  map[string]*auth.AccessToken{},
 	}
 	facade := NewStorageFacade(store, nil, key)
-	provider, err := NewOpenIDProvider(facade, issuer, nil, "", nil)
+	provider, err := NewOpenIDProvider(facade, sha256.Sum256([]byte("synthetic-oidc-crypto-key-for-tests-only")), issuer, nil, "", nil)
 	require.NoError(t, err)
 	post := func(path string, form url.Values, password string) *httptest.ResponseRecorder {
 		req := httptest.NewRequest(http.MethodPost, issuer+path, strings.NewReader(form.Encode())).WithContext(ctx)

@@ -1,10 +1,14 @@
 package cmd
 
 import (
+	"crypto/sha256"
 	"crypto/x509"
 	"encoding/pem"
+	"fmt"
+	"strings"
 	"testing"
 
+	"github.com/formancehq/go-libs/v3/service"
 	"github.com/formancehq/go-libs/v5/pkg/audit"
 	"github.com/stretchr/testify/require"
 )
@@ -56,4 +60,41 @@ func TestAuditCanBeEnabled(t *testing.T) {
 	require.NoError(t, err)
 	require.True(t, config.Enabled)
 	require.Equal(t, "s3cret", config.HandledHeaderSecret)
+}
+
+func TestCryptoKeyConfiguration(t *testing.T) {
+	command := newServeCommand()
+	material, err := command.Flags().GetString(CryptoKeyFlag)
+	require.NoError(t, err)
+	require.Empty(t, material)
+	for _, material := range []string{"", "test", strings.Repeat("x", 31), strings.Repeat(" ", 32), strings.Repeat(" ", 32) + "test"} {
+		t.Run(fmt.Sprintf("length-%d", len(material)), func(t *testing.T) {
+			command := newServeCommand()
+			require.NoError(t, command.Flags().Set(CryptoKeyFlag, material))
+			require.EqualError(t, runServe(command, nil), "crypto key must contain at least 32 bytes of secret material")
+		})
+	}
+	material = "synthetic-oidc-crypto-key-for-tests-only"
+	first, err := deriveCryptoKey(material)
+	require.NoError(t, err)
+	second, err := deriveCryptoKey(material)
+	require.NoError(t, err)
+	require.Equal(t, sha256.Sum256([]byte(material)), first)
+	require.Equal(t, first, second, "restarts and replicas must derive the same key")
+	other, err := deriveCryptoKey(material + "-rotated")
+	require.NoError(t, err)
+	require.NotEqual(t, first, other)
+}
+
+func TestCryptoKeyEnvironmentAndFlagPrecedence(t *testing.T) {
+	t.Setenv("CRYPTO_KEY", "synthetic-env-crypto-key-for-tests-only")
+	command := newServeCommand()
+	service.BindEnvToCommand(command)
+	material, err := command.Flags().GetString(CryptoKeyFlag)
+	require.NoError(t, err)
+	require.Equal(t, "synthetic-env-crypto-key-for-tests-only", material)
+	require.NoError(t, command.ParseFlags([]string{"--crypto-key", "synthetic-flag-crypto-key-for-tests-only"}))
+	material, err = command.Flags().GetString(CryptoKeyFlag)
+	require.NoError(t, err)
+	require.Equal(t, "synthetic-flag-crypto-key-for-tests-only", material)
 }

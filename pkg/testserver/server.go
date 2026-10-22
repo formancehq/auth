@@ -95,6 +95,7 @@ func (s *Server) Start() error {
 		"--" + cmd.ListenFlag, ":0",
 		"--" + cmd.BaseUrlFlag, s.configuration.BaseURL,
 		"--" + cmd.SigningKeyFlag, string(signingKeyPEM),
+		"--" + cmd.CryptoKeyFlag, "synthetic-oidc-crypto-key-for-tests-only",
 		"--" + bunconnect.PostgresURIFlag, s.configuration.PostgresConfiguration.DatabaseSourceName,
 		"--" + bunconnect.PostgresMaxOpenConnsFlag, fmt.Sprint(s.configuration.PostgresConfiguration.MaxOpenConns),
 		"--" + bunconnect.PostgresConnMaxIdleTimeFlag, fmt.Sprint(s.configuration.PostgresConfiguration.ConnMaxIdleTime),
@@ -203,7 +204,7 @@ func (s *Server) Start() error {
 
 	logArgs := slices.Clone(args)
 	for i, arg := range logArgs {
-		if arg == "--"+cmd.SigningKeyFlag && i+1 < len(logArgs) {
+		if (arg == "--"+cmd.SigningKeyFlag || arg == "--"+cmd.CryptoKeyFlag) && i+1 < len(logArgs) {
 			logArgs[i+1] = "<redacted>"
 		}
 	}

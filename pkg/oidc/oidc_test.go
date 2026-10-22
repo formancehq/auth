@@ -5,6 +5,7 @@ import (
 	"context"
 	"crypto/rand"
 	"crypto/rsa"
+	"crypto/sha256"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -114,7 +115,7 @@ func withServerDB(t *testing.T, fn func(m *mockoidc.MockOIDC, storage *sqlstorag
 	require.NoError(t, err)
 
 	// Construct our oidc provider
-	provider, err := oidc.NewOpenIDProvider(storageFacade, serverUrl, []string{serverUrl}, mockOIDC.Issuer(), keySet)
+	provider, err := oidc.NewOpenIDProvider(storageFacade, sha256.Sum256([]byte("synthetic-oidc-crypto-key-for-tests-only")), serverUrl, []string{serverUrl}, mockOIDC.Issuer(), keySet)
 	require.NoError(t, err)
 
 	// Create the router

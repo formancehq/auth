@@ -12,6 +12,7 @@ import (
 	"github.com/go-jose/go-jose/v4"
 	"net/http"
 	"os"
+	"strings"
 
 	"gopkg.in/yaml.v3"
 
@@ -53,6 +54,7 @@ const (
 	AuthIssuersFlag           = "auth-issuers"
 	ListenFlag                = "listen"
 	SigningKeyFlag            = "signing-key"
+	CryptoKeyFlag             = "crypto-key"
 	ConfigFlag                = "config"
 
 	compromisedSigningKeySHA256 = "679e01c92ee655f2d88fa3612f120e897ba219fcb84cec36045e581e85b323f8"
@@ -100,6 +102,7 @@ func newServeCommand() *cobra.Command {
 	cmd.Flags().String(DelegatedClientSecretFlag, "", "Delegated OIDC client secret")
 	cmd.Flags().String(BaseUrlFlag, "http://localhost:8080", "Base service url")
 	cmd.Flags().StringSlice(AuthIssuersFlag, []string{}, "Additional trusted issuer URLs for multi-domain support")
+	cmd.Flags().String(CryptoKeyFlag, "", "Secret material for OIDC encryption, at least 32 bytes (required)")
 	cmd.Flags().String(SigningKeyFlag, "", "PEM-encoded PKCS#1 RSA private key used to sign tokens (required)")
 	cmd.Flags().String(ListenFlag, ":8080", "Listening address")
 	cmd.Flags().String(ConfigFlag, "", "Config file name without extension")
@@ -121,6 +124,12 @@ func runServe(cmd *cobra.Command, _ []string) error {
 	baseUrl, _ := cmd.Flags().GetString(BaseUrlFlag)
 	if baseUrl == "" {
 		return errors.New("base url must be defined")
+	}
+
+	cryptoKeyMaterial, _ := cmd.Flags().GetString(CryptoKeyFlag)
+	cryptoKey, err := deriveCryptoKey(cryptoKeyMaterial)
+	if err != nil {
+		return err
 	}
 
 	additionalIssuers, _ := cmd.Flags().GetStringSlice(AuthIssuersFlag)
@@ -190,7 +199,7 @@ func runServe(cmd *cobra.Command, _ []string) error {
 		messagingfx.PublishModuleFromFlags(cmd, service.IsDebug(cmd)),
 		fx.Supply(fx.Annotate(cmd.Context(), fx.As(new(context.Context)))),
 		sqlstorage.Module(*connectionOptions, key, service.IsDebug(cmd), o.Clients...),
-		oidc.Module(key, baseUrl, trustedIssuers, o.Clients...),
+		oidc.Module(key, cryptoKey, baseUrl, trustedIssuers, o.Clients...),
 		api.Module(
 			listen,
 			baseUrl,
@@ -254,4 +263,13 @@ func runServe(cmd *cobra.Command, _ []string) error {
 	)
 
 	return service.New(cmd.OutOrStdout(), options...).Run(cmd)
+}
+
+// deriveCryptoKey accepts explicit secret material only; hashing fixes the AES
+// key size, but does not add entropy to the operator-provided secret.
+func deriveCryptoKey(material string) ([32]byte, error) {
+	if len(strings.TrimSpace(material)) < 32 {
+		return [32]byte{}, errors.New("crypto key must contain at least 32 bytes of secret material")
+	}
+	return sha256.Sum256([]byte(material)), nil
 }

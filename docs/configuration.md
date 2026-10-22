@@ -45,7 +45,7 @@ Generate a key and inject its contents through the deployment secret mechanism:
 
 ```sh
 openssl genrsa -traditional -out auth-signing-key.pem 4096
-auth serve --signing-key "$(cat auth-signing-key.pem)"
+auth serve --signing-key "$(cat auth-signing-key.pem)" # also requires CRYPTO_KEY; see below
 ```
 
 Do not store the private key in the repository, a container image, or command output. The service refuses to start when the flag is empty, the PEM cannot be decoded, the key is not a PKCS#1 RSA private key, or the key matches the compromised legacy key removed from this repository.
@@ -85,3 +85,55 @@ Previously, introspection attempted to load a user for every token and returned 
 Machine-token responses contain no user subject (`sub`), email, or other user claims, even when the token includes `openid` or `email` scopes. Tokens associated with a user retain their existing scope-dependent user claims.
 
 The access restrictions are unchanged. The requesting client must authenticate and must either be in the token's audience or have `trusted: true`. A client can introspect its own token without being trusted. A trusted client inspecting another client's token receives that token's issuing `client_id`, not its own ID. This behavior does not allow an untrusted client outside the audience to inspect the token.
+
+## OIDC encryption key
+
+`auth serve` requires `--crypto-key` or `CRYPTO_KEY`, with no default. An explicit
+flag takes precedence over the environment variable, as with other service flags.
+Provide at least 32 bytes of high-entropy secret material, excluding surrounding
+whitespace from the minimum length. Auth derives the 32-byte AES key with SHA-256
+of the exact supplied bytes; hashing does not increase the secret's entropy.
+Missing, short, or whitespace-only values fail startup before storage or listeners
+start. The provider also rejects zero, empty-hash, and legacy public keys.
+
+This is a dedicated symmetric OIDC key. It is separate from `SIGNING_KEY`, the RSA
+private key used for JWT signatures. Provision it through the deployment secret
+mechanism. Keep the same value across replicas and restarts, and use separate
+values for separate environments. Do not commit it, print it, generate it at
+process startup, or generate a new value on each chart render.
+
+### Migration and rollout prerequisites
+
+Before deploying this version, the deployment owner must provision a stable Auth
+secret and wire it to `CRYPTO_KEY` (or `--crypto-key`) for every replica. This PR
+changes Auth only; Helm and infrastructure must supply that secret separately.
+The enforcing binary will not start without it. Earlier binaries do not support
+the new flag, so do not pass `--crypto-key` to an earlier binary.
+
+The previous binary always uses the public `SHA-256("test")` key. A mixed rollout
+therefore cannot share opaque artifacts between old and new replicas. Plan a
+coordinated cutover and a window to drain in-flight OIDC operations. There is no
+legacy-key fallback. Rolling back to the old binary restores the vulnerability
+and loses compatibility with opaque artifacts encrypted under the new key.
+Require a security decision before rollback; prefer a forward fix with the same
+configured secret.
+
+Changing the key invalidates old opaque access-token envelopes at introspection,
+userinfo, and revocation. Clients should obtain new tokens and retry interrupted
+login flows. JWT signatures and expiry remain unchanged when `SIGNING_KEY` stays
+the same, including the intentional validity of issued JWTs after client deletion
+or revocation. Refresh-token UUIDs are stored independently and are not rotated
+by this setting.
+
+Authorization codes use the same encryption key when created, but this service
+redeems them by exact stored ciphertext rather than decryption. Rotation alone
+does not invalidate an already stored code. Auth does not currently enforce a
+local expiration when it looks up a code by ciphertext, so waiting during the
+cutover is not an invalidation mechanism. If the rollout must invalidate every
+artifact created under the old key, the deployment owner must arrange an
+explicit purge of outstanding authorization requests as a separate, reviewed
+operation. New codes use the configured secret. The key change itself requires
+no database migration.
+
+Go callers of `oidc.Module` and `oidc.NewOpenIDProvider` must now supply an explicit
+`[32]byte` crypto key. The HTTP API is unchanged.

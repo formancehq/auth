@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/rand"
 	"crypto/rsa"
+	"crypto/sha256"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -67,7 +68,7 @@ func TestClientCredentialsGrantedScopes(t *testing.T) {
 					router := chi.NewRouter()
 					server := httptest.NewServer(router)
 					defer server.Close()
-					provider, err := oidc.NewOpenIDProvider(oidc.NewStorageFacade(storage, nil, key, clients...), server.URL, []string{server.URL}, "", nil)
+					provider, err := oidc.NewOpenIDProvider(oidc.NewStorageFacade(storage, nil, key, clients...), sha256.Sum256([]byte("synthetic-oidc-crypto-key-for-tests-only")), server.URL, []string{server.URL}, "", nil)
 					require.NoError(t, err)
 					oidc.AddRoutes(router, provider, storage, nil)
 					form := url.Values{"grant_type": {"client_credentials"}}

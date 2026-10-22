@@ -2,6 +2,7 @@ package oidc
 
 import (
 	"crypto/sha256"
+	"errors"
 	"net/http"
 	"net/url"
 	"time"
@@ -62,7 +63,10 @@ func (p provider) JWTProfileVerifier(issuer string) JWTProfileVerifier {
 
 var _ JWTAuthorizationGrantExchanger = (*provider)(nil)
 
-func NewOpenIDProvider(storage op.Storage, issuer string, trustedIssuers []string, delegatedIssuer string, delegatedIssuerKeySet oidc.KeySet) (op.OpenIDProvider, error) {
+func NewOpenIDProvider(storage op.Storage, cryptoKey [32]byte, issuer string, trustedIssuers []string, delegatedIssuer string, delegatedIssuerKeySet oidc.KeySet) (op.OpenIDProvider, error) {
+	if cryptoKey == ([32]byte{}) || cryptoKey == sha256.Sum256([]byte("test")) || cryptoKey == sha256.Sum256(nil) {
+		return nil, errors.New("OIDC crypto key must be configured with non-public secret material")
+	}
 	var p op.OpenIDProvider
 
 	parsedIssuer, err := url.Parse(issuer)
@@ -113,7 +117,7 @@ func NewOpenIDProvider(storage op.Storage, issuer string, trustedIssuers []strin
 	// (which is set by the chi middleware based on trusted issuers) instead
 	// of using a static issuer string.
 	p, err = op.NewDynamicOpenIDProvider(parsedIssuer.Path, &op.Config{
-		CryptoKey:                sha256.Sum256([]byte("test")),
+		CryptoKey:                cryptoKey,
 		DefaultLogoutRedirectURI: pathLoggedOut,
 		CodeMethodS256:           true,
 		AuthMethodPost:           true,
