@@ -24,11 +24,18 @@ existing scope rules. In particular, the delegated JWT-bearer flow carries the
 scopes of the trusted assertion rather than adopting the client-credentials
 defaults.
 
-This phase changes token issuance only. `--auth-check-scopes` remains optional
-and defaults to `false`; explicit `false` and `true` remain supported. Auth does
-not start enforcing scopes by default, and this change does not enable scope
-checks in other services. Deployments must review client scopes and token
-consumers before enabling enforcement in a later rollout phase.
+## Mandatory scope checks
+
+Auth always checks scopes on authenticated management API routes. Read requests
+require `auth:read` or `auth:write`; write requests require `auth:write`.
+A valid token with missing or unrelated scopes receives HTTP 401.
+
+The `--auth-check-scopes` flag has been removed. Remove it from deployment
+arguments, including explicit `true` or `false` values, before upgrading;
+Auth rejects the removed flag at startup. Ensure management clients have the
+required scopes and obtain new tokens before upgrading. Existing tokens are not
+rewritten. This change applies to Auth only; other services retain their own
+scope-checking configuration.
 
 ## Token signing key
 

@@ -47,7 +47,6 @@ var _ = Context("Auth - OAuth2 Clients Management", func() {
 				},
 				Secrets: []string{"global"},
 			}},
-			CheckScopes: true,
 		})
 	})
 

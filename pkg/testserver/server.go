@@ -8,7 +8,6 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
-	authlib "github.com/formancehq/go-libs/v3/auth"
 	"io"
 	"net/http"
 	"os"
@@ -64,7 +63,6 @@ type Configuration struct {
 	OTLPConfig             *OTLPConfig
 	BaseURL                string
 	Clients                []auth.StaticClient
-	CheckScopes            bool
 }
 
 type Logger interface {
@@ -201,9 +199,6 @@ func (s *Server) Start() error {
 	}
 	if s.configuration.Debug {
 		args = append(args, "--"+service.DebugFlag)
-	}
-	if s.configuration.CheckScopes {
-		args = append(args, "--"+authlib.AuthCheckScopesFlag)
 	}
 
 	logArgs := slices.Clone(args)
