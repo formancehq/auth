@@ -103,7 +103,6 @@ func newServeCommand() *cobra.Command {
 	cmd.Flags().String(SigningKeyFlag, "", "PEM-encoded PKCS#1 RSA private key used to sign tokens (required)")
 	cmd.Flags().String(ListenFlag, ":8080", "Listening address")
 	cmd.Flags().String(ConfigFlag, "", "Config file name without extension")
-	cmd.Flags().Bool(authlib.AuthCheckScopesFlag, false, "Enable scope checking")
 
 	audit.AddFlags(cmd.Flags())
 	publish.AddFlags("auth", cmd.Flags())
@@ -177,7 +176,6 @@ func runServe(cmd *cobra.Command, _ []string) error {
 	}
 
 	listen, _ := cmd.Flags().GetString(ListenFlag)
-	checkScopes, _ := cmd.Flags().GetBool(authlib.AuthCheckScopesFlag)
 
 	auditConfig, err := audit.ConfigFromFlags(cmd.Flags())
 	if err != nil {
@@ -207,7 +205,7 @@ func runServe(cmd *cobra.Command, _ []string) error {
 		authlib.Module(authlib.ModuleConfig{
 			Enabled:     true,
 			Issuers:     trustedIssuers,
-			CheckScopes: checkScopes,
+			CheckScopes: true,
 			Service:     ServiceName,
 		}),
 		fx.Decorate(func() authlib.Authenticator {
@@ -221,7 +219,7 @@ func runServe(cmd *cobra.Command, _ []string) error {
 			for _, issuer := range trustedIssuers {
 				keySets[issuer] = staticKeySet
 			}
-			return authlib.NewJWTAuth(keySets, ServiceName, checkScopes)
+			return authlib.NewJWTAuth(keySets, ServiceName, true)
 		}),
 	}
 
