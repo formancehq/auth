@@ -33,8 +33,10 @@ func addClientRoutes(db *bun.DB, r chi.Router, authenticator authlib.Authenticat
 }
 
 type clientSecretView struct {
-	auth.ClientSecret
-	Hash string `json:"-"`
+	ID         string        `json:"id"`
+	LastDigits string        `json:"lastDigits"`
+	Name       string        `json:"name"`
+	Metadata   auth.Metadata `json:"metadata"`
 }
 
 type clientView struct {
@@ -58,7 +60,10 @@ func mapBusinessClient(c auth.Client) clientView {
 		ID: c.Id,
 		Secrets: mapList(c.Secrets, func(i auth.ClientSecret) clientSecretView {
 			return clientSecretView{
-				ClientSecret: i,
+				ID:         i.ID,
+				LastDigits: i.LastDigits,
+				Name:       i.Name,
+				Metadata:   i.Metadata,
 			}
 		}),
 	}

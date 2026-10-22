@@ -1,5 +1,17 @@
 # Configuration
 
+## Client secret representations
+
+Client representations returned by `GET /clients`, `GET /clients/{clientId}`,
+`POST /clients` and `PUT /clients/{clientId}` expose only `id`, `lastDigits`,
+`name` and `metadata` for each secret. Stored secret hashes are internal and
+must not appear in these responses. The API uses an explicit projection to
+keep storage fields out of the public representation.
+
+`POST /clients/{clientId}/secrets` returns the new secret's plaintext in `clear`
+at creation time. Later client reads do not return it. Secret storage and
+validation are unchanged.
+
 ## Scope rollout: token issuance
 
 For `client_credentials`, omitting the `scope` parameter grants the scopes

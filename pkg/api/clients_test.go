@@ -273,7 +273,10 @@ func TestReadClient(t *testing.T) {
 			ClientOptions: opts,
 			ID:            client1.Id,
 			Secrets: []clientSecretView{{
-				ClientSecret: secret,
+				ID:         secret.ID,
+				LastDigits: secret.LastDigits,
+				Name:       secret.Name,
+				Metadata:   secret.Metadata,
 			}},
 		}, ret)
 	})
