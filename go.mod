@@ -9,7 +9,7 @@ require (
 	github.com/formancehq/auth/pkg/client v0.0.0-00010101000000-000000000000
 	github.com/formancehq/go-libs/v3 v3.6.1
 	github.com/formancehq/go-libs/v5 v5.6.1
-	github.com/go-chi/chi/v5 v5.3.0
+	github.com/go-chi/chi/v5 v5.4.0
 	github.com/go-jose/go-jose/v4 v4.1.4
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/google/uuid v1.6.0
